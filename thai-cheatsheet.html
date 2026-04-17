@@ -14,6 +14,8 @@
     background: #f5f5f5;
     color: #1a1a1a;
     padding: 20px;
+    max-width: 860px;
+    margin: 0 auto;
   }
 
   h1 { text-align: center; font-size: 1.8rem; margin-bottom: 4px; color: #222; }
@@ -76,8 +78,8 @@
   tbody tr:hover { background: #f9fafb; }
   td { padding: 7px 10px; vertical-align: middle; }
 
-  .thai-letter { font-family: 'Noto Sans Thai', sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; }
-  .thai-name { font-family: 'Noto Sans Thai', sans-serif; font-size: 0.95rem; }
+  .thai-letter { font-family: 'Noto Serif Thai', serif; font-size: 1.7rem; font-weight: 700; line-height: 1; }
+  .thai-name { font-family: 'Noto Serif Thai', serif; font-size: 0.95rem; }
   td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
   .sound-type { font-size: 0.75rem; color: #888; }
 
@@ -91,9 +93,47 @@
 
   .footer { text-align: center; margin-top: 18px; font-size: 0.78rem; color: #999; }
 
-  /* ===== VOWEL TABLE ===== */
-  .vowel-form { font-family: 'Noto Sans Thai', sans-serif; font-size: 1.4rem; font-weight: 700; }
-  .vowel-example { font-family: 'Noto Sans Thai', sans-serif; font-size: 0.95rem; }
+  /* ===== VIEW TOGGLE ===== */
+  .view-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
+  .view-btn {
+    padding: 5px 14px; border: 2px solid #ddd; border-radius: 6px;
+    background: #fff; font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer;
+  }
+  .view-btn:hover { border-color: #999; }
+  .view-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+  .consonant-view { display: none; }
+  .consonant-view.active { display: block; }
+
+  /* ===== PAIR TABLE ===== */
+  .pair-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 18px; }
+  .pair-table th { padding: 8px 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #fff; text-align: center; }
+  .pair-table td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .pair-table tr:last-child td { border-bottom: none; }
+  .pair-table tr:hover { background: #f9fafb; }
+  .pair-cell { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .pair-letter { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
+  .pair-letter .thai-letter { font-size: 1.5rem; }
+  .pair-letter .thai-name { font-size: 0.72rem; color: #888; }
+
+  /* ===== VOWEL CARDS ===== */
+  .vowel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+  .vowel-grid-header {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 2px;
+  }
+  .vowel-grid-header-card {
+    display: grid; grid-template-columns: 1fr 1fr; padding: 0 14px;
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 600;
+  }
+  .vowel-grid-header-card span { text-align: center; }
+  .vowel-card {
+    background: #fff; border-radius: 8px; padding: 10px 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 0;
+  }
+  .vowel-card-side { text-align: center; padding: 0 6px; }
+  .vowel-card-side:first-child { border-right: 1px solid #eee; }
+  .vowel-form { font-family: 'Noto Serif Thai', serif; font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
+  .vowel-card-side .vowel-ipa { font-size: 0.75rem; color: #777; font-family: monospace; display: block; margin-top: 2px; }
+  .vowel-card-side .vowel-example { font-family: 'Noto Serif Thai', serif; font-size: 0.8rem; color: #555; display: block; margin-top: 2px; }
 
   @media print {
     body { padding: 10px; background: #fff; }
@@ -118,20 +158,30 @@
 
 <div class="font-toggle">
   <span style="font-size:0.85rem; font-weight:600; color:#555;">Font:</span>
-  <button class="toggle-btn active" onclick="setFont('sans')" id="btn-sans">Modern (Sans)</button>
-  <button class="toggle-btn" onclick="setFont('serif')" id="btn-serif">Traditional (Serif)</button>
+  <button class="toggle-btn active" onclick="setFont('serif')" id="btn-serif">Traditional (Serif)</button>
+  <button class="toggle-btn" onclick="setFont('sans')" id="btn-sans">Modern (Sans)</button>
 </div>
 
 <div class="tab-bar">
   <button class="tab-btn active" onclick="showTab('consonants')">Consonants</button>
   <button class="tab-btn" onclick="showTab('vowels')">Vowels</button>
   <button class="tab-btn" onclick="showTab('tones')">Tones</button>
+  <button class="tab-btn" onclick="showTab('clusters')">Clusters</button>
 </div>
 
 <!-- ################################################################ -->
 <!-- #################### CONSONANTS TAB ########################### -->
 <!-- ################################################################ -->
 <div id="tab-consonants" class="tab-content active">
+
+<div class="view-toggle">
+  <span style="font-size:0.85rem; font-weight:600; color:#555;">View:</span>
+  <button class="view-btn active" onclick="setConView('class')">By Class</button>
+  <button class="view-btn" onclick="setConView('sound')">By Sound</button>
+</div>
+
+<!-- ==================== BY CLASS VIEW ==================== -->
+<div id="con-class" class="consonant-view active">
 
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div> Mid Class (กลาง) — 9</div>
@@ -235,17 +285,17 @@
     <tbody>
       <tr>
         <td style="padding:8px; border-bottom:1px solid #eee;"><strong>Unaspirated stop?</strong><br><span style="font-size:0.78rem; color:#666;">plains</span></td>
-        <td style="padding:8px; border-bottom:1px solid #eee; font-family:'Noto Sans Thai',sans-serif;">/k/ ก • /tɕ/ จ • /d/ ด • /t/ ต • /b/ บ • /p/ ป • /ʔ/ อ</td>
+        <td style="padding:8px; border-bottom:1px solid #eee; font-family:'Noto Serif Thai',serif;">/k/ ก • /tɕ/ จ • /d/ ด • /t/ ต • /b/ บ • /p/ ป • /ʔ/ อ</td>
         <td style="padding:8px; border-bottom:1px solid #eee; text-align:center;"><strong style="color:#2563eb;">Always MID</strong></td>
       </tr>
       <tr>
         <td style="padding:8px; border-bottom:1px solid #eee;"><strong>Can you hum it?</strong><br><span style="font-size:0.78rem; color:#666;">sonorants</span></td>
-        <td style="padding:8px; border-bottom:1px solid #eee; font-family:'Noto Sans Thai',sans-serif;">/ŋ/ ง • /n/ น • /m/ ม • /j/ ย • /r/ ร • /l/ ล • /w/ ว</td>
+        <td style="padding:8px; border-bottom:1px solid #eee; font-family:'Noto Serif Thai',serif;">/ŋ/ ง • /n/ น • /m/ ม • /j/ ย • /r/ ร • /l/ ล • /w/ ว</td>
         <td style="padding:8px; border-bottom:1px solid #eee; text-align:center;"><strong style="color:#dc2626;">Always LOW</strong></td>
       </tr>
       <tr>
         <td style="padding:8px;"><strong>Does air come out?</strong><br><span style="font-size:0.78rem; color:#666;">aspirates &amp; fricatives</span></td>
-        <td style="padding:8px; font-family:'Noto Sans Thai',sans-serif;">/kʰ/ • /tɕʰ/ • /s/ • /tʰ/ • /pʰ/ • /f/ • /h/</td>
+        <td style="padding:8px; font-family:'Noto Serif Thai',serif;">/kʰ/ • /tɕʰ/ • /s/ • /tʰ/ • /pʰ/ • /f/ • /h/</td>
         <td style="padding:8px; text-align:center;"><strong style="color:#16a34a;">HIGH</strong> or <strong style="color:#dc2626;">LOW</strong><br><span style="font-size:0.78rem; color:#666;">(each sound has both — check the tables above)</span></td>
       </tr>
     </tbody>
@@ -264,6 +314,164 @@
   <p style="margin-top:8px"><strong>ห นำ (leading ห):</strong> Low-class sonorants (น ม ง ย ร ล ว) have no high-class letter. Putting a silent ห in front bumps them to high-class tone rules. That's all it does — ห is silent, it just changes the tone.</p>
 </div>
 
+</div><!-- end con-class view -->
+
+<!-- ==================== BY SOUND VIEW ==================== -->
+<div id="con-sound" class="consonant-view">
+
+<!-- UNPAIRED: MID CLASS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header mid">Mid Class — Unpaired (9)</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Unaspirated stops — only one class, no pairs to worry about</span>
+</div>
+
+<table class="pair-table" style="margin-bottom:18px;">
+  <thead><tr>
+    <th style="background:#2563eb; width:60px;">Sound</th>
+    <th style="background:#2563eb;">Letters</th>
+    <th style="background:#2563eb; width:50px;">Final</th>
+  </tr></thead>
+  <tbody>
+    <tr><td class="initial-sound">/k/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ก</span><span class="thai-name">ไก่ chicken</span></span></div></td><td class="final-sound">/k/</td></tr>
+    <tr><td class="initial-sound">/tɕ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">จ</span><span class="thai-name">จาน plate</span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/d/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ด</span><span class="thai-name">เด็ก child</span></span><span class="pair-letter"><span class="thai-letter">ฎ</span><span class="thai-name">ชฎา <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/t/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ต</span><span class="thai-name">เต่า turtle</span></span><span class="pair-letter"><span class="thai-letter">ฏ</span><span class="thai-name">ปฏัก <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/b/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">บ</span><span class="thai-name">ใบไม้ leaf</span></span></div></td><td class="final-sound">/p/</td></tr>
+    <tr><td class="initial-sound">/p/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ป</span><span class="thai-name">ปลา fish</span></span></div></td><td class="final-sound">/p/</td></tr>
+    <tr><td class="initial-sound">/ʔ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">อ</span><span class="thai-name">อ่าง basin</span></span></div></td><td class="final-sound">—</td></tr>
+  </tbody>
+</table>
+
+<!-- UNPAIRED: SONORANTS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header low">Sonorants — Always Low (10)</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Can you hum it? Then it's always low class. Use silent ห to shift tone.</span>
+</div>
+
+<table class="pair-table" style="margin-bottom:18px;">
+  <thead><tr>
+    <th style="background:#dc2626; width:60px;">Sound</th>
+    <th style="background:#dc2626;">Letters</th>
+    <th style="background:#dc2626; width:50px;">Final</th>
+  </tr></thead>
+  <tbody>
+    <tr><td class="initial-sound">/ŋ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ง</span><span class="thai-name">งู snake</span></span></div></td><td class="final-sound">/ŋ/</td></tr>
+    <tr><td class="initial-sound">/j/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ญ</span><span class="thai-name">หญิง woman</span></span><span class="pair-letter"><span class="thai-letter">ย</span><span class="thai-name">ยักษ์ giant</span></span></div></td><td class="final-sound">/n/ · /j/</td></tr>
+    <tr><td class="initial-sound">/n/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">น</span><span class="thai-name">หนู mouse</span></span><span class="pair-letter"><span class="thai-letter">ณ</span><span class="thai-name">เณร <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/m/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ม</span><span class="thai-name">ม้า horse</span></span></div></td><td class="final-sound">/m/</td></tr>
+    <tr><td class="initial-sound">/r/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ร</span><span class="thai-name">เรือ boat</span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/l/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ล</span><span class="thai-name">ลิง monkey</span></span><span class="pair-letter"><span class="thai-letter">ฬ</span><span class="thai-name">จุฬา <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/w/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ว</span><span class="thai-name">แหวน ring</span></span></div></td><td class="final-sound">/w/</td></tr>
+  </tbody>
+</table>
+
+<!-- PAIRED: HIGH / LOW -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header" style="background:#7c3aed;">High / Low Pairs — Same Sound, Different Class (25)</div>
+</div>
+<p style="font-size:0.78rem; color:#555; margin: -4px 0 8px 0;">These consonants share the same sound but belong to different classes — which changes the tone. The <strong style="color:#16a34a;">high-class</strong> letter usually comes first in the alphabet.</p>
+
+<table class="pair-table">
+  <thead><tr>
+    <th style="background:#7c3aed; width:60px;">Sound</th>
+    <th style="background:#16a34a;">High Class</th>
+    <th style="background:#dc2626;">Low Class</th>
+    <th style="background:#7c3aed; width:50px;">Final</th>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td class="initial-sound">/kʰ/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ข</span><span class="thai-name">ไข่ egg</span></span>
+        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฃ</span><span class="thai-name">ขวด <span class="obsolete-tag">OBS</span></span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ค</span><span class="thai-name">ควาย buffalo</span></span>
+        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฅ</span><span class="thai-name">ฅน <span class="obsolete-tag">OBS</span></span></span>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฆ</span><span class="thai-name">ระฆัง <span class="rare-tag">R</span></span></span>
+      </td>
+      <td class="final-sound">/k/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/tɕʰ/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ฉ</span><span class="thai-name">ฉิ่ง cymbals</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ช</span><span class="thai-name">ช้าง elephant</span></span>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฌ</span><span class="thai-name">เฌอ <span class="rare-tag">R</span></span></span>
+      </td>
+      <td class="final-sound">/t/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/tʰ/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฐ</span><span class="thai-name">ฐาน <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ถ</span><span class="thai-name">ถุง bag</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฑ</span><span class="thai-name">มณโฑ <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฒ</span><span class="thai-name">ผู้เฒ่า <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ท</span><span class="thai-name">ทหาร soldier</span></span>
+        <span class="pair-letter"><span class="thai-letter">ธ</span><span class="thai-name">ธง flag</span></span>
+      </td>
+      <td class="final-sound">/t/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/pʰ/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ผ</span><span class="thai-name">ผึ้ง bee</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">พ</span><span class="thai-name">พาน tray</span></span>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ภ</span><span class="thai-name">สำเภา <span class="rare-tag">R</span></span></span>
+      </td>
+      <td class="final-sound">/p/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/f/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ฝ</span><span class="thai-name">ฝา lid</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ฟ</span><span class="thai-name">ฟัน tooth</span></span>
+      </td>
+      <td class="final-sound">/p/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/s/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ศ</span><span class="thai-name">ศาลา <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ษ</span><span class="thai-name">ฤๅษี <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ส</span><span class="thai-name">เสือ tiger</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ซ</span><span class="thai-name">โซ่ chain</span></span>
+      </td>
+      <td class="final-sound">/t/</td>
+    </tr>
+    <tr>
+      <td class="initial-sound">/h/</td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ห</span><span class="thai-name">หีบ chest</span></span>
+      </td>
+      <td>
+        <span class="pair-letter"><span class="thai-letter">ฮ</span><span class="thai-name">นกฮูก owl</span></span>
+      </td>
+      <td class="final-sound">—</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tone-rules" style="margin-top:18px;">
+  <h2>Tips</h2>
+  <p><strong>Most sounds have one high + multiple low letters</strong> — when in doubt, low is the safer guess.</p>
+  <p style="margin-top:4px;"><strong>High usually comes first</strong> in the alphabet: ข before ค, ฉ before ช, ถ before ท, ผ before พ, ฝ before ฟ.</p>
+  <p style="margin-top:4px;"><strong>Exception:</strong> /s/ — high class has three letters (ศ ษ ส) vs one low (ซ). And ส comes after ซ in the alphabet.</p>
+</div>
+
+</div><!-- end con-sound view -->
+
 </div><!-- end consonants tab -->
 
 
@@ -274,80 +482,190 @@
 
 <div class="tone-rules">
   <h2>Thai Vowels</h2>
-  <p>Thai has 9 basic vowel sounds, each with a short and long version. The length matters — it changes the meaning and affects tone rules (short vowel + dead syllable = different tone than long vowel + dead syllable). There are also 3 diphthongs and a few special forms.</p>
+  <p>9 basic pairs + 3 diphthong pairs + 3 special forms + 12 glide endings. The dash (-) shows where the consonant goes.</p>
 </div>
 
+<!-- BASIC VOWELS as card grid -->
 <div class="class-section">
-  <div class="class-header" style="background:#7c3aed;">Basic Vowels — Short / Long Pairs</div>
-  <table>
-    <thead><tr style="background:#7c3aed;">
-      <th style="color:#fff; text-align:center;">Sound</th>
-      <th style="color:#fff; text-align:center;">Short form</th>
-      <th style="color:#fff; text-align:center;">IPA</th>
-      <th style="color:#fff; text-align:center;">Long form</th>
-      <th style="color:#fff; text-align:center;">IPA</th>
-      <th style="color:#fff; text-align:center;">Example (short)</th>
-      <th style="color:#fff; text-align:center;">Example (long)</th>
-    </tr></thead>
-    <tbody>
-      <tr><td style="text-align:center;">a</td><td class="vowel-form" style="text-align:center;">-ะ / -ั</td><td style="text-align:center;">/a/</td><td class="vowel-form" style="text-align:center;">-า</td><td style="text-align:center;">/aː/</td><td class="vowel-example">กะ (estimate)</td><td class="vowel-example">กา (crow)</td></tr>
-      <tr><td style="text-align:center;">i</td><td class="vowel-form" style="text-align:center;">-ิ</td><td style="text-align:center;">/i/</td><td class="vowel-form" style="text-align:center;">-ี</td><td style="text-align:center;">/iː/</td><td class="vowel-example">กิน (eat)</td><td class="vowel-example">กี่ (how many)</td></tr>
-      <tr><td style="text-align:center;">ue</td><td class="vowel-form" style="text-align:center;">-ึ</td><td style="text-align:center;">/ɯ/</td><td class="vowel-form" style="text-align:center;">-ือ</td><td style="text-align:center;">/ɯː/</td><td class="vowel-example">นึก (think)</td><td class="vowel-example">มือ (hand)</td></tr>
-      <tr><td style="text-align:center;">u</td><td class="vowel-form" style="text-align:center;">-ุ</td><td style="text-align:center;">/u/</td><td class="vowel-form" style="text-align:center;">-ู</td><td style="text-align:center;">/uː/</td><td class="vowel-example">กุบ (snap)</td><td class="vowel-example">กู (I, rude)</td></tr>
-      <tr><td style="text-align:center;">e</td><td class="vowel-form" style="text-align:center;">เ-ะ</td><td style="text-align:center;">/e/</td><td class="vowel-form" style="text-align:center;">เ-</td><td style="text-align:center;">/eː/</td><td class="vowel-example">เกะกะ (messy)</td><td class="vowel-example">เก (old/vintage)</td></tr>
-      <tr><td style="text-align:center;">ae</td><td class="vowel-form" style="text-align:center;">แ-ะ</td><td style="text-align:center;">/ɛ/</td><td class="vowel-form" style="text-align:center;">แ-</td><td style="text-align:center;">/ɛː/</td><td class="vowel-example">แกะ (sheep)</td><td class="vowel-example">แก (you/old)</td></tr>
-      <tr><td style="text-align:center;">o</td><td class="vowel-form" style="text-align:center;">โ-ะ</td><td style="text-align:center;">/o/</td><td class="vowel-form" style="text-align:center;">โ-</td><td style="text-align:center;">/oː/</td><td class="vowel-example">โต๊ะ (table)</td><td class="vowel-example">โต (grow)</td></tr>
-      <tr><td style="text-align:center;">aw</td><td class="vowel-form" style="text-align:center;">เ-าะ</td><td style="text-align:center;">/ɔ/</td><td class="vowel-form" style="text-align:center;">-อ</td><td style="text-align:center;">/ɔː/</td><td class="vowel-example">เกาะ (island)</td><td class="vowel-example">กอ (hug)</td></tr>
-      <tr><td style="text-align:center;">er</td><td class="vowel-form" style="text-align:center;">เ-อะ</td><td style="text-align:center;">/ɤ/</td><td class="vowel-form" style="text-align:center;">เ-อ</td><td style="text-align:center;">/ɤː/</td><td class="vowel-example">เลอะ (messy)</td><td class="vowel-example">เธอ (she)</td></tr>
-    </tbody>
-  </table>
+  <div class="class-header" style="background:#7c3aed;">Basic Vowels — 9 Pairs</div>
+</div>
+<div class="vowel-grid-header">
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+</div>
+<div class="vowel-grid">
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-ะ / -ั</div><span class="vowel-ipa">/a/</span><span class="vowel-example">กะ estimate</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-า</div><span class="vowel-ipa">/aː/</span><span class="vowel-example">กา crow</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-ิ</div><span class="vowel-ipa">/i/</span><span class="vowel-example">กิน eat</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-ี</div><span class="vowel-ipa">/iː/</span><span class="vowel-example">กี่ how many</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-ึ</div><span class="vowel-ipa">/ɯ/</span><span class="vowel-example">นึก think</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-ือ</div><span class="vowel-ipa">/ɯː/</span><span class="vowel-example">มือ hand</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-ุ</div><span class="vowel-ipa">/u/</span><span class="vowel-example">กุบ snap</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-ู</div><span class="vowel-ipa">/uː/</span><span class="vowel-example">กู I (rude)</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-ะ</div><span class="vowel-ipa">/e/</span><span class="vowel-example">เกะกะ messy</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-</div><span class="vowel-ipa">/eː/</span><span class="vowel-example">เก old</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">แ-ะ</div><span class="vowel-ipa">/ɛ/</span><span class="vowel-example">แกะ sheep</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">แ-</div><span class="vowel-ipa">/ɛː/</span><span class="vowel-example">แก you</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">โ-ะ</div><span class="vowel-ipa">/o/</span><span class="vowel-example">โต๊ะ table</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">โ-</div><span class="vowel-ipa">/oː/</span><span class="vowel-example">โต grow</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-าะ</div><span class="vowel-ipa">/ɔ/</span><span class="vowel-example">เกาะ island</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-อ</div><span class="vowel-ipa">/ɔː/</span><span class="vowel-example">กอ hug</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-อะ</div><span class="vowel-ipa">/ɤ/</span><span class="vowel-example">เลอะ messy</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-อ</div><span class="vowel-ipa">/ɤː/</span><span class="vowel-example">เธอ she</span></div>
+  </div>
+
 </div>
 
+<!-- DIPHTHONGS -->
 <div class="class-section">
-  <div class="class-header" style="background:#0891b2;">Diphthongs — Short / Long Pairs</div>
-  <table>
-    <thead><tr style="background:#0891b2;">
-      <th style="color:#fff; text-align:center;">Sound</th>
-      <th style="color:#fff; text-align:center;">Short form</th>
-      <th style="color:#fff; text-align:center;">IPA</th>
-      <th style="color:#fff; text-align:center;">Long form</th>
-      <th style="color:#fff; text-align:center;">IPA</th>
-      <th style="color:#fff; text-align:center;">Example (short)</th>
-      <th style="color:#fff; text-align:center;">Example (long)</th>
-    </tr></thead>
-    <tbody>
-      <tr><td style="text-align:center;">ia</td><td class="vowel-form" style="text-align:center;">เ-ียะ</td><td style="text-align:center;">/ia/</td><td class="vowel-form" style="text-align:center;">เ-ีย</td><td style="text-align:center;">/iaː/</td><td class="vowel-example">เกี๊ยะ (clog)</td><td class="vowel-example">เสีย (broken)</td></tr>
-      <tr><td style="text-align:center;">uea</td><td class="vowel-form" style="text-align:center;">เ-ือะ</td><td style="text-align:center;">/ɯa/</td><td class="vowel-form" style="text-align:center;">เ-ือ</td><td style="text-align:center;">/ɯaː/</td><td class="vowel-example">เลือะ (rare)</td><td class="vowel-example">เสือ (tiger)</td></tr>
-      <tr><td style="text-align:center;">ua</td><td class="vowel-form" style="text-align:center;">-ัวะ</td><td style="text-align:center;">/ua/</td><td class="vowel-form" style="text-align:center;">-ัว / -ว</td><td style="text-align:center;">/uaː/</td><td class="vowel-example">ผัวะ (rare)</td><td class="vowel-example">ตัว (body/clf.)</td></tr>
-    </tbody>
-  </table>
+  <div class="class-header" style="background:#0891b2;">Diphthongs — 3 Pairs</div>
+</div>
+<div class="vowel-grid-header">
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+</div>
+<div class="vowel-grid">
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-ียะ</div><span class="vowel-ipa">/ia/</span><span class="vowel-example">เกี๊ยะ clog</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ีย</div><span class="vowel-ipa">/iaː/</span><span class="vowel-example">เสีย broken</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-ือะ</div><span class="vowel-ipa">/ɯa/</span><span class="vowel-example">เลือะ rare</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ือ</div><span class="vowel-ipa">/ɯaː/</span><span class="vowel-example">เสือ tiger</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-ัวะ</div><span class="vowel-ipa">/ua/</span><span class="vowel-example">ผัวะ rare</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-ัว / -ว</div><span class="vowel-ipa">/uaː/</span><span class="vowel-example">ตัว body</span></div>
+  </div>
+
 </div>
 
+<!-- SPECIAL FORM -->
 <div class="class-section">
-  <div class="class-header" style="background:#64748b;">Special Vowel Forms</div>
-  <table>
-    <thead><tr style="background:#64748b;">
-      <th style="color:#fff; text-align:center;">Form</th>
-      <th style="color:#fff; text-align:center;">Sound</th>
-      <th style="color:#fff; text-align:center;">IPA</th>
-      <th style="color:#fff; text-align:center;">Notes</th>
-      <th style="color:#fff; text-align:center;">Example</th>
-    </tr></thead>
-    <tbody>
-      <tr><td class="vowel-form" style="text-align:center;">-ำ</td><td style="text-align:center;">am</td><td style="text-align:center;">/am/</td><td>Short /a/ + /m/ combined in one symbol</td><td class="vowel-example">ทำ (do/make)</td></tr>
-      <tr><td class="vowel-form" style="text-align:center;">ไ-</td><td style="text-align:center;">ai</td><td style="text-align:center;">/aj/</td><td>Common form</td><td class="vowel-example">ไก่ (chicken)</td></tr>
-      <tr><td class="vowel-form" style="text-align:center;">ใ-</td><td style="text-align:center;">ai</td><td style="text-align:center;">/aj/</td><td>Same sound as ไ-, only 20 words use this form</td><td class="vowel-example">ใจ (heart)</td></tr>
-      <tr><td class="vowel-form" style="text-align:center;">เ-า</td><td style="text-align:center;">ao</td><td style="text-align:center;">/aw/</td><td>Combination of เ- and -า</td><td class="vowel-example">เขา (he/she/mountain)</td></tr>
-    </tbody>
-  </table>
+  <div class="class-header" style="background:#64748b;">Special Form</div>
+</div>
+<div class="vowel-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="vowel-card" style="grid-template-columns: 1fr;">
+    <div class="vowel-card-side"><div class="vowel-form">-ำ</div><span class="vowel-ipa">/am/</span><span class="vowel-example">ทำ do, น้ำ water</span><span style="font-size:0.65rem; color:#999;">short /a/ + /m/ in one symbol</span></div>
+  </div>
+  <div class="vowel-card" style="grid-template-columns: 1fr;">
+    <div class="vowel-card-side"><div class="vowel-form">ฤ</div><span class="vowel-ipa">/rɯ/ or /ri/</span><span class="vowel-example">ฤดู season</span><span style="font-size:0.65rem; color:#999;">acts as low-class consonant + vowel</span></div>
+  </div>
+  <div class="vowel-card" style="grid-template-columns: 1fr;">
+    <div class="vowel-card-side"><div class="vowel-form">ฤๅ</div><span class="vowel-ipa">/rɯː/</span><span class="vowel-example">ฤๅษี hermit</span><span style="font-size:0.65rem; color:#999;">long form, very rare</span></div>
+  </div>
+</div>
+
+<!-- VOWEL + GLIDE ENDINGS -->
+<div class="class-section" style="margin-bottom:6px;">
+  <div class="class-header" style="background:#b45309;">Vowel + Glide Endings (ย/ว)</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Vowels ending in ย /j/ or ว /w/ glide</span>
+</div>
+<div class="vowel-grid-header">
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+  <div class="vowel-grid-header-card"><span>SHORT</span><span>LONG</span></div>
+</div>
+<div class="vowel-grid">
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">ไ- / ใ-</div><span class="vowel-ipa">/aj/</span><span class="vowel-example">ไม่ not</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-าย</div><span class="vowel-ipa">/aːj/</span><span class="vowel-example">สบาย well</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-า</div><span class="vowel-ipa">/aw/</span><span class="vowel-example">เขา he</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-าว</div><span class="vowel-ipa">/aːw/</span><span class="vowel-example">ขาว white</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+    <div class="vowel-card-side"><div class="vowel-form">-อย</div><span class="vowel-ipa">/ɔːj/</span><span class="vowel-example">น้อย little</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+    <div class="vowel-card-side"><div class="vowel-form">โ-ย</div><span class="vowel-ipa">/oːj/</span><span class="vowel-example">โดย by</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ย</div><span class="vowel-ipa">/ɤːj/</span><span class="vowel-example">เคย ever</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">เ-็ว</div><span class="vowel-ipa">/ew/</span><span class="vowel-example">เร็ว fast</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ว</div><span class="vowel-ipa">/eːw/</span><span class="vowel-example">เอว waist</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">แ-็ว</div><span class="vowel-ipa">/ɛw/</span><span class="vowel-example"><span style="font-size:0.65rem; color:#999;">rare</span></span></div>
+    <div class="vowel-card-side"><div class="vowel-form">แ-ว</div><span class="vowel-ipa">/ɛːw/</span><span class="vowel-example">แมว cat</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ียว</div><span class="vowel-ipa">/iaw/</span><span class="vowel-example">เขียว green</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">อิว</div><span class="vowel-ipa">/iw/</span><span class="vowel-example">หิว hungry</span></div>
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+    <div class="vowel-card-side"><div class="vowel-form">เ-ือย</div><span class="vowel-ipa">/ɯaj/</span><span class="vowel-example">เหนื่อย tired</span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">-วย</div><span class="vowel-ipa">/uaj/</span><span class="vowel-example">สวย pretty</span></div>
+    <div class="vowel-card-side"><div class="vowel-form">-วาย</div><span class="vowel-ipa">/uaːj/</span><span class="vowel-example"><span style="font-size:0.65rem; color:#999;">rare</span></span></div>
+  </div>
+
+  <div class="vowel-card">
+    <div class="vowel-card-side"><div class="vowel-form">อุย</div><span class="vowel-ipa">/uj/</span><span class="vowel-example">ทุย rare</span></div>
+    <div class="vowel-card-side" style="opacity:0.3;"><div class="vowel-form">—</div></div>
+  </div>
+
 </div>
 
 <div class="tone-rules">
   <h2>Vowel Tips</h2>
-  <p>• <strong>Short vs long matters for tones:</strong> in dead syllables with a low-class initial consonant, short vowel → high tone, long vowel → falling tone.</p>
-  <p style="margin-top:4px;">• <strong>Vowels can appear before, after, above, below, or around the consonant.</strong> The dash (-) shows where the consonant goes: เ-ะ means เ goes before, ะ goes after.</p>
-  <p style="margin-top:4px;">• <strong>-ั (mai han akat)</strong> replaces -ะ when a final consonant closes the syllable: กะ → กัน.</p>
-  <p style="margin-top:4px;">• <strong>ใ- only appears in 20 words.</strong> Everything else uses ไ-. If in doubt, use ไ-.</p>
+  <p><strong>Short vs long matters for tones:</strong> dead syllable + low class: short → high tone, long → falling tone.</p>
+  <p style="margin-top:4px;"><strong>-ั (mai han akat)</strong> replaces -ะ when a final consonant closes the syllable: กะ → กัน.</p>
+  <p style="margin-top:4px;"><strong>ใ- only in 20 words.</strong> Everything else uses ไ-. If in doubt, use ไ-.</p>
 </div>
 
 </div><!-- end vowels tab -->
@@ -418,10 +736,10 @@
     <thead>
       <tr>
         <th style="background:#555; color:#fff; padding:8px; text-align:center;">Class</th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Sans Thai',sans-serif;"><span style="font-size:1.2rem;">ก่</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#1 ไม้เอก</span></th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Sans Thai',sans-serif;"><span style="font-size:1.2rem;">ก้</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#2 ไม้โท</span></th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Sans Thai',sans-serif;"><span style="font-size:1.2rem;">ก๊</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#3 ไม้ตรี</span></th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Sans Thai',sans-serif;"><span style="font-size:1.2rem;">ก๋</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#4 ไม้จัตวา</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.2rem;">ก่</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#1 ไม้เอก</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.2rem;">ก้</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#2 ไม้โท</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.2rem;">ก๊</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#3 ไม้ตรี</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.2rem;">ก๋</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif;">#4 ไม้จัตวา</span></th>
       </tr>
     </thead>
     <tbody>
@@ -459,9 +777,236 @@
 </div><!-- end tones tab -->
 
 
-<div class="footer">
-  44 consonants • 32 vowel forms • 5 tones • Print this and stick it on your wall
+<!-- ################################################################ -->
+<!-- #################### CLUSTERS TAB ############################# -->
+<!-- ################################################################ -->
+<div id="tab-clusters" class="tab-content">
+
+<div class="tone-rules">
+  <h2>Consonant Clusters — อักษรควบ</h2>
+  <p>When two consonants appear together without a vowel between them, they form a cluster. Thai has three types.</p>
 </div>
+
+<!-- TRUE CLUSTERS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header" style="background:#2563eb;">True Clusters — อักษรควบแท้</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Both consonants are pronounced together</span>
+</div>
+
+<table style="margin-bottom:18px;">
+  <thead>
+    <tr>
+      <th style="background:#2563eb; width:80px;"></th>
+      <th style="background:#2563eb; text-align:center; font-family:'Noto Serif Thai',serif; font-size:1.2rem;">+ ร</th>
+      <th style="background:#2563eb; text-align:center; font-family:'Noto Serif Thai',serif; font-size:1.2rem;">+ ล</th>
+      <th style="background:#2563eb; text-align:center; font-family:'Noto Serif Thai',serif; font-size:1.2rem;">+ ว</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="thai-letter">ก</span></td>
+      <td style="text-align:center;"><span class="thai-letter">กร</span> <span style="font-size:0.78rem; color:#555;">/gr/</span><br><span style="font-size:0.8rem; color:#555;">เกรง fear</span></td>
+      <td style="text-align:center;"><span class="thai-letter">กล</span> <span style="font-size:0.78rem; color:#555;">/gl/</span><br><span style="font-size:0.8rem; color:#555;">กล้อง camera</span></td>
+      <td style="text-align:center;"><span class="thai-letter">กว</span> <span style="font-size:0.78rem; color:#555;">/gw/</span><br><span style="font-size:0.8rem; color:#555;">กว่า more</span></td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">ข</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ขร</span> <span style="font-size:0.78rem; color:#555;">/kʰr/</span><br><span style="font-size:0.8rem; color:#555;">ขรึม grim</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ขล</span> <span style="font-size:0.78rem; color:#555;">/kʰl/</span><br><span style="font-size:0.8rem; color:#555;">ขลุ่ย flute</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ขว</span> <span style="font-size:0.78rem; color:#555;">/kʰw/</span><br><span style="font-size:0.8rem; color:#555;">ขวัญ spirit</span></td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">ค</span></td>
+      <td style="text-align:center;"><span class="thai-letter">คร</span> <span style="font-size:0.78rem; color:#555;">/kʰr/</span><br><span style="font-size:0.8rem; color:#555;">ครู teacher</span></td>
+      <td style="text-align:center;"><span class="thai-letter">คล</span> <span style="font-size:0.78rem; color:#555;">/kʰl/</span><br><span style="font-size:0.8rem; color:#555;">คลอง canal</span></td>
+      <td style="text-align:center;"><span class="thai-letter">คว</span> <span style="font-size:0.78rem; color:#555;">/kʰw/</span><br><span style="font-size:0.8rem; color:#555;">ความ meaning</span></td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">ต</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ตร</span> <span style="font-size:0.78rem; color:#555;">/dtr/</span><br><span style="font-size:0.8rem; color:#555;">ตรง straight</span></td>
+      <td style="text-align:center; color:#ccc;">—</td>
+      <td style="text-align:center; color:#ccc;">—</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">ป</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ปร</span> <span style="font-size:0.78rem; color:#555;">/bpr/</span><br><span style="font-size:0.8rem; color:#555;">เปรียบ compare</span></td>
+      <td style="text-align:center;"><span class="thai-letter">ปล</span> <span style="font-size:0.78rem; color:#555;">/bpl/</span><br><span style="font-size:0.8rem; color:#555;">ปลา fish</span></td>
+      <td style="text-align:center; color:#ccc;">—</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">ผ</span></td>
+      <td style="text-align:center; color:#ccc;">—</td>
+      <td style="text-align:center;"><span class="thai-letter">ผล</span> <span style="font-size:0.78rem; color:#555;">/pʰl/</span><br><span style="font-size:0.8rem; color:#555;">ผลัด take turns</span></td>
+      <td style="text-align:center; color:#ccc;">—</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">พ</span></td>
+      <td style="text-align:center;"><span class="thai-letter">พร</span> <span style="font-size:0.78rem; color:#555;">/pʰr/</span><br><span style="font-size:0.8rem; color:#555;">พระ monk</span></td>
+      <td style="text-align:center;"><span class="thai-letter">พล</span> <span style="font-size:0.78rem; color:#555;">/pʰl/</span><br><span style="font-size:0.8rem; color:#555;">พลอย gem</span></td>
+      <td style="text-align:center; color:#ccc;">—</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- FALSE CLUSTERS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header" style="background:#dc2626;">False Clusters — อักษรควบไม่แท้</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">The ร is silent — only the first consonant is heard</span>
+</div>
+
+<table style="margin-bottom:18px;">
+  <thead>
+    <tr>
+      <th style="background:#dc2626; width:140px;">Cluster</th>
+      <th style="background:#dc2626;">Sounds like</th>
+      <th style="background:#dc2626;">Examples</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="thai-letter">ทร</span></td>
+      <td class="initial-sound">/s/ <span style="font-size:0.75rem; color:#888;">or /t/</span></td>
+      <td><span class="thai-name">ทราบ</span> know &bull; <span class="thai-name">ทราย</span> sand<br><span style="font-size:0.78rem; color:#888;">Some words use /t/: <span class="thai-name">โทร</span> call &bull; <span class="thai-name">ทรง</span> shape &bull; <span class="thai-name">ทรุด</span> sink</span></td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">สร</span></td>
+      <td class="initial-sound">/s/</td>
+      <td><span class="thai-name">สร้าง</span> build &bull; <span class="thai-name">เสร็จ</span> done</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">จร</span></td>
+      <td class="initial-sound">/j/</td>
+      <td><span class="thai-name">จริง</span> true &bull; <span class="thai-name">จราจร</span> traffic</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- LEADING CONSONANTS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header" style="background:#16a34a;">Leading Consonants — อักษรนำ</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Silent ห or อ shifts tone class for sonorants</span>
+</div>
+
+<div class="tone-rules" style="margin-bottom:10px; padding:12px 16px;">
+  <p style="margin-bottom:8px;"><strong>Why?</strong> Sonorants (ง น ม ย ร ล ว) are always low class, so they can only produce mid, high, and falling tones on their own. Prepending a silent <strong>ห</strong> (high class) unlocks rising and low tones.</p>
+</div>
+
+<table style="margin-bottom:10px;">
+  <thead>
+    <tr>
+      <th style="background:#16a34a;">หอ นำ</th>
+      <th style="background:#16a34a;">Sounds like</th>
+      <th style="background:#16a34a;">Example</th>
+      <th style="background:#16a34a;">Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="thai-letter">หง</span></td>
+      <td class="initial-sound">/ŋ/</td>
+      <td><span class="thai-name">หง่อย</span></td>
+      <td>listless</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หน</span></td>
+      <td class="initial-sound">/n/</td>
+      <td><span class="thai-name">หนู</span></td>
+      <td>mouse</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หม</span></td>
+      <td class="initial-sound">/m/</td>
+      <td><span class="thai-name">หมา</span></td>
+      <td>dog</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หญ</span></td>
+      <td class="initial-sound">/j/</td>
+      <td><span class="thai-name">หญิง</span></td>
+      <td>female</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หย</span></td>
+      <td class="initial-sound">/j/</td>
+      <td><span class="thai-name">หยุด</span></td>
+      <td>stop</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หร</span></td>
+      <td class="initial-sound">/r/</td>
+      <td><span class="thai-name">หรือ</span></td>
+      <td>or</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หล</span></td>
+      <td class="initial-sound">/l/</td>
+      <td><span class="thai-name">หลับ</span></td>
+      <td>sleep</td>
+    </tr>
+    <tr>
+      <td><span class="thai-letter">หว</span></td>
+      <td class="initial-sound">/w/</td>
+      <td><span class="thai-name">หวัง</span></td>
+      <td>hope</td>
+    </tr>
+  </tbody>
+</table>
+
+<table style="margin-bottom:18px;">
+  <thead>
+    <tr>
+      <th style="background:#16a34a;">ออ นำ</th>
+      <th style="background:#16a34a;">Sounds like</th>
+      <th style="background:#16a34a;">Example</th>
+      <th style="background:#16a34a;">Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="thai-letter">อย</span></td>
+      <td class="initial-sound">/j/</td>
+      <td><span class="thai-name">อยู่</span> &bull; <span class="thai-name">อย่า</span> &bull; <span class="thai-name">อย่าง</span> &bull; <span class="thai-name">อยาก</span></td>
+      <td>be at &bull; don't &bull; kind &bull; want</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- NON-CONFORMING CLUSTERS -->
+<div class="class-section" style="margin-bottom:8px;">
+  <div class="class-header" style="background:#64748b;">Non-Conforming Clusters</div>
+  <span style="font-size:0.78rem; color:#555; margin-left:6px;">Two consonants that don't form a true cluster — an unwritten /a/ is inserted</span>
+</div>
+
+<div class="tone-rules" style="margin-bottom:18px;">
+  <p>When two consonants can't merge into a true cluster, a short <strong>/a/</strong> sub-syllable is inserted between them. This /a/ is not written. No tone mark can be used on these.</p>
+  <p style="margin-top:6px;"><span class="thai-name" style="font-size:1.1rem;">ขนม</span> → /kʰa-nom/ (snack) &nbsp;&bull;&nbsp; <span class="thai-name" style="font-size:1.1rem;">สนุก</span> → /sa-nuk/ (fun) &nbsp;&bull;&nbsp; <span class="thai-name" style="font-size:1.1rem;">แขนง</span> → /kʰa-nɛːŋ/ (branch)</p>
+  <p style="margin-top:6px;">Some clusters produce <strong>/aː/</strong> (long) instead: <span class="thai-name" style="font-size:1.1rem;">มรกต</span> → /mɔː-ra-got/ (emerald) &nbsp;&bull;&nbsp; <span class="thai-name" style="font-size:1.1rem;">ทราบ</span> → handled as false cluster above</p>
+</div>
+
+<!-- CLUSTER RULES -->
+<div class="tone-rules">
+  <h2>Cluster Rules</h2>
+
+  <p style="margin-bottom:10px;"><strong>Tone rule for clusters:</strong></p>
+  <div style="background:#f8f9fa; border-radius:8px; padding:12px 16px; margin-bottom:12px; font-size:0.85rem; line-height:1.8;">
+    <strong>If 2nd consonant is a sonorant</strong> (ง น ม ย ร ล ว):<br>
+    → Tone is determined by the <strong>1st consonant's class</strong><br>
+    <span style="font-size:0.78rem; color:#666;">ปลูก /bpluːk/ — low tone from mid-class ป &nbsp;•&nbsp; สนุก /sa-nuk/ — low tone from high-class ส</span><br><br>
+    <strong>If 2nd consonant is NOT a sonorant:</strong><br>
+    → Tone is determined by the <strong>2nd consonant's class</strong><br>
+    <span style="font-size:0.78rem; color:#666;">แสดง /sa-dɛːŋ/ — mid tone from mid-class ด &nbsp;•&nbsp; เฉพาะ /tɕʰa-pʰɔ/ — low tone from low-class พ</span>
+  </div>
+
+  <p style="margin-bottom:10px;"><strong>Orthography:</strong></p>
+  <div style="background:#f8f9fa; border-radius:8px; padding:12px 16px; font-size:0.85rem; line-height:1.8;">
+    <strong>Preposed vowels</strong> go before the <em>entire</em> cluster: <span class="thai-name" style="font-size:1.05rem;">โปรด</span> not ป<span style="color:red;">โ</span>รด<br>
+    <strong>Tone marks &amp; superscript vowels</strong> sit above the <em>2nd</em> consonant: <span class="thai-name" style="font-size:1.05rem;">กล้อง</span> (mark on ล not ก)<br>
+    <strong>Subscript vowels</strong> go under the <em>2nd</em> consonant: <span class="thai-name" style="font-size:1.05rem;">พริ้ม</span> (อิ under ร not พ)
+  </div>
+</div>
+
+</div><!-- end clusters tab -->
+
 
 <script>
 function setFont(style) {
@@ -474,6 +1019,13 @@ function setFont(style) {
   });
   document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById('btn-' + style).classList.add('active');
+}
+
+function setConView(view) {
+  document.querySelectorAll('.consonant-view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('con-' + view).classList.add('active');
+  event.target.classList.add('active');
 }
 
 function showTab(name) {
