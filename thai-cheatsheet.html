@@ -110,10 +110,11 @@
   .pair-table td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
   .pair-table tr:last-child td { border-bottom: none; }
   .pair-table tr:hover { background: #f9fafb; }
-  .pair-cell { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-  .pair-letter { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
-  .pair-letter .thai-letter { font-size: 1.5rem; }
-  .pair-letter .thai-name { font-size: 0.72rem; color: #888; }
+  .pair-cell { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+  .pair-letter { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 50px; }
+  .pair-letter .thai-letter { font-size: 1.6rem; }
+  .pair-letter .thai-name { font-family: 'Noto Serif Thai', serif; font-size: 1rem; color: #555; }
+  .pair-letter .pair-eng { font-size: 0.7rem; color: #888; }
 
   /* ===== VOWEL CARDS ===== */
   .vowel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
@@ -176,12 +177,12 @@
 
 <div class="view-toggle">
   <span style="font-size:0.85rem; font-weight:600; color:#555;">View:</span>
-  <button class="view-btn active" onclick="setConView('class')">By Class</button>
-  <button class="view-btn" onclick="setConView('sound')">By Sound</button>
+  <button class="view-btn active" onclick="setConView('sound')">By Sound</button>
+  <button class="view-btn" onclick="setConView('class')">By Class</button>
 </div>
 
 <!-- ==================== BY CLASS VIEW ==================== -->
-<div id="con-class" class="consonant-view active">
+<div id="con-class" class="consonant-view">
 
 <div class="legend">
   <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div> Mid Class (กลาง) — 9</div>
@@ -317,7 +318,7 @@
 </div><!-- end con-class view -->
 
 <!-- ==================== BY SOUND VIEW ==================== -->
-<div id="con-sound" class="consonant-view">
+<div id="con-sound" class="consonant-view active">
 
 <!-- UNPAIRED: MID CLASS -->
 <div class="class-section" style="margin-bottom:8px;">
@@ -332,13 +333,13 @@
     <th style="background:#2563eb; width:50px;">Final</th>
   </tr></thead>
   <tbody>
-    <tr><td class="initial-sound">/k/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ก</span><span class="thai-name">ไก่ chicken</span></span></div></td><td class="final-sound">/k/</td></tr>
-    <tr><td class="initial-sound">/tɕ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">จ</span><span class="thai-name">จาน plate</span></span></div></td><td class="final-sound">/t/</td></tr>
-    <tr><td class="initial-sound">/d/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ด</span><span class="thai-name">เด็ก child</span></span><span class="pair-letter"><span class="thai-letter">ฎ</span><span class="thai-name">ชฎา <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
-    <tr><td class="initial-sound">/t/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ต</span><span class="thai-name">เต่า turtle</span></span><span class="pair-letter"><span class="thai-letter">ฏ</span><span class="thai-name">ปฏัก <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
-    <tr><td class="initial-sound">/b/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">บ</span><span class="thai-name">ใบไม้ leaf</span></span></div></td><td class="final-sound">/p/</td></tr>
-    <tr><td class="initial-sound">/p/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ป</span><span class="thai-name">ปลา fish</span></span></div></td><td class="final-sound">/p/</td></tr>
-    <tr><td class="initial-sound">/ʔ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">อ</span><span class="thai-name">อ่าง basin</span></span></div></td><td class="final-sound">—</td></tr>
+    <tr><td class="initial-sound">/k/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ก</span><span class="thai-name">ไก่</span><span class="pair-eng">chicken</span></span></div></td><td class="final-sound">/k/</td></tr>
+    <tr><td class="initial-sound">/tɕ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">จ</span><span class="thai-name">จาน</span><span class="pair-eng">plate</span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/d/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ด</span><span class="thai-name">เด็ก</span><span class="pair-eng">child</span></span><span class="pair-letter"><span class="thai-letter">ฎ</span><span class="thai-name">ชฎา</span><span class="pair-eng">headdress <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/t/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ต</span><span class="thai-name">เต่า</span><span class="pair-eng">turtle</span></span><span class="pair-letter"><span class="thai-letter">ฏ</span><span class="thai-name">ปฏัก</span><span class="pair-eng">goad <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/t/</td></tr>
+    <tr><td class="initial-sound">/b/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">บ</span><span class="thai-name">ใบไม้</span><span class="pair-eng">leaf</span></span></div></td><td class="final-sound">/p/</td></tr>
+    <tr><td class="initial-sound">/p/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ป</span><span class="thai-name">ปลา</span><span class="pair-eng">fish</span></span></div></td><td class="final-sound">/p/</td></tr>
+    <tr><td class="initial-sound">/ʔ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">อ</span><span class="thai-name">อ่าง</span><span class="pair-eng">basin</span></span></div></td><td class="final-sound">—</td></tr>
   </tbody>
 </table>
 
@@ -355,13 +356,13 @@
     <th style="background:#dc2626; width:50px;">Final</th>
   </tr></thead>
   <tbody>
-    <tr><td class="initial-sound">/ŋ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ง</span><span class="thai-name">งู snake</span></span></div></td><td class="final-sound">/ŋ/</td></tr>
-    <tr><td class="initial-sound">/j/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ญ</span><span class="thai-name">หญิง woman</span></span><span class="pair-letter"><span class="thai-letter">ย</span><span class="thai-name">ยักษ์ giant</span></span></div></td><td class="final-sound">/n/ · /j/</td></tr>
-    <tr><td class="initial-sound">/n/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">น</span><span class="thai-name">หนู mouse</span></span><span class="pair-letter"><span class="thai-letter">ณ</span><span class="thai-name">เณร <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
-    <tr><td class="initial-sound">/m/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ม</span><span class="thai-name">ม้า horse</span></span></div></td><td class="final-sound">/m/</td></tr>
-    <tr><td class="initial-sound">/r/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ร</span><span class="thai-name">เรือ boat</span></span></div></td><td class="final-sound">/n/</td></tr>
-    <tr><td class="initial-sound">/l/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ล</span><span class="thai-name">ลิง monkey</span></span><span class="pair-letter"><span class="thai-letter">ฬ</span><span class="thai-name">จุฬา <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
-    <tr><td class="initial-sound">/w/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ว</span><span class="thai-name">แหวน ring</span></span></div></td><td class="final-sound">/w/</td></tr>
+    <tr><td class="initial-sound">/ŋ/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ง</span><span class="thai-name">งู</span><span class="pair-eng">snake</span></span></div></td><td class="final-sound">/ŋ/</td></tr>
+    <tr><td class="initial-sound">/j/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ญ</span><span class="thai-name">หญิง</span><span class="pair-eng">woman</span></span><span class="pair-letter"><span class="thai-letter">ย</span><span class="thai-name">ยักษ์</span><span class="pair-eng">giant</span></span></div></td><td class="final-sound">/n/ · /j/</td></tr>
+    <tr><td class="initial-sound">/n/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">น</span><span class="thai-name">หนู</span><span class="pair-eng">mouse</span></span><span class="pair-letter"><span class="thai-letter">ณ</span><span class="thai-name">เณร</span><span class="pair-eng">novice <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/m/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ม</span><span class="thai-name">ม้า</span><span class="pair-eng">horse</span></span></div></td><td class="final-sound">/m/</td></tr>
+    <tr><td class="initial-sound">/r/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ร</span><span class="thai-name">เรือ</span><span class="pair-eng">boat</span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/l/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ล</span><span class="thai-name">ลิง</span><span class="pair-eng">monkey</span></span><span class="pair-letter"><span class="thai-letter">ฬ</span><span class="thai-name">จุฬา</span><span class="pair-eng">kite <span class="rare-tag">R</span></span></span></div></td><td class="final-sound">/n/</td></tr>
+    <tr><td class="initial-sound">/w/</td><td><div class="pair-cell"><span class="pair-letter"><span class="thai-letter">ว</span><span class="thai-name">แหวน</span><span class="pair-eng">ring</span></span></div></td><td class="final-sound">/w/</td></tr>
   </tbody>
 </table>
 
@@ -369,7 +370,7 @@
 <div class="class-section" style="margin-bottom:8px;">
   <div class="class-header" style="background:#7c3aed;">High / Low Pairs — Same Sound, Different Class (25)</div>
 </div>
-<p style="font-size:0.78rem; color:#555; margin: -4px 0 8px 0;">These consonants share the same sound but belong to different classes — which changes the tone. The <strong style="color:#16a34a;">high-class</strong> letter usually comes first in the alphabet.</p>
+<p style="font-size:0.78rem; color:#555; margin: -4px 0 8px 0;">Same sound, different class — which changes the tone. Usually one <strong style="color:#16a34a;">high</strong> and one or more <strong style="color:#dc2626;">low</strong>. Exception: /s/ has three high (ศ ษ ส) vs one low (ซ).</p>
 
 <table class="pair-table">
   <thead><tr>
@@ -381,83 +382,83 @@
   <tbody>
     <tr>
       <td class="initial-sound">/kʰ/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ข</span><span class="thai-name">ไข่ egg</span></span>
-        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฃ</span><span class="thai-name">ขวด <span class="obsolete-tag">OBS</span></span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ค</span><span class="thai-name">ควาย buffalo</span></span>
-        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฅ</span><span class="thai-name">ฅน <span class="obsolete-tag">OBS</span></span></span>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฆ</span><span class="thai-name">ระฆัง <span class="rare-tag">R</span></span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ข</span><span class="thai-name">ไข่</span><span class="pair-eng">egg</span></span>
+        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฃ</span><span class="thai-name">ขวด</span><span class="pair-eng">bottle <span class="obsolete-tag">OBS</span></span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ค</span><span class="thai-name">ควาย</span><span class="pair-eng">buffalo</span></span>
+        <span class="pair-letter" style="opacity:0.4;"><span class="thai-letter">ฅ</span><span class="thai-name">ฅน</span><span class="pair-eng">person <span class="obsolete-tag">OBS</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ฆ</span><span class="thai-name">ระฆัง</span><span class="pair-eng">bell <span class="rare-tag">R</span></span></span>
+      </div></td>
       <td class="final-sound">/k/</td>
     </tr>
     <tr>
       <td class="initial-sound">/tɕʰ/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ฉ</span><span class="thai-name">ฉิ่ง cymbals</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ช</span><span class="thai-name">ช้าง elephant</span></span>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฌ</span><span class="thai-name">เฌอ <span class="rare-tag">R</span></span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฉ</span><span class="thai-name">ฉิ่ง</span><span class="pair-eng">cymbals</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ช</span><span class="thai-name">ช้าง</span><span class="pair-eng">elephant</span></span>
+        <span class="pair-letter"><span class="thai-letter">ฌ</span><span class="thai-name">เฌอ</span><span class="pair-eng">tree <span class="rare-tag">R</span></span></span>
+      </div></td>
       <td class="final-sound">/t/</td>
     </tr>
     <tr>
       <td class="initial-sound">/tʰ/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฐ</span><span class="thai-name">ฐาน <span class="rare-tag">R</span></span></span>
-        <span class="pair-letter"><span class="thai-letter">ถ</span><span class="thai-name">ถุง bag</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฑ</span><span class="thai-name">มณโฑ <span class="rare-tag">R</span></span></span>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ฒ</span><span class="thai-name">ผู้เฒ่า <span class="rare-tag">R</span></span></span>
-        <span class="pair-letter"><span class="thai-letter">ท</span><span class="thai-name">ทหาร soldier</span></span>
-        <span class="pair-letter"><span class="thai-letter">ธ</span><span class="thai-name">ธง flag</span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฐ</span><span class="thai-name">ฐาน</span><span class="pair-eng">pedestal <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ถ</span><span class="thai-name">ถุง</span><span class="pair-eng">bag</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฑ</span><span class="thai-name">มณโฑ</span><span class="pair-eng">Montho <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ฒ</span><span class="thai-name">ผู้เฒ่า</span><span class="pair-eng">elder <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ท</span><span class="thai-name">ทหาร</span><span class="pair-eng">soldier</span></span>
+        <span class="pair-letter"><span class="thai-letter">ธ</span><span class="thai-name">ธง</span><span class="pair-eng">flag</span></span>
+      </div></td>
       <td class="final-sound">/t/</td>
     </tr>
     <tr>
       <td class="initial-sound">/pʰ/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ผ</span><span class="thai-name">ผึ้ง bee</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">พ</span><span class="thai-name">พาน tray</span></span>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ภ</span><span class="thai-name">สำเภา <span class="rare-tag">R</span></span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ผ</span><span class="thai-name">ผึ้ง</span><span class="pair-eng">bee</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">พ</span><span class="thai-name">พาน</span><span class="pair-eng">tray</span></span>
+        <span class="pair-letter"><span class="thai-letter">ภ</span><span class="thai-name">สำเภา</span><span class="pair-eng">junk <span class="rare-tag">R</span></span></span>
+      </div></td>
       <td class="final-sound">/p/</td>
     </tr>
     <tr>
       <td class="initial-sound">/f/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ฝ</span><span class="thai-name">ฝา lid</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ฟ</span><span class="thai-name">ฟัน tooth</span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฝ</span><span class="thai-name">ฝา</span><span class="pair-eng">lid</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฟ</span><span class="thai-name">ฟัน</span><span class="pair-eng">tooth</span></span>
+      </div></td>
       <td class="final-sound">/p/</td>
     </tr>
     <tr>
       <td class="initial-sound">/s/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ศ</span><span class="thai-name">ศาลา <span class="rare-tag">R</span></span></span>
-        <span class="pair-letter"><span class="thai-letter" style="font-size:1.2rem;">ษ</span><span class="thai-name">ฤๅษี <span class="rare-tag">R</span></span></span>
-        <span class="pair-letter"><span class="thai-letter">ส</span><span class="thai-name">เสือ tiger</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ซ</span><span class="thai-name">โซ่ chain</span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ศ</span><span class="thai-name">ศาลา</span><span class="pair-eng">pavilion <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ษ</span><span class="thai-name">ฤๅษี</span><span class="pair-eng">hermit <span class="rare-tag">R</span></span></span>
+        <span class="pair-letter"><span class="thai-letter">ส</span><span class="thai-name">เสือ</span><span class="pair-eng">tiger</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ซ</span><span class="thai-name">โซ่</span><span class="pair-eng">chain</span></span>
+      </div></td>
       <td class="final-sound">/t/</td>
     </tr>
     <tr>
       <td class="initial-sound">/h/</td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ห</span><span class="thai-name">หีบ chest</span></span>
-      </td>
-      <td>
-        <span class="pair-letter"><span class="thai-letter">ฮ</span><span class="thai-name">นกฮูก owl</span></span>
-      </td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ห</span><span class="thai-name">หีบ</span><span class="pair-eng">chest</span></span>
+      </div></td>
+      <td><div class="pair-cell">
+        <span class="pair-letter"><span class="thai-letter">ฮ</span><span class="thai-name">นกฮูก</span><span class="pair-eng">owl</span></span>
+      </div></td>
       <td class="final-sound">—</td>
     </tr>
   </tbody>
@@ -465,9 +466,8 @@
 
 <div class="tone-rules" style="margin-top:18px;">
   <h2>Tips</h2>
-  <p><strong>Most sounds have one high + multiple low letters</strong> — when in doubt, low is the safer guess.</p>
-  <p style="margin-top:4px;"><strong>High usually comes first</strong> in the alphabet: ข before ค, ฉ before ช, ถ before ท, ผ before พ, ฝ before ฟ.</p>
-  <p style="margin-top:4px;"><strong>Exception:</strong> /s/ — high class has three letters (ศ ษ ส) vs one low (ซ). And ส comes after ซ in the alphabet.</p>
+  <p><strong>When in doubt, guess low class</strong> — most sounds have more low-class letters than high-class.</p>
+  <p style="margin-top:4px;"><strong>The consonant name reveals the class</strong> — e.g. สอ เสือ (rising tone) must be high class, because low-class consonants can't produce a rising tone without a tone mark.</p>
 </div>
 
 </div><!-- end con-sound view -->
