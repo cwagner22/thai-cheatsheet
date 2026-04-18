@@ -1,0 +1,80 @@
+.zoneGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.endgameHeader {
+  font-size: 1.05rem;
+  margin: 22px 0 6px;
+  color: #222;
+}
+
+.endgameSub {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0 0 10px;
+}
+
+.endgameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.endgameCard {
+  text-align: left;
+  background: #f8fafc;
+  border: none;
+  border-left: 4px solid #64748b;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.endgameCard:hover {
+  background: #f1f5f9;
+  box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+.endgameCard[data-kind='words'] {
+  background: #f0fdf4;
+  border-left-color: #16a34a;
+}
+.endgameCard[data-kind='words']:hover {
+  background: #dcfce7;
+  box-shadow: 0 0 0 2px #86efac;
+}
+
+.endgameCard[data-kind='pangram'] {
+  background: #faf5ff;
+  border-left-color: #9333ea;
+}
+.endgameCard[data-kind='pangram']:hover {
+  background: #f3e8ff;
+  box-shadow: 0 0 0 2px #d8b4fe;
+}
+
+.endgameTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: #222;
+}
+
+.endgameDesc {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.endgameId {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 600;
+}

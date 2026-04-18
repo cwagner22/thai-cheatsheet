@@ -1,0 +1,84 @@
+.card {
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.05s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.titleKeys {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 1.3rem;
+  color: #222;
+}
+
+.titleKey + .titleKey {
+  margin-left: 0.4rem;
+}
+
+.intro {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 4px 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 6px 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.table th {
+  padding: 4px 6px;
+  border: 1px solid;
+  text-align: left;
+  color: #222;
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
+  background: transparent;
+}
+
+.table td {
+  padding: 3px 6px;
+  border: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.keyCell {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.keyGlyph {
+  font-family: 'Noto Serif Thai', serif;
+}
+
+.shiftLabel {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 8px 0 4px;
+}
+
+.practice {
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  border-top: 1px dashed;
+  padding-top: 6px;
+}
+
+.practice a {
+  color: inherit;
+  text-decoration: underline;
+}

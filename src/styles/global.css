@@ -1,0 +1,151 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  padding: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+h1 { text-align: center; font-size: 1.8rem; margin-bottom: 4px; color: #222; }
+.subtitle { text-align: center; font-size: 0.95rem; color: #666; margin-bottom: 16px; }
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 8px 22px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.tab-btn:hover { border-color: #999; }
+.tab-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+
+/* ===== LEGEND & TOGGLES ===== */
+.legend { display: flex; justify-content: center; gap: 24px; margin-bottom: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; }
+.legend-dot { width: 16px; height: 16px; border-radius: 4px; }
+
+.font-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.toggle-btn {
+  padding: 6px 14px; border: 2px solid #ddd; border-radius: 6px; background: #fff;
+  font-size: 0.82rem; font-weight: 600; color: #555; cursor: pointer; transition: all 0.15s;
+  font-family: inherit;
+}
+.toggle-btn:hover { border-color: #999; }
+.toggle-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+
+/* ===== TABLES ===== */
+.class-section { margin-bottom: 22px; break-inside: avoid; }
+.class-header {
+  display: inline-block; padding: 5px 18px; border-radius: 6px;
+  font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 8px;
+}
+.class-header.mid { background: #2563eb; }
+.class-header.high { background: #16a34a; }
+.class-header.low { background: #dc2626; }
+.tone-hint { display: inline-block; font-size: 0.8rem; color: #555; margin-left: 10px; font-weight: 400; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.85rem; }
+thead th { padding: 8px 10px; text-align: left; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #fff; }
+thead.mid th { background: #2563eb; }
+thead.high th { background: #16a34a; }
+thead.low th { background: #dc2626; }
+tbody tr { border-bottom: 1px solid #eee; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f9fafb; }
+td { padding: 7px 10px; vertical-align: middle; }
+
+.thai-letter { font-family: 'Noto Serif Thai', serif; font-size: 1.7rem; font-weight: 700; line-height: 1; }
+.thai-name { font-family: 'Noto Serif Thai', serif; font-size: 0.95rem; }
+td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
+.sound-type { font-size: 0.75rem; color: #888; }
+
+.rare-tag { font-size: 0.65rem; background: #fef3c7; color: #92400e; padding: 1px 5px; border-radius: 3px; margin-left: 4px; font-weight: 600; vertical-align: middle; }
+.obsolete-tag { font-size: 0.65rem; background: #fee2e2; color: #991b1b; padding: 1px 5px; border-radius: 3px; margin-left: 4px; font-weight: 600; vertical-align: middle; }
+.sonorant-tag { font-size: 0.65rem; background: #ede9fe; color: #5b21b6; padding: 1px 5px; border-radius: 3px; margin-left: 4px; font-weight: 600; }
+
+/* ===== TONE RULES ===== */
+.tone-rules { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.82rem; line-height: 1.7; }
+.tone-rules h2 { font-size: 1rem; margin-bottom: 8px; }
+
+.footer { text-align: center; margin-top: 18px; font-size: 0.78rem; color: #999; }
+
+/* ===== VIEW TOGGLE ===== */
+.view-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
+.view-btn {
+  padding: 5px 14px; border: 2px solid #ddd; border-radius: 6px;
+  background: #fff; font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer;
+  font-family: inherit;
+}
+.view-btn:hover { border-color: #999; }
+.view-btn.active { border-color: #2563eb; background: #eff6ff; color: #2563eb; }
+
+/* ===== PAIR TABLE ===== */
+.pair-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 18px; }
+.pair-table th { padding: 8px 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #fff; text-align: center; }
+.pair-table td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+.pair-table tr:last-child td { border-bottom: none; }
+.pair-table tr:hover { background: #f9fafb; }
+.pair-cell { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.pair-letter { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 50px; }
+.pair-letter .thai-letter { font-size: 1.6rem; }
+.pair-letter .thai-name { font-family: 'Noto Serif Thai', serif; font-size: 1rem; color: #555; }
+.pair-letter .pair-eng { font-size: 0.7rem; color: #888; }
+
+/* ===== VOWEL CARDS ===== */
+.vowel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+.vowel-grid-header {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 2px;
+}
+.vowel-grid-header-card {
+  display: grid; grid-template-columns: 1fr 1fr; padding: 0 14px;
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 600;
+}
+.vowel-grid-header-card span { text-align: center; }
+.vowel-card {
+  background: #fff; border-radius: 8px; padding: 10px 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 0;
+}
+.vowel-card-side { text-align: center; padding: 0 6px; }
+.vowel-card-side:first-child { border-right: 1px solid #eee; }
+.vowel-form { font-family: 'Noto Serif Thai', serif; font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
+.vowel-card-side .vowel-ipa { font-size: 0.75rem; color: #777; font-family: monospace; display: block; margin-top: 2px; }
+.vowel-card-side .vowel-example { font-family: 'Noto Serif Thai', serif; font-size: 0.8rem; color: #555; display: block; margin-top: 2px; }
+
+/* ===== SANS FONT OVERRIDE ===== */
+body.sans .thai-letter,
+body.sans .thai-name,
+body.sans .vowel-form,
+body.sans .vowel-card-side .vowel-example,
+body.sans .pair-letter .thai-name {
+  font-family: 'Noto Sans Thai', sans-serif;
+}
+
+@media print {
+  body { padding: 10px; background: #fff; }
+  .class-section { break-inside: avoid; }
+  table { box-shadow: none; border: 1px solid #ddd; }
+  .tone-rules { box-shadow: none; border: 1px solid #ddd; }
+  .font-toggle, .tab-bar { display: none; }
+}
+
+@media (max-width: 700px) {
+  table { font-size: 0.78rem; }
+  .thai-letter { font-size: 1.4rem; }
+  td { padding: 5px 6px; }
+}
