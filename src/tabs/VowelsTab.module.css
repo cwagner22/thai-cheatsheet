@@ -1,0 +1,72 @@
+.sectionSub {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 4px 0 8px;
+}
+
+.closedBlock {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.closedLabel {
+  font-size: 0.6rem;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.closedForm {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+body.sans .closedForm {
+  font-family: 'Noto Sans Thai', sans-serif;
+}
+
+.closedExample {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.2;
+}
+
+.closedGloss {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.closedNote {
+  font-size: 0.65rem;
+  color: #888;
+  font-style: italic;
+  line-height: 1.2;
+}
+
+.note {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+body.sans .closedExample {
+  font-family: 'Noto Sans Thai', sans-serif;
+}
