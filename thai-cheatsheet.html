@@ -168,6 +168,8 @@
   <button class="tab-btn" onclick="showTab('vowels')">Vowels</button>
   <button class="tab-btn" onclick="showTab('tones')">Tones</button>
   <button class="tab-btn" onclick="showTab('clusters')">Clusters</button>
+  <button class="tab-btn" onclick="showTab('typing')">Typing</button>
+  <button class="tab-btn" onclick="showTab('quirks')">Quirks</button>
 </div>
 
 <!-- ################################################################ -->
@@ -733,8 +735,8 @@
         <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444;">Class</th>
         <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444;">Live<br><span style="font-size:0.7rem; opacity:0.8;">(no mark)</span></th>
         <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444;">Dead<br><span style="font-size:0.7rem; opacity:0.8;">(short)</span></th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444;">Dead (long)<br><span style="font-size:0.7rem; font-family:'Noto Serif Thai',serif;">= ไม้เอก ก่</span></th>
-        <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.1rem;">ก้</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif; opacity:0.8;">ไม้โท</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.1rem;">ก่</span> <span style="font-size:0.78rem; opacity:0.9;">ไม้เอก</span><br><span style="font-size:0.7rem; font-family:Inter,sans-serif; opacity:0.8;">= Dead (long)</span></th>
+        <th style="background:#555; color:#fff; padding:8px; text-align:center; border:1px solid #444; font-family:'Noto Serif Thai',serif;"><span style="font-size:1.1rem;">ก้</span> <span style="font-size:0.78rem; opacity:0.9;">ไม้โท</span></th>
       </tr>
     </thead>
     <tbody>
@@ -764,8 +766,8 @@
   </p>
 
   <p style="margin-top:14px; margin-bottom:4px;"><strong>The other two tone marks (Mid class only):</strong></p>
-  <p style="font-size:0.83rem;">• <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ก๊</span> <strong>ไม้ตรี</strong> → <strong>High</strong> tone.</p>
-  <p style="font-size:0.83rem;">• <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ก๋</span> <strong>ไม้จัตวา</strong> → <strong>Rising</strong> tone.</p>
+  <p style="font-size:0.83rem;">• <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ก๊</span> <span style="font-family:'Noto Serif Thai',serif;">ไม้ตรี</span> → <strong>High</strong> tone.</p>
+  <p style="font-size:0.83rem;">• <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ก๋</span> <span style="font-family:'Noto Serif Thai',serif;">ไม้จัตวา</span> → <strong>Rising</strong> tone.</p>
   <p style="font-size:0.78rem; color:#666; margin-top:4px;">Used only on Mid-class letters (it's how Mid gets its High and Rising tones, since the Dead / ไม้เอก / ไม้โท columns cover Low and Falling).</p>
 
   <p style="margin-top:14px; margin-bottom:4px;"><strong>Tips:</strong></p>
@@ -1343,6 +1345,518 @@
 </div>
 
 </div><!-- end clusters tab -->
+
+
+<!-- ################################################################ -->
+<!-- #################### TYPING TAB ############################### -->
+<!-- ################################################################ -->
+<div id="tab-typing" class="tab-content">
+
+<div class="tone-rules" style="margin-bottom:14px;">
+  <p style="font-size:0.9rem;">The standard Thai keyboard is the <strong>Kedmanee</strong> layout (เกษมณี). Below, the keyboard is colour-coded into <strong>9 finger-zones</strong> — each zone has a mnemonic story linking its letters. Every card ends with a <strong>🎯 Practice</strong> link to the matching numbered lesson on the <a href="https://thai-notes.com/typing/typingtrainer.html" target="_blank" style="color:#2563eb;">thai-notes.com typing trainer</a> (use the trainer's <em>Lesson menu</em> to jump to the numbered lesson).</p>
+</div>
+
+<!-- KEYBOARD VISUAL -->
+<div style="background:#fafafa; border:1px solid #e5e5e5; border-radius:10px; padding:14px; margin-bottom:18px; overflow-x:auto;">
+  <style>
+    .kb-row { display:flex; gap:4px; margin-bottom:4px; justify-content:center; }
+    .kb-key { width:58px; height:66px; border-radius:6px; border:1px solid #ccc; background:#fff; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; font-family:'Noto Serif Thai',serif; position:relative; padding-bottom:6px; }
+    .kb-key .kb-shift { font-size:0.95rem; color:#888; position:absolute; top:4px; left:0; right:0; text-align:center; font-family:inherit; line-height:1; }
+    .kb-key .kb-main { font-size:1.5rem; color:#222; line-height:1; }
+    .kb-offset-1 { margin-left:30px; }
+    .kb-offset-2 { margin-left:46px; }
+    .kb-offset-3 { margin-left:76px; }
+    .kb-zone-flu { background:#fef3c7; border-color:#d97706; }  /* Far Left Upper */
+    .kb-zone-fru { background:#dbeafe; border-color:#2563eb; }  /* Far Right Upper */
+    .kb-zone-tl  { background:#fee2e2; border-color:#dc2626; }  /* Top Left */
+    .kb-zone-tr  { background:#dcfce7; border-color:#16a34a; }  /* Top Right */
+    .kb-zone-lh  { background:#ede9fe; border-color:#7c3aed; }  /* Left Home */
+    .kb-zone-rh  { background:#ffedd5; border-color:#ea580c; }  /* Right Home */
+    .kb-zone-frc { background:#fce7f3; border-color:#db2777; }  /* Far Right Clutter */
+    .kb-zone-bl  { background:#cffafe; border-color:#0891b2; }  /* Bottom Left */
+    .kb-zone-br  { background:#f3e8ff; border-color:#9333ea; }  /* Bottom Right */
+    .kb-spacer { width:58px; }
+    .kb-wide { width:90px; font-size:0.8rem; color:#666; font-family:inherit; }
+    .kb-key .kb-main.kb-combining::before,
+    .kb-key .kb-shift.kb-combining::before { content:"\25CC"; color:#bbb; }
+  </style>
+
+  <!-- Row 1 (number row) -->
+  <div class="kb-row">
+    <div class="kb-key"><span class="kb-shift">%</span><span class="kb-main" style="font-size:0.9rem;">_</span></div>
+    <div class="kb-key"><span class="kb-shift">+</span><span class="kb-main" style="font-size:0.9rem;">ๅ</span></div>
+    <div class="kb-key"><span class="kb-shift">๑</span><span class="kb-main" style="font-size:0.9rem;">/</span></div>
+    <div class="kb-key"><span class="kb-shift">๒</span><span class="kb-main" style="font-size:0.9rem;">-</span></div>
+    <div class="kb-key kb-zone-flu"><span class="kb-shift">๓</span><span class="kb-main">ภ</span></div>
+    <div class="kb-key kb-zone-flu"><span class="kb-shift">๔</span><span class="kb-main">ถ</span></div>
+    <div class="kb-key kb-zone-flu"><span class="kb-shift kb-combining">ู</span><span class="kb-main kb-combining">ุ</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">฿</span><span class="kb-main kb-combining">ึ</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">๕</span><span class="kb-main">ค</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">๖</span><span class="kb-main">ต</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">๗</span><span class="kb-main">จ</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">๘</span><span class="kb-main">ข</span></div>
+    <div class="kb-key kb-zone-fru"><span class="kb-shift">๙</span><span class="kb-main">ช</span></div>
+  </div>
+  <!-- Row 2 (QWERTY row) -->
+  <div class="kb-row kb-offset-1">
+    <div class="kb-key kb-zone-tl"><span class="kb-shift">๐</span><span class="kb-main">ๆ</span></div>
+    <div class="kb-key kb-zone-tl"><span class="kb-shift">"</span><span class="kb-main">ไ</span></div>
+    <div class="kb-key kb-zone-tl"><span class="kb-shift">ฎ</span><span class="kb-main">ำ</span></div>
+    <div class="kb-key kb-zone-tl"><span class="kb-shift">ฑ</span><span class="kb-main">พ</span></div>
+    <div class="kb-key kb-zone-tl"><span class="kb-shift">ธ</span><span class="kb-main">ะ</span></div>
+    <div class="kb-key kb-zone-tr"><span class="kb-shift kb-combining">ํ</span><span class="kb-main kb-combining">ั</span></div>
+    <div class="kb-key kb-zone-tr"><span class="kb-shift kb-combining">๊</span><span class="kb-main kb-combining">ี</span></div>
+    <div class="kb-key kb-zone-tr"><span class="kb-shift">ณ</span><span class="kb-main">ร</span></div>
+    <div class="kb-key kb-zone-tr"><span class="kb-shift">ฯ</span><span class="kb-main">น</span></div>
+    <div class="kb-key kb-zone-tr"><span class="kb-shift">ญ</span><span class="kb-main">ย</span></div>
+    <div class="kb-key kb-zone-frc"><span class="kb-shift">ฐ</span><span class="kb-main">บ</span></div>
+    <div class="kb-key kb-zone-frc"><span class="kb-shift">,</span><span class="kb-main">ล</span></div>
+  </div>
+  <!-- Row 3 (ASDF home row) -->
+  <div class="kb-row kb-offset-2">
+    <div class="kb-key kb-zone-lh"><span class="kb-shift">ฤ</span><span class="kb-main">ฟ</span></div>
+    <div class="kb-key kb-zone-lh"><span class="kb-shift">ฆ</span><span class="kb-main">ห</span></div>
+    <div class="kb-key kb-zone-lh"><span class="kb-shift">ฏ</span><span class="kb-main">ก</span></div>
+    <div class="kb-key kb-zone-lh"><span class="kb-shift">โ</span><span class="kb-main">ด</span></div>
+    <div class="kb-key kb-zone-lh"><span class="kb-shift">ฌ</span><span class="kb-main">เ</span></div>
+    <div class="kb-key kb-zone-rh"><span class="kb-shift kb-combining">็</span><span class="kb-main kb-combining">้</span></div>
+    <div class="kb-key kb-zone-rh"><span class="kb-shift kb-combining">๋</span><span class="kb-main kb-combining">่</span></div>
+    <div class="kb-key kb-zone-rh"><span class="kb-shift">ษ</span><span class="kb-main">า</span></div>
+    <div class="kb-key kb-zone-rh"><span class="kb-shift">ศ</span><span class="kb-main">ส</span></div>
+    <div class="kb-key kb-zone-rh"><span class="kb-shift">ซ</span><span class="kb-main">ว</span></div>
+    <div class="kb-key kb-zone-frc"><span class="kb-shift">.</span><span class="kb-main">ง</span></div>
+  </div>
+  <!-- Row 4 (ZXCV row) -->
+  <div class="kb-row kb-offset-3">
+    <div class="kb-key kb-zone-bl"><span class="kb-shift">(</span><span class="kb-main">ผ</span></div>
+    <div class="kb-key kb-zone-bl"><span class="kb-shift">)</span><span class="kb-main">ป</span></div>
+    <div class="kb-key kb-zone-bl"><span class="kb-shift">ฉ</span><span class="kb-main">แ</span></div>
+    <div class="kb-key kb-zone-bl"><span class="kb-shift">ฮ</span><span class="kb-main">อ</span></div>
+    <div class="kb-key kb-zone-bl"><span class="kb-shift kb-combining">ฺ</span><span class="kb-main kb-combining">ิ</span></div>
+    <div class="kb-key kb-zone-br"><span class="kb-shift kb-combining">์</span><span class="kb-main kb-combining">ื</span></div>
+    <div class="kb-key kb-zone-br"><span class="kb-shift">?</span><span class="kb-main">ท</span></div>
+    <div class="kb-key kb-zone-br"><span class="kb-shift">ฒ</span><span class="kb-main">ม</span></div>
+    <div class="kb-key kb-zone-br"><span class="kb-shift">ฬ</span><span class="kb-main">ใ</span></div>
+    <div class="kb-key kb-zone-br"><span class="kb-shift">ฦ</span><span class="kb-main">ฝ</span></div>
+  </div>
+  <p style="font-size:0.72rem; color:#888; margin-top:10px; text-align:center;">Lower char = default · upper-right char = Shift · zone colors match cards below</p>
+</div>
+
+<!-- ZONE CARDS -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:12px; margin-bottom:20px;">
+
+  <!-- ZONE 1: Far Left Upper -->
+  <div style="background:#fffbeb; border-left:4px solid #d97706; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#d97706;">⬆️⬅️ Far Left Upper</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ถ&nbsp;ภ</span>
+    </div>
+    <p style="font-size:0.82rem; color:#555; margin:4px 0;"><strong>Loop trick:</strong> <span style="font-family:'Noto Serif Thai',serif;">ภ</span>'s loop opens <em>left</em>, <span style="font-family:'Noto Serif Thai',serif;">ถ</span>'s opens <em>right</em> — matches their key order.</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#fef3c7;">
+        <th style="padding:4px 6px; border:1px solid #fde68a; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #fde68a; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fde68a; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ภ</td><td style="padding:3px 6px; border:1px solid #eee;">loop opens <em>left</em> → sits on the <em>left</em></td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ถ</td><td style="padding:3px 6px; border:1px solid #eee;">loop opens <em>right</em> → sits on the <em>right</em></td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch ↓</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ุ</td><td style="padding:3px 6px; border:1px solid #eee;">short /u/ vowel below</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#fef3c7;">
+        <th style="padding:4px 6px; border:1px solid #fde68a; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fde68a; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #fde68a; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;ุ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;ู</td><td style="padding:3px 6px; border:1px solid #eee;">long /uː/ — two dots = "longer"</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#d97706; margin:6px 0 0; border-top:1px dashed #fcd34d; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 18 (drill) · <strong>Lesson 21</strong> (Thai words)</p>
+  </div>
+
+  <!-- ZONE 2: Far Right Upper -->
+  <div style="background:#eff6ff; border-left:4px solid #2563eb; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#2563eb;">⬆️➡️ Far Right Upper</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ค&nbsp;ต&nbsp;จ&nbsp;ข</span>
+    </div>
+    <p style="font-size:0.83rem; color:#444; margin:4px 0;"><em>"A <strong>buffalo</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ค</strong>วาย</span>) <strong>examines</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ต</strong>รวจ</span>) a <strong>plate</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>จ</strong>าน</span>) with an <strong>egg</strong> (<span style="font-family:'Noto Serif Thai',serif;">ไ<strong>ข</strong>่</span>) on it."</em></p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#dbeafe;">
+        <th style="padding:4px 6px; border:1px solid #bfdbfe; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #bfdbfe; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #bfdbfe; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch ←</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ึ</td><td style="padding:3px 6px; border:1px solid #eee;">short /ɯ/ vowel above</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ค</td><td style="padding:3px 6px; border:1px solid #eee;">the <strong>buffalo</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ค</strong>วาย</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ต</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>examines</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ต</strong>รวจ</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">จ</td><td style="padding:3px 6px; border:1px solid #eee;">…a <strong>plate</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>จ</strong>าน</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ข</td><td style="padding:3px 6px; border:1px solid #eee;">…with an <strong>egg</strong> (<span style="font-family:'Noto Serif Thai',serif;">ไ<strong>ข</strong>่</span>) on it</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky stretch →</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ช</td><td style="padding:3px 6px; border:1px solid #eee;">extra consonant at the edge</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#2563eb; margin:6px 0 0; border-top:1px dashed #bfdbfe; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 19 (drill) · Lesson 20 (adds ึ ช) · <strong>Lesson 21</strong> (Thai words)</p>
+  </div>
+
+  <!-- ZONE 3: Top Left -->
+  <div style="background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#dc2626;">↖️ Top Left</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ๆ&nbsp;ไ&nbsp;ำ&nbsp;พ</span>
+    </div>
+    <p style="font-size:0.83rem; color:#444; margin:4px 0;"><em>"<strong>Quickly</strong> (<span style="font-family:'Noto Serif Thai',serif;">เร็ว <strong>ๆ</strong></span>) <strong>go</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ไ</strong>ป</span>) and <strong>dance</strong> (<span style="font-family:'Noto Serif Thai',serif;">ร<strong>ำ</strong></span>) with <strong>Potjaman</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>พ</strong>จมาน</span>)."</em></p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#fee2e2;">
+        <th style="padding:4px 6px; border:1px solid #fecaca; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #fecaca; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fecaca; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ๆ</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>Quickly</strong> (<span style="font-family:'Noto Serif Thai',serif;">เร็ว <strong>ๆ</strong></span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ไ</td><td style="padding:3px 6px; border:1px solid #eee;">…<strong>go</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ไ</strong>ป</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ำ</td><td style="padding:3px 6px; border:1px solid #eee;">…and <strong>dance</strong> (<span style="font-family:'Noto Serif Thai',serif;">ร<strong>ำ</strong></span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">พ</td><td style="padding:3px 6px; border:1px solid #eee;">…with <strong>Potjaman</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>พ</strong>จมาน</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch →</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ะ</td><td style="padding:3px 6px; border:1px solid #eee;">short /a/ vowel after</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#fee2e2;">
+        <th style="padding:4px 6px; border:1px solid #fecaca; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fecaca; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #fecaca; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ำ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฎ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>headdress</strong> (<span style="font-family:'Noto Serif Thai',serif;">ช<strong>ฎ</strong>า</span>) worn when dancing <span style="font-family:'Noto Serif Thai',serif;">รำ</span></td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">พ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฑ</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>Montho</strong> (<span style="font-family:'Noto Serif Thai',serif;">ม<strong>ณโฑ</strong></span>) on her <span style="font-family:'Noto Serif Thai',serif;">พ่อ</span>'s shoulders</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ะ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ธ</td><td style="padding:3px 6px; border:1px solid #eee;">Ploy Chermarn (<span style="font-family:'Noto Serif Thai',serif;">เฌอมาลย์</span>) holds a <strong>flag</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ธ</strong>ง</span>)</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#dc2626; margin:6px 0 0; border-top:1px dashed #fecaca; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 9 (drill) · <strong>Lesson 12</strong> (Thai words, all top row) · Lesson 27 (adds ธ)</p>
+  </div>
+
+  <!-- ZONE 4: Top Right -->
+  <div style="background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#16a34a;">↗️ Top Right</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">&#x25CC;ี&nbsp;ร&nbsp;น&nbsp;ย</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#dcfce7;">
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch ←</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ั</td><td style="padding:3px 6px; border:1px solid #eee;">short /a/ vowel above</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ี</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>Again</strong> (<span style="font-family:'Noto Serif Thai',serif;">อ<strong>ี</strong>กครั้งหนึ่ง</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ร</td><td style="padding:3px 6px; border:1px solid #eee;">…a <strong>boat</strong> (<span style="font-family:'Noto Serif Thai',serif;">เ<strong>ร</strong>ือ</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">น</td><td style="padding:3px 6px; border:1px solid #eee;">…with a <strong>mouse</strong> (<span style="font-family:'Noto Serif Thai',serif;">ห<strong>น</strong>ู</span>) in it…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ย</td><td style="padding:3px 6px; border:1px solid #eee;">…chased by an <strong>ogre</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ย</strong>ักษ์</span>)</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#dcfce7;">
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #bbf7d0; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;ั</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;ํ</td><td style="padding:3px 6px; border:1px solid #eee;"><span style="font-family:'Noto Serif Thai',serif;">นิคหิต</span> (nikkhahit) — nasal /am/ marker</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;ี</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;๊</td><td style="padding:3px 6px; border:1px solid #eee;"><span style="font-family:'Noto Serif Thai',serif;">ไม้ตรี</span> (tone-mark 3)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ร</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ณ</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>novice</strong> (<span style="font-family:'Noto Serif Thai',serif;">เณร</span>) studying at <span style="font-family:'Noto Serif Thai',serif;">โ<strong>ร</strong>งเรียน</span> (school)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">น</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฯ</td><td style="padding:3px 6px; border:1px solid #eee;">paiyan-noi — "et cetera" abbreviation mark</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ย</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ญ</td><td style="padding:3px 6px; border:1px solid #eee;">same start sound — <strong>ogre</strong> & <span style="font-family:'Noto Serif Thai',serif;">ห<strong>ญ</strong>ิง</span> (woman) cohabit</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#16a34a; margin:6px 0 0; border-top:1px dashed #bbf7d0; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 10 (drill) · <strong>Lesson 12</strong> (Thai words, all top row)</p>
+  </div>
+
+  <!-- ZONE 5: Left Home -->
+  <div style="background:#f5f3ff; border-left:4px solid #7c3aed; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#7c3aed;">⬅️ Left Home</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ฟ&nbsp;ห&nbsp;ก&nbsp;ด</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#ede9fe;">
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch →</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">เ</td><td style="padding:3px 6px; border:1px solid #eee;">pre-posed vowel /eː/</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ฟ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>tooth</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ฟ</strong>ัน</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ห</td><td style="padding:3px 6px; border:1px solid #eee;">…sits on a <strong>chest</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ห</strong>ีบ</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ก</td><td style="padding:3px 6px; border:1px solid #eee;">…with a <strong>chicken</strong> (<span style="font-family:'Noto Serif Thai',serif;">ไ<strong>ก</strong>่</span>) next to it</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ด</td><td style="padding:3px 6px; border:1px solid #eee;">…and a <strong>child</strong> (<span style="font-family:'Noto Serif Thai',serif;">เ<strong>ด</strong>็ก</span>) looking on</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#ede9fe;">
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #ddd6fe; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฟ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฤ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>tooth</strong> pulled out, leaving the odd vowel <span style="font-family:'Noto Serif Thai',serif;">ฤ</span> (/rɯ/)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ห</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฆ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>bell</strong> (<span style="font-family:'Noto Serif Thai',serif;">ระ<strong>ฆ</strong>ัง</span>) on the chest</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ก</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฏ</td><td style="padding:3px 6px; border:1px solid #eee;">chasing the <strong>chicken</strong> with a <span style="font-family:'Noto Serif Thai',serif;">ป<strong>ฏ</strong>ัก</span> spear</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ด</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">โ</td><td style="padding:3px 6px; border:1px solid #eee;">the <strong>child</strong> yells "D'oh!" Homer-style</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">เ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฌ</td><td style="padding:3px 6px; border:1px solid #eee;">Ploy <strong>เฌ</strong>อมาลย์ (actress) — same spot as pre-posed <span style="font-family:'Noto Serif Thai',serif;">เ</span></td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#7c3aed; margin:6px 0 0; border-top:1px dashed #ddd6fe; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 1 (drill) · <strong>Lesson 4</strong> (Thai words) · Lesson 22 (โ) · Lesson 27 (ฌ)</p>
+  </div>
+
+  <!-- ZONE 6: Right Home -->
+  <div style="background:#fff7ed; border-left:4px solid #ea580c; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#ea580c;">➡️ Right Home</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">&#x25CC;่&nbsp;า&nbsp;ส&nbsp;ว</span>
+    </div>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#ffedd5;">
+        <th style="padding:4px 6px; border:1px solid #fed7aa; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #fed7aa; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fed7aa; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch ←</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;้</td><td style="padding:3px 6px; border:1px solid #eee;"><span style="font-family:'Noto Serif Thai',serif;">ไม้โท</span> (tone-mark 2)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;่</td><td style="padding:3px 6px; border:1px solid #eee;">index <strong>draws a vertical tick</strong> — <span style="font-family:'Noto Serif Thai',serif;">ไม้เอก</span> (tone-mark 1)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">า</td><td style="padding:3px 6px; border:1px solid #eee;">you <strong>open your mouth to say "hahh"</strong></td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ส</td><td style="padding:3px 6px; border:1px solid #eee;">your ring finger doesn't have a ring on it — it's got a <strong>tiny tiger</strong> (<span style="font-family:'Noto Serif Thai',serif;">เ<strong>ส</strong>ือ</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ว</td><td style="padding:3px 6px; border:1px solid #eee;">…so the <strong>ring</strong> (<span style="font-family:'Noto Serif Thai',serif;">แห<strong>ว</strong>น</span>) got bumped to your pinky</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#ffedd5;">
+        <th style="padding:4px 6px; border:1px solid #fed7aa; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fed7aa; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #fed7aa; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;้</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;็</td><td style="padding:3px 6px; border:1px solid #eee;"><strong><span style="font-family:'Noto Serif Thai',serif;">ไม้ไต่คู้</span> (mai-taikhu)</strong> — shortens a vowel</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;่</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">&#x25CC;๋</td><td style="padding:3px 6px; border:1px solid #eee;"><span style="font-family:'Noto Serif Thai',serif;">ไม้จัตวา</span> (tone-mark 4)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ว</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ซ</td><td style="padding:3px 6px; border:1px solid #eee;">looks like ว with a <strong>zigzag</strong></td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ส</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ศ</td><td style="padding:3px 6px; border:1px solid #eee;"><strong><span style="font-family:'Noto Serif Thai',serif;">ศาลา</span> (saalaa)</strong> sheltering the tiger</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">า</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ษ</td><td style="padding:3px 6px; border:1px solid #eee;"><strong>hermit</strong> (<span style="font-family:'Noto Serif Thai',serif;">ฤๅษี</span>) beside the saalaa</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#ea580c; margin:6px 0 0; border-top:1px dashed #fed7aa; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 2 (drill) · <strong>Lesson 4</strong> (Thai words) · Lesson 13 (adds ้) · Lesson 43 (ศ ษ)</p>
+  </div>
+
+  <!-- ZONE 7: Far Right Clutter -->
+  <div style="background:#fdf2f8; border-left:4px solid #db2777; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#db2777;">➡️➡️ Far Right Clutter</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ง&nbsp;บ&nbsp;ล</span>
+    </div>
+    <p style="font-size:0.83rem; color:#444; margin:4px 0;"><em>"A <strong>snake</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ง</strong>ู</span>) on the ground, a <strong>leafy</strong> (<span style="font-family:'Noto Serif Thai',serif;">ใ<strong>บ</strong></span>) tree with a <strong>monkey</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ล</strong>ิง</span>) in it."</em></p>
+    <p style="font-size:0.8rem; color:#555; margin:4px 0;">All three reached by stretching the right pinky further right, then further up.</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#fce7f3;">
+        <th style="padding:4px 6px; border:1px solid #fbcfe8; text-align:left;">Pinky stretch</th>
+        <th style="padding:4px 6px; border:1px solid #fbcfe8; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fbcfe8; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">home row →</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ง</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>snake</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ง</strong>ู</span>) on the ground (home row)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">top row → (near)</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">บ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>leafy</strong> (<span style="font-family:'Noto Serif Thai',serif;">ใ<strong>บ</strong></span>) tree…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">top row → (far)</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ล</td><td style="padding:3px 6px; border:1px solid #eee;">…with a <strong>monkey</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ล</strong>ิง</span>) climbing highest</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#fce7f3;">
+        <th style="padding:4px 6px; border:1px solid #fbcfe8; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #fbcfe8;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #fbcfe8; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ง</td><td style="padding:3px 6px; border:1px solid #eee;"><kbd>.</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">full stop / period</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">บ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฐ</td><td style="padding:3px 6px; border:1px solid #eee;">a pedestal / base (<span style="font-family:'Noto Serif Thai',serif;"><strong>ฐ</strong>าน</span>) under the tree</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ล</td><td style="padding:3px 6px; border:1px solid #eee;"><kbd>,</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">comma</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#db2777; margin:6px 0 0; border-top:1px dashed #fbcfe8; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 16 (drill) · <strong>Lesson 17</strong> (Thai words)</p>
+  </div>
+
+  <!-- ZONE 8: Bottom Left -->
+  <div style="background:#ecfeff; border-left:4px solid #0891b2; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#0891b2;">↙️ Bottom Left</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ผ&nbsp;ป&nbsp;แ&nbsp;อ</span>
+    </div>
+    <p style="font-size:0.83rem; color:#444; margin:4px 0;"><em>"A <strong>bee</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ผ</strong>ึ้ง</span>) flies over a pond. A <strong>fish</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ป</strong>ลา</span>) pokes its head out. Both <strong>peek</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>แ</strong>อบดู</span>) at a <strong>bowl</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>อ</strong>่าง</span>) floating on the pond."</em></p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#cffafe;">
+        <th style="padding:4px 6px; border:1px solid #a5f3fc; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #a5f3fc; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #a5f3fc; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ผ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>bee</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ผ</strong>ึ้ง</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ป</td><td style="padding:3px 6px; border:1px solid #eee;">…and a <strong>fish</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ป</strong>ลา</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">แ</td><td style="padding:3px 6px; border:1px solid #eee;">…both <strong>peek</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>แ</strong>อบดู</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">อ</td><td style="padding:3px 6px; border:1px solid #eee;">…at a <strong>bowl</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>อ</strong>่าง</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch →</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ิ</td><td style="padding:3px 6px; border:1px solid #eee;">short /i/ vowel above</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#cffafe;">
+        <th style="padding:4px 6px; border:1px solid #a5f3fc; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #a5f3fc;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #a5f3fc; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ผ</td><td style="padding:3px 6px; border:1px solid #eee;"><kbd>(</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">open paren — leftmost key</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ป</td><td style="padding:3px 6px; border:1px solid #eee;"><kbd>)</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">close paren — right next to open</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">แ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฉ</td><td style="padding:3px 6px; border:1px solid #eee;">similar shape — like <span style="font-family:'Noto Serif Thai',serif;">แ</span> with an extra stroke</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">อ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฮ</td><td style="padding:3px 6px; border:1px solid #eee;">same key — lookalikes (<span style="font-family:'Noto Serif Thai',serif;">อ → ฮ</span>)</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#0891b2; margin:6px 0 0; border-top:1px dashed #a5f3fc; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 5 (drill) · <strong>Lesson 8</strong> (Thai words, home+bottom) · Lesson 44 (ฮ)</p>
+  </div>
+
+  <!-- ZONE 9: Bottom Right -->
+  <div style="background:#faf5ff; border-left:4px solid #9333ea; border-radius:8px; padding:12px 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+      <strong style="color:#9333ea;">↘️ Bottom Right</strong>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.3rem; color:#222;">ท&nbsp;ม&nbsp;ใ&nbsp;ฝ</span>
+    </div>
+    <p style="font-size:0.83rem; color:#444; margin:4px 0;"><em>"A <strong>soldier</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ท</strong>หาร</span>) on a <strong>horse</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ม</strong>้า</span>) <strong>uses</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ใ</strong>ช้</span>) a <strong>lid</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ฝ</strong>า</span>) as a shield."</em></p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:6px 0;">
+      <tr style="background:#f3e8ff;">
+        <th style="padding:4px 6px; border:1px solid #e9d5ff; text-align:left;">Finger</th>
+        <th style="padding:4px 6px; border:1px solid #e9d5ff; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #e9d5ff; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index stretch ←</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">&#x25CC;ื</td><td style="padding:3px 6px; border:1px solid #eee;">long /ɯː/ vowel above</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">index</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ท</td><td style="padding:3px 6px; border:1px solid #eee;">the <strong>soldier</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ท</strong>หาร</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">middle</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ม</td><td style="padding:3px 6px; border:1px solid #eee;">…on a <strong>horse</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ม</strong>้า</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">ring</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ใ</td><td style="padding:3px 6px; border:1px solid #eee;">…<strong>uses</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ใ</strong>ช้</span>)…</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee;">pinky</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ฝ</td><td style="padding:3px 6px; border:1px solid #eee;">…a <strong>lid</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ฝ</strong>า</span>) as a shield</td></tr>
+    </table>
+    <p style="font-size:0.8rem; color:#555; margin:8px 0 4px;"><strong>Shift layer</strong>:</p>
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem; margin:4px 0;">
+      <tr style="background:#f3e8ff;">
+        <th style="padding:4px 6px; border:1px solid #e9d5ff; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">Key</th>
+        <th style="padding:4px 6px; border:1px solid #e9d5ff;">+⇧</th>
+        <th style="padding:4px 6px; border:1px solid #e9d5ff; text-align:left;">Mnemonic</th>
+      </tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ท</td><td style="padding:3px 6px; border:1px solid #eee;"><kbd>?</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">the <strong>soldier</strong> has a question</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ม</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฒ</td><td style="padding:3px 6px; border:1px solid #eee;"><span style="font-family:'Noto Serif Thai',serif;">หมู</span> ("Moo", nickname) grows into an <strong>old man</strong> (<span style="font-family:'Noto Serif Thai',serif;">ผู้เ<strong>ฒ่</strong>า</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ใ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฬ</td><td style="padding:3px 6px; border:1px solid #eee;">a <strong>mute</strong> (<span style="font-family:'Noto Serif Thai',serif;"><strong>ใ</strong>บ้</span>) flies a <strong>kite</strong> (<span style="font-family:'Noto Serif Thai',serif;">จุ<strong>ฬ</strong>า</span>)</td></tr>
+      <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฝ</td><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ฦ</td><td style="padding:3px 6px; border:1px solid #eee;">so rare it's virtually obsolete — safe to ignore</td></tr>
+    </table>
+    <p style="font-size:0.78rem; color:#9333ea; margin:6px 0 0; border-top:1px dashed #e9d5ff; padding-top:6px;">🎯 <strong>Practice:</strong> Lesson 6 (drill) · <strong>Lesson 8</strong> (Thai words, home+bottom) · Lesson 44 (ฬ)</p>
+  </div>
+
+</div>
+
+<!-- PUNCTUATION & EDGE CHARS -->
+<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px 14px; margin-bottom:18px;">
+  <p style="font-weight:700; margin:0 0 6px; color:#334155;">⌨️ Punctuation &amp; edge characters</p>
+  <p style="font-size:0.85rem; margin:4px 0; color:#475569;">These punctuation marks and rare vowels all sit at the edges of the layout. If you have Thai-labeled keycaps, most will be there — but the obscure ones (<span style="font-family:'Noto Serif Thai',serif;">ฤ ฦ</span>) and the Shift-layer punctuation are often <em>unprinted</em> even on Thai hardware. If you're typing on a QWERTY keyboard with no Thai labels at all, everything below is still correct — the OS maps by <em>position</em>, not by the printed label.</p>
+  <table style="width:100%; border-collapse:collapse; font-size:0.82rem; margin:8px 0;">
+    <tr style="background:#e2e8f0;">
+      <th style="padding:4px 6px; border:1px solid #cbd5e1; text-align:left;">Character</th>
+      <th style="padding:4px 6px; border:1px solid #cbd5e1; text-align:left;">Position</th>
+      <th style="padding:4px 6px; border:1px solid #cbd5e1; text-align:left;">Notes</th>
+    </tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>/</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">number row, <em>unshifted</em> (left pinky, 3rd key from left)</td><td style="padding:3px 6px; border:1px solid #eee;">Shift = Thai numeral <span style="font-family:'Noto Serif Thai',serif;">๑</span></td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>-</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">number row, <em>unshifted</em> (left ring, 4th key from left)</td><td style="padding:3px 6px; border:1px solid #eee;">Shift = Thai numeral <span style="font-family:'Noto Serif Thai',serif;">๒</span></td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>,</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ล</span> (Far Right Clutter)</td><td style="padding:3px 6px; border:1px solid #eee;">—</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>.</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ง</span> (Far Right Clutter)</td><td style="padding:3px 6px; border:1px solid #eee;">full stop / period</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>(</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ผ</span> (Bottom Left)</td><td style="padding:3px 6px; border:1px solid #eee;">—</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>)</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ป</span> (Bottom Left)</td><td style="padding:3px 6px; border:1px solid #eee;">—</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee;"><kbd>?</kbd></td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ท</span> (Bottom Right)</td><td style="padding:3px 6px; border:1px solid #eee;">the soldier has a question</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ฤ</td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ฟ</span> (Left Home)</td><td style="padding:3px 6px; border:1px solid #eee;">pseudo-vowel /rɯ/ — appears in some Pali loanwords</td></tr>
+    <tr><td style="padding:3px 6px; border:1px solid #eee; font-family:'Noto Serif Thai',serif; font-size:1.15rem;">ฦ</td><td style="padding:3px 6px; border:1px solid #eee;">Shift + <span style="font-family:'Noto Serif Thai',serif;">ฝ</span> (Bottom Right)</td><td style="padding:3px 6px; border:1px solid #eee;">virtually obsolete — safe to ignore</td></tr>
+  </table>
+  <p style="font-size:0.78rem; color:#64748b; margin:6px 0 0;"><strong>Not on the default Kedmanee layout at all:</strong> <kbd>!</kbd>, <kbd>%</kbd>, <kbd>@</kbd>, etc. — these vary between manufacturers and aren't standardized in the original layout. Use your OS's "Show Input Menu" / keyboard viewer to see what your current mapping produces.</p>
+  <p style="font-size:0.78rem; color:#2563eb; margin:6px 0 0;">🎯 <strong>Practice:</strong> <strong>Lesson 48</strong> (punctuation) · Lesson 47 (Thai numerals)</p>
+</div>
+
+<!-- TYPING TIPS -->
+<div class="tone-rules" style="margin-top:18px;">
+  <p style="font-weight:700; margin:0 0 6px;">💡 Typing tips</p>
+  <p style="font-size:0.86rem; margin:4px 0;"><strong>Typing order:</strong> <em>consonant → above/below vowel → tone mark</em>. Combining marks attach to whatever was typed just before them, so the consonant always comes first. E.g. <span style="font-family:'Noto Serif Thai',serif; font-size:1.05rem;">ถั่ว</span> = <kbd>ถ</kbd> <kbd>&#x25CC;ั</kbd> <kbd>&#x25CC;่</kbd> <kbd>ว</kbd>.</p>
+  <p style="font-size:0.86rem; margin:4px 0;"><strong>Exception:</strong> <span style="font-family:'Noto Serif Thai',serif; font-size:1.05rem;">&nbsp;ำ&nbsp;</span> is <em>not</em> a combining above-vowel — it's a full key — so tone mark comes <em>before</em> it. E.g. <span style="font-family:'Noto Serif Thai',serif; font-size:1.05rem;">ต่ำ</span> = <kbd>ต</kbd> <kbd>&#x25CC;่</kbd> <kbd>ำ</kbd>.</p>
+  <p style="font-size:0.86rem; margin:4px 0;"><strong>Pre-posed vowels</strong> (<span style="font-family:'Noto Serif Thai',serif;">เ แ โ ใ ไ</span>) are typed <em>in reading order</em>, i.e. before the consonant they sound after. E.g. <span style="font-family:'Noto Serif Thai',serif; font-size:1.05rem;">เดิน</span> = <kbd>เ</kbd> <kbd>ด</kbd> <kbd>&#x25CC;ิ</kbd> <kbd>น</kbd>.</p>
+  <p style="font-size:0.86rem; margin:4px 0;"><strong>Find home position by touch.</strong> The <kbd>ด</kbd> and <kbd>ก</kbd> keys (forefingers) have small bumps — never look down. Fingers curved 90°, wrists level, elbows tucked in.</p>
+  <p style="font-size:0.86rem; margin:4px 0;"><strong>Shift side-rule.</strong> Always press the <em>opposite</em> Shift key from the letter. Left-hand letter (e.g. ด → โ) needs the right Shift; right-hand letter (e.g. ส → ศ) needs the left Shift.</p>
+</div>
+
+<!-- FULL-KEYBOARD PRACTICE -->
+<h2 style="font-size:1.05rem; margin:22px 0 10px; color:#222;">🏁 Full-keyboard practice (span multiple zones)</h2>
+<p style="font-size:0.85rem; color:#555; margin:0 0 10px;">Once the zones and groups are comfortable, these lessons exercise everything together — no single finger-zone owns them.</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px; margin-bottom:20px;">
+
+  <div style="background:#f8fafc; border-left:4px solid #64748b; border-radius:8px; padding:10px 12px;">
+    <p style="font-size:0.85rem; font-weight:700; margin:0 0 2px;">Lesson 42 — alphabet ก → ว</p>
+    <p style="font-size:0.78rem; color:#555; margin:2px 0 0;">Types the first 30 consonants in alphabet order. A good midpoint check.</p>
+  </div>
+
+  <div style="background:#f8fafc; border-left:4px solid #64748b; border-radius:8px; padding:10px 12px;">
+    <p style="font-size:0.85rem; font-weight:700; margin:0 0 2px;">Lesson 46 — entire alphabet</p>
+    <p style="font-size:0.78rem; color:#555; margin:2px 0 0;">All 42 consonants ก → ฮ (chicken to owl). The graduation drill.</p>
+  </div>
+
+  <div style="background:#f0fdf4; border-left:4px solid #16a34a; border-radius:8px; padding:10px 12px;">
+    <p style="font-size:0.85rem; font-weight:700; margin:0 0 2px;">Lessons 49 &amp; 50 — top 100 Thai words</p>
+    <p style="font-size:0.78rem; color:#555; margin:2px 0 0;">The 100 most common Thai words, split across two lessons. Fast wins for everyday Thai.</p>
+  </div>
+
+  <div style="background:#faf5ff; border-left:4px solid #9333ea; border-radius:8px; padding:10px 12px;">
+    <p style="font-size:0.85rem; font-weight:700; margin:0 0 2px;">Lessons 51 &amp; 52 — pangrams</p>
+    <p style="font-size:0.78rem; color:#555; margin:2px 0 0;">Four sentences that each use every letter of the alphabet. The final test of stamina and Shift-layer fluency.</p>
+  </div>
+
+</div>
+
+</div><!-- end typing tab -->
+
+
+<!-- ============================================================= -->
+<!-- ========================== QUIRKS TAB ======================= -->
+<!-- ============================================================= -->
+<div id="tab-quirks" class="tab-content">
+  <h2 style="margin-top:0; margin-bottom:6px;">Spelling-sound irregularities</h2>
+  <p style="font-size:0.85rem; color:#555; margin-bottom:14px;">Gotchas that aren't already covered by the main Consonants / Vowels / Clusters tabs.</p>
+
+  <!-- 1. THANTHAKHAT -->
+  <div class="tone-rules" style="margin-bottom:14px;">
+    <h3 style="margin-top:0; margin-bottom:6px;">1. <span style="font-family:'Noto Serif Thai',serif;">การันต์</span> — silent-letter mark <span style="font-size:0.85rem; color:#666; font-weight:400;">(thanthakhat ◌์)</span></h3>
+    <p style="font-size:0.88rem;">A small <strong>◌์</strong> above a consonant silences it. Used in Sanskrit/Pali loanwords to preserve etymology while trimming pronunciation.</p>
+    <div style="background:#f8f9fa; padding:10px 14px; border-radius:6px; margin:8px 0; font-size:0.9rem; line-height:1.9;">
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">สัตว์</span> /sàt/ animal · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">จันทร์</span> /jan/ Monday · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">เสาร์</span> /sǎo/ Saturday · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ศุกร์</span> /sùk/ Friday
+    </div>
+    <p style="font-size:0.82rem; color:#666;"><strong>Rule of thumb:</strong> the mark cancels the letter it sits on <em>and</em> often any cluster-mate just before it. Treat the word as if the silenced letters weren't written — including for tone rules.</p>
+  </div>
+
+  <!-- 2. อ CARRIER -->
+  <div class="tone-rules" style="margin-bottom:14px;">
+    <h3 style="margin-top:0; margin-bottom:6px;">2. <span style="font-family:'Noto Serif Thai',serif;">อ</span> as silent vowel carrier</h3>
+    <p style="font-size:0.88rem;">Thai vowels can't stand alone — they need a consonant to hang on. When a word <em>starts</em> with a vowel sound, <strong>อ</strong> sits silently as the carrier.</p>
+    <div style="background:#f8f9fa; padding:10px 14px; border-radius:6px; margin:8px 0; font-size:0.9rem; line-height:1.9;">
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">อาหาร</span> /aa-hǎan/ food · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">เอา</span> /ao/ take · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">อิน</span> /in/ (slang)
+    </div>
+    <p style="font-size:0.82rem; color:#666;">Carrier อ still counts as mid-class for tone rules — that's why อา, อิ, อุ, เอ default to mid tone with no mark.</p>
+  </div>
+
+  <!-- 3. IMPLICIT /o/ -->
+  <div class="tone-rules" style="margin-bottom:14px;">
+    <h3 style="margin-top:0; margin-bottom:6px;">3. Unwritten short <span style="font-family:'Noto Serif Thai',serif;">โ-ะ</span> /o/ in closed single syllables</h3>
+    <p style="font-size:0.88rem;">You already know the unwritten /a/ between two consonants (Clusters → non-conforming). There's a sibling: when a single-syllable word is just <strong>two consonants</strong>, an unwritten short <strong>/o/</strong> fills the gap.</p>
+    <div style="background:#f8f9fa; padding:10px 14px; border-radius:6px; margin:8px 0; font-size:0.9rem; line-height:1.9;">
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">นก</span> /nók/ bird · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">คน</span> /khon/ person · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ผม</span> /phǒm/ I (m.) · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">จบ</span> /jòp/ finish
+    </div>
+    <p style="font-size:0.82rem; color:#666;"><strong>Tell them apart from /a/ clusters:</strong> two syllables pronounced = /a/ inserted. One short stressed syllable = /o/ inserted.</p>
+  </div>
+
+  <!-- 4. SILENT ร -->
+  <div class="tone-rules" style="margin-bottom:14px;">
+    <h3 style="margin-top:0; margin-bottom:6px;">4. Silent <span style="font-family:'Noto Serif Thai',serif;">ร</span> in final clusters <span style="font-size:0.85rem; color:#666; font-weight:400;">(no ◌์ needed)</span></h3>
+    <p style="font-size:0.88rem;">When <strong>ร</strong> is the second letter of a final cluster, it's simply dropped — no thanthakhat required. This is a native convention, not a Sanskrit quirk.</p>
+    <div style="background:#f8f9fa; padding:10px 14px; border-radius:6px; margin:8px 0; font-size:0.9rem; line-height:1.9;">
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">สมัคร</span> /sa-màk/ apply · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">บัตร</span> /bàt/ card · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">จักร</span> /jàk/ wheel · <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">มิตร</span> /mít/ friend
+    </div>
+  </div>
+
+  <!-- 5. CLASS INHERITANCE -->
+  <div class="tone-rules" style="margin-bottom:14px;">
+    <h3 style="margin-top:0; margin-bottom:6px;">5. Class inheritance in 2-syllable words <span style="font-size:0.85rem; color:#dc2626; font-weight:400;">(the big gotcha)</span></h3>
+    <p style="font-size:0.88rem;">In unwritten-/a/ words, the <strong>first consonant's class often determines the tone of the second syllable</strong>, not the second consonant's class. The first consonant acts like a silent leading ห/อ for the whole word.</p>
+    <div style="background:#f8f9fa; padding:10px 14px; border-radius:6px; margin:8px 0; font-size:0.9rem; line-height:1.9;">
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ขนม</span> /kha-nǒm/ — ข (high) makes นม rise, even though ม alone is low class<br>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">ตลาด</span> /ta-làat/ — ต (mid) makes ลาด follow mid-class rules → low tone (dead)<br>
+      <span style="font-family:'Noto Serif Thai',serif; font-size:1.1rem;">สนุก</span> /sa-nùk/ — ส (high) → นุก gets low tone (dead-short, high class rule)
+    </div>
+    <p style="font-size:0.82rem; color:#666;">This is the #1 reason the "consonant class + live/dead" rule can seem to break on longer words.</p>
+  </div>
+
+</div><!-- end quirks tab -->
 
 
 <script>
