@@ -146,7 +146,7 @@ export function PracticeOverlay({ lessons, initialLessonId, title, onExit, onLes
               className={`${styles.tab} ${l.id === lessonId ? styles.tabActive : ''}`}
               onClick={() => setLessonId(l.id)}
             >
-              {lessonKindIcon(l.kind)} {l.title.split(' · ')[1] ?? l.title} · L{l.id}
+              {lessonKindIcon(l.kind)} {capitalize(l.title.split(' · ')[1] ?? l.title)} · L{l.id}
             </button>
           ))}
         </div>
@@ -213,6 +213,10 @@ export function PracticeOverlay({ lessons, initialLessonId, title, onExit, onLes
   );
 }
 
+function capitalize(s: string): string {
+  return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
+}
+
 function lessonKindIcon(kind: Lesson['kind']): string {
   switch (kind) {
     case 'drill': return '🎯';
@@ -235,7 +239,11 @@ function DrillLine({ text, lineIdx, cursor, active, done, mistakeMap }: {
       {text.split('').map((ch, i) => {
         const isDone = done || i < cursor;
         const isCursor = active && i === cursor;
-        const isMistake = mistakeMap.has(`${lineIdx}:${i}`);
+        // Only show "mistake" styling if the cursor is *currently* on that
+        // position (i.e., the user is stuck there). Once the cursor advances
+        // past it, the character is treated as done (green) and the total
+        // mistake count in the stats bar is the historical record.
+        const isMistake = isCursor && mistakeMap.has(`${lineIdx}:${i}`);
         const cls = [
           styles.ch,
           isDone ? styles.chDone : '',

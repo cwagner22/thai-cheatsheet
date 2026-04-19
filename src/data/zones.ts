@@ -59,8 +59,8 @@ export const ZONES: Zone[] = [
     headBorder: '#fde68a',
     titleKeys: ['ภ', 'ถ', '◌ุ'],
     rows: [
-      { finger: 'middle', key: 'ภ', mnemonic: 'a **junk** (สำเ**ภ**า) — loop opens *left* → sits on the *left*' },
-      { finger: 'index', key: 'ถ', mnemonic: 'a **sack** (**ถ**ุง) — loop opens *right* → sits on the *right*' },
+      { finger: 'middle', key: 'ภ', mnemonic: 'an **Asian sailboat** (สำเ**ภ**า) — loop opens *left* → sits on the *left*' },
+      { finger: 'index', key: 'ถ', mnemonic: 'a **bag** (**ถ**ุง) — loop opens *right* → sits on the *right*' },
       { finger: 'index →', key: '◌ุ', combining: true, mnemonic: 'short /u/ vowel below' },
     ],
     shiftRows: [
@@ -186,28 +186,6 @@ export const ZONES: Zone[] = [
     practice: { drills: [2], words: [4], extras: [{ lesson: 13, note: 'adds ้' }, { lesson: 43, note: 'ศ ษ' }] },
   },
   {
-    id: 'frc',
-    title: 'Far Right Clutter',
-    arrow: '➡️➡️',
-    color: '#db2777',
-    bg: '#fdf2f8',
-    headBg: '#fce7f3',
-    headBorder: '#fbcfe8',
-    titleKeys: ['ง', 'บ', 'ล'],
-    intro: 'All three reached by stretching the right pinky further right (ง on home row), then further up (บ ล on row above).',
-    rows: [
-      { finger: 'home row →', key: 'ง', mnemonic: 'a **snake** (**ง**ู) on the ground (home row)' },
-      { finger: 'top row → (near)', key: 'บ', mnemonic: 'a **leafy** (ใ**บ**) tree…' },
-      { finger: 'top row → (far)', key: 'ล', mnemonic: '…with a **monkey** (**ล**ิง) climbing highest' },
-    ],
-    shiftRows: [
-      { base: 'ง', shifted: '.', isPunct: true, mnemonic: 'full stop / period' },
-      { base: 'บ', shifted: 'ฐ', mnemonic: 'a pedestal / base (**ฐ**าน) under the tree' },
-      { base: 'ล', shifted: ',', isPunct: true, mnemonic: 'comma' },
-    ],
-    practice: { drills: [16], words: [17] },
-  },
-  {
     id: 'bl',
     title: 'Bottom Left',
     arrow: '↙️',
@@ -254,6 +232,28 @@ export const ZONES: Zone[] = [
       { base: 'ฝ', shifted: 'ฦ', mnemonic: 'so rare it\'s virtually obsolete — safe to ignore' },
     ],
     practice: { drills: [6], words: [8], extras: [{ lesson: 44, note: 'ฬ' }] },
+  },
+  {
+    id: 'frc',
+    title: 'Far Right Clutter',
+    arrow: '➡️➡️',
+    color: '#db2777',
+    bg: '#fdf2f8',
+    headBg: '#fce7f3',
+    headBorder: '#fbcfe8',
+    titleKeys: ['ง', 'บ', 'ล'],
+    intro: 'All three reached by stretching the right pinky further right (ง on home row), then further up (บ ล on row above).',
+    rows: [
+      { finger: 'home row →', key: 'ง', mnemonic: 'a **snake** (**ง**ู) on the ground (home row)' },
+      { finger: 'top row → (near)', key: 'บ', mnemonic: 'a **leafy** (ใ**บ**) tree…' },
+      { finger: 'top row → (far)', key: 'ล', mnemonic: '…with a **monkey** (**ล**ิง) climbing highest' },
+    ],
+    shiftRows: [
+      { base: 'ง', shifted: '.', isPunct: true, mnemonic: 'full stop / period' },
+      { base: 'บ', shifted: 'ฐ', mnemonic: 'a pedestal / base (**ฐ**าน) under the tree' },
+      { base: 'ล', shifted: ',', isPunct: true, mnemonic: 'comma' },
+    ],
+    practice: { drills: [16], words: [17] },
   },
 ];
 

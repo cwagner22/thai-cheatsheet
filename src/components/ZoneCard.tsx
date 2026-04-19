@@ -1,5 +1,4 @@
 import type { Zone } from '../data/zones';
-import { TRAINER_URL } from '../data/zones';
 import styles from './ZoneCard.module.css';
 
 interface ZoneCardProps {
@@ -9,23 +8,64 @@ interface ZoneCardProps {
   isHovered?: boolean;
 }
 
-/** Render a mnemonic with simple **bold** markers → <strong>. */
+/**
+ * Render a mnemonic with simple **bold** / *italic* markers.
+ *
+ * Combining-mark fix: when a Thai combining mark (above/below vowels, tone
+ * marks) directly follows a closing `**`, the element boundary between
+ * `<strong>ถ</strong>` and the trailing text node breaks Unicode text
+ * shaping — the combining mark renders as a lonely ◌ circle. Solution: in
+ * the split-token array, pull leading Thai combining marks of a plain
+ * segment into the *preceding* bold/italic segment so they render together
+ * inside the same element.
+ */
+const THAI_COMBINING_RE = /^[\u0E30-\u0E3A\u0E47-\u0E4E]+/;
+
+function isBoldOrItalic(s: string): 2 | 1 | 0 {
+  if (s.startsWith('**') && s.endsWith('**') && s.length >= 4) return 2;
+  if (s.startsWith('*') && s.endsWith('*') && s.length >= 3 && !s.startsWith('**')) return 1;
+  return 0;
+}
+
 function renderMnemonic(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/);
+  const raw = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/);
+  // Post-process the token list: move leading combining marks of a plain
+  // segment into the preceding bold/italic segment.
+  const parts: string[] = [];
+  for (const part of raw) {
+    const prev = parts[parts.length - 1];
+    const marker = prev ? isBoldOrItalic(prev) : 0;
+    if (marker) {
+      const m = part.match(THAI_COMBINING_RE);
+      if (m) {
+        const marks = m[0];
+        const delim = '*'.repeat(marker);
+        parts[parts.length - 1] = prev.slice(0, -marker) + marks + delim;
+        const remainder = part.slice(marks.length);
+        if (remainder) parts.push(remainder);
+        continue;
+      }
+    }
+    if (part) parts.push(part);
+  }
   return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
+    if (isBoldOrItalic(part) === 2) {
       return <strong key={i}>{part.slice(2, -2)}</strong>;
     }
-    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+    if (isBoldOrItalic(part) === 1) {
       return <em key={i}>{part.slice(1, -1)}</em>;
     }
     return <span key={i}>{part}</span>;
   });
 }
 
-function Circle({ char, combining }: { char: string; combining?: boolean }) {
-  // Render just the character; combining marks show alone as in the polished keyboard.
-  return <span className={styles.keyGlyph}>{combining ? char.replace(/^◌/, '') : char}</span>;
+function Circle({ char }: { char: string; combining?: boolean }) {
+  // Keep the ◌ prefix on combining marks. An isolated combining mark has
+  // zero advance width, which makes `text-align: center` useless — the
+  // browser draws a fallback dotted circle out of flow and the cell appears
+  // left-aligned. Rendering the explicit ◌ DOTTED CIRCLE (U+25CC) as a
+  // visible base gives the mark a normal-width glyph to attach to.
+  return <span className={styles.keyGlyph}>{char}</span>;
 }
 
 export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCardProps) {
@@ -49,7 +89,7 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
         </strong>
         <span className={styles.titleKeys}>
           {zone.titleKeys.map((k, i) => (
-            <span key={i} className={styles.titleKey}>{k.replace(/^◌/, '')}</span>
+            <span key={i} className={styles.titleKey}>{k}</span>
           ))}
         </span>
       </div>
@@ -60,7 +100,7 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
         <thead>
           <tr style={{ background: zone.headBg }}>
             <th style={{ borderColor: zone.headBorder }}>{zone.rows.some(r => r.finger.includes('stretch') || r.finger.includes('row')) ? 'Finger / position' : 'Finger'}</th>
-            <th style={{ borderColor: zone.headBorder, fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>Key</th>
+            <th style={{ borderColor: zone.headBorder }}>Key</th>
             <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
           </tr>
         </thead>
@@ -83,7 +123,7 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
           <table className={styles.table}>
             <thead>
               <tr style={{ background: zone.headBg }}>
-                <th style={{ borderColor: zone.headBorder, fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>Key</th>
+                <th style={{ borderColor: zone.headBorder }}>Key</th>
                 <th style={{ borderColor: zone.headBorder }}>+⇧</th>
                 <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
               </tr>
@@ -103,33 +143,6 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
         </>
       )}
 
-      <p className={styles.practice} style={{ color: zone.color, borderColor: zone.headBorder }}>
-        🎯 <strong>Practice:</strong>{' '}
-        {zone.practice.drills.map(d => (
-          <span key={d}>
-            <a href={TRAINER_URL} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>Lesson {d}</a>
-            {' '}(drill){' '}
-          </span>
-        ))}
-        {zone.practice.words.length > 0 && (
-          <>
-            ·{' '}
-            <strong>
-              <a href={TRAINER_URL} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>
-                Lesson {zone.practice.words.join(', ')}
-              </a>
-            </strong>{' '}
-            (Thai words)
-          </>
-        )}
-        {zone.practice.extras?.map((ex, i) => (
-          <span key={i}>
-            {' '}·{' '}
-            <a href={TRAINER_URL} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>Lesson {ex.lesson}</a>
-            {' '}({ex.note})
-          </span>
-        ))}
-      </p>
     </div>
   );
 }
