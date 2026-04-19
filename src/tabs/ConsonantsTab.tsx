@@ -112,7 +112,7 @@ function ByClassView() {
         <div className="class-header mid">Mid Class — อักษรกลาง (9)</div>
         <div className={styles.mnemBoxMid}>
           <strong>Mnemonic:</strong>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
           <span style={{ color: '#666' }}> — <em>"A chicken pecks a dead child on top of a jar"</em></span><br />
           <span className={styles.mnemLetters}>→ ก  จ  ฎ ฏ  ด ต  บ  ป  อ</span>
         </div>
@@ -123,7 +123,7 @@ function ByClassView() {
         <div className="class-header high">High Class — อักษรสูง (11)</div>
         <div className={styles.mnemBoxHigh}>
           <strong>Mnemonic:</strong>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
           <span style={{ color: '#666' }}> — <em>"A ghost entrusts a bag of rice to me"</em></span><br />
           <span className={styles.mnemLetters}>→ ผ  ฝ  ถ ฐ  ข ฃ  ส ศ ษ  ห  ฉ</span>
         </div>
@@ -153,17 +153,17 @@ function ByClassView() {
           <tbody>
             <tr>
               <td style={{ padding: 8, borderBottom: '1px solid #eee' }}><strong>Unaspirated stop?</strong><br /><span style={{ fontSize: '0.78rem', color: '#666' }}>plains</span></td>
-              <td style={{ padding: 8, borderBottom: '1px solid #eee', fontFamily: "'Noto Serif Thai', serif" }}>/k/ ก • /tɕ/ จ • /d/ ด • /t/ ต • /b/ บ • /p/ ป • /ʔ/ อ</td>
+              <td style={{ padding: 8, borderBottom: '1px solid #eee', fontFamily: 'var(--thai-font)' }}>/k/ ก • /tɕ/ จ • /d/ ด • /t/ ต • /b/ บ • /p/ ป • /ʔ/ อ</td>
               <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}><strong style={{ color: '#2563eb' }}>Always MID</strong></td>
             </tr>
             <tr>
               <td style={{ padding: 8, borderBottom: '1px solid #eee' }}><strong>Can you hum it?</strong><br /><span style={{ fontSize: '0.78rem', color: '#666' }}>sonorants</span></td>
-              <td style={{ padding: 8, borderBottom: '1px solid #eee', fontFamily: "'Noto Serif Thai', serif" }}>/ŋ/ ง • /n/ น • /m/ ม • /j/ ย • /r/ ร • /l/ ล • /w/ ว</td>
+              <td style={{ padding: 8, borderBottom: '1px solid #eee', fontFamily: 'var(--thai-font)' }}>/ŋ/ ง • /n/ น • /m/ ม • /j/ ย • /r/ ร • /l/ ล • /w/ ว</td>
               <td style={{ padding: 8, borderBottom: '1px solid #eee', textAlign: 'center' }}><strong style={{ color: '#dc2626' }}>Always LOW</strong></td>
             </tr>
             <tr>
               <td style={{ padding: 8 }}><strong>Does air come out?</strong><br /><span style={{ fontSize: '0.78rem', color: '#666' }}>aspirates &amp; fricatives</span></td>
-              <td style={{ padding: 8, fontFamily: "'Noto Serif Thai', serif" }}>/kʰ/ • /tɕʰ/ • /s/ • /tʰ/ • /pʰ/ • /f/ • /h/</td>
+              <td style={{ padding: 8, fontFamily: 'var(--thai-font)' }}>/kʰ/ • /tɕʰ/ • /s/ • /tʰ/ • /pʰ/ • /f/ • /h/</td>
               <td style={{ padding: 8, textAlign: 'center' }}><strong style={{ color: '#16a34a' }}>HIGH</strong> or <strong style={{ color: '#dc2626' }}>LOW</strong><br /><span style={{ fontSize: '0.78rem', color: '#666' }}>(each sound has both — check the tables above)</span></td>
             </tr>
           </tbody>
@@ -253,13 +253,13 @@ function BySoundView() {
         <p style={{ marginTop: 14, marginBottom: 6 }}><strong>Classical class mnemonics (ไตรยางศ์):</strong></p>
         <div className={styles.mnemBoxMid}>
           <strong>Mid Class (9):</strong>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
           <span style={{ color: '#666' }}> — <em>"A chicken pecks a dead child on top of a jar"</em></span><br />
           <span className={styles.mnemLetters}>→ ก  จ  ฎ ฏ  ด ต  บ  ป  อ</span>
         </div>
         <div className={styles.mnemBoxHigh}>
           <strong>High Class (11):</strong>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
           <span style={{ color: '#666' }}> — <em>"A ghost entrusts a bag of rice to me"</em></span><br />
           <span className={styles.mnemLetters}>→ ผ  ฝ  ถ ฐ  ข ฃ  ส ศ ษ  ห  ฉ</span>
         </div>

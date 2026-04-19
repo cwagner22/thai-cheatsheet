@@ -1,5 +1,18 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/*
+ * Global Thai font switch: the Font toggle flips `body.sans` on, which
+ * remaps --thai-font. Every Thai-text style in the app reads from this
+ * variable instead of hardcoding a family, so the toggle affects every
+ * tab uniformly.
+ */
+:root {
+  --thai-font: 'Noto Serif Thai', serif;
+}
+body.sans {
+  --thai-font: 'Noto Sans Thai', sans-serif;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background: #f5f5f5;
@@ -70,8 +83,8 @@ tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: #f9fafb; }
 td { padding: 7px 10px; vertical-align: middle; }
 
-.thai-letter { font-family: 'Noto Serif Thai', serif; font-size: 1.7rem; font-weight: 700; line-height: 1; }
-.thai-name { font-family: 'Noto Serif Thai', serif; font-size: 0.95rem; }
+.thai-letter { font-family: var(--thai-font); font-size: 1.7rem; font-weight: 700; line-height: 1; }
+.thai-name { font-family: var(--thai-font); font-size: 0.95rem; }
 td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
 .sound-type { font-size: 0.75rem; color: #888; }
 
@@ -104,7 +117,7 @@ td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
 .pair-cell { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
 .pair-letter { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 50px; }
 .pair-letter .thai-letter { font-size: 1.6rem; }
-.pair-letter .thai-name { font-family: 'Noto Serif Thai', serif; font-size: 1rem; color: #555; }
+.pair-letter .thai-name { font-family: var(--thai-font); font-size: 1rem; color: #555; }
 .pair-letter .pair-eng { font-size: 0.7rem; color: #888; }
 
 /* ===== VOWEL CARDS ===== */
@@ -123,18 +136,9 @@ td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
 }
 .vowel-card-side { text-align: center; padding: 0 6px; }
 .vowel-card-side:first-child { border-right: 1px solid #eee; }
-.vowel-form { font-family: 'Noto Serif Thai', serif; font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
+.vowel-form { font-family: var(--thai-font); font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
 .vowel-card-side .vowel-ipa { font-size: 0.75rem; color: #777; font-family: monospace; display: block; margin-top: 2px; }
-.vowel-card-side .vowel-example { font-family: 'Noto Serif Thai', serif; font-size: 0.8rem; color: #555; display: block; margin-top: 2px; }
-
-/* ===== SANS FONT OVERRIDE ===== */
-body.sans .thai-letter,
-body.sans .thai-name,
-body.sans .vowel-form,
-body.sans .vowel-card-side .vowel-example,
-body.sans .pair-letter .thai-name {
-  font-family: 'Noto Sans Thai', sans-serif;
-}
+.vowel-card-side .vowel-example { font-family: var(--thai-font); font-size: 0.8rem; color: #555; display: block; margin-top: 2px; }
 
 @media print {
   body { padding: 10px; background: #fff; }

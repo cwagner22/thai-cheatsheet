@@ -37,7 +37,7 @@
 }
 
 .thaiCol {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
 }
 
 .subcol {

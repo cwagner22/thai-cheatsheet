@@ -26,7 +26,7 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   position: relative;
   padding-bottom: 5px;
   transition: opacity 0.12s, box-shadow 0.12s, background 0.12s, border-color 0.12s;

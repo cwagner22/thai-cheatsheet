@@ -14,7 +14,7 @@
 }
 
 .titleKeys {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.3rem;
   color: #222;
 }
@@ -56,13 +56,13 @@
 }
 
 .keyCell {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.15rem;
   text-align: center;
 }
 
 .keyGlyph {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
 }
 
 .shiftLabel {
@@ -184,7 +184,7 @@
 }
 
 .rowKeyChar {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.5rem;
   line-height: 1;
   color: #222;
@@ -192,7 +192,7 @@
 }
 
 .rowKeyThai {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 0.88rem;
   color: #333;
   line-height: 1.2;

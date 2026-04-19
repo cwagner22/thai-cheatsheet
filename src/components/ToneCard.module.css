@@ -16,7 +16,7 @@
 }
 
 .thaiName {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   color: #444;
   font-size: 0.95rem;
 }
@@ -50,7 +50,7 @@
 }
 
 .exampleWord {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.2rem;
 }
 

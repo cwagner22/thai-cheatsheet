@@ -37,9 +37,9 @@ export function ClustersTab() {
         <thead>
           <tr>
             <th style={{ background: '#2563eb', width: 80 }} />
-            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: "'Noto Serif Thai', serif", fontSize: '1.2rem' }}>+ ร</th>
-            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: "'Noto Serif Thai', serif", fontSize: '1.2rem' }}>+ ล</th>
-            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: "'Noto Serif Thai', serif", fontSize: '1.2rem' }}>+ ว</th>
+            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: 'var(--thai-font)', fontSize: '1.2rem' }}>+ ร</th>
+            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: 'var(--thai-font)', fontSize: '1.2rem' }}>+ ล</th>
+            <th style={{ background: '#2563eb', textAlign: 'center', fontFamily: 'var(--thai-font)', fontSize: '1.2rem' }}>+ ว</th>
           </tr>
         </thead>
         <tbody>

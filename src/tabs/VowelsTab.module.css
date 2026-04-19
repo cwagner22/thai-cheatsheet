@@ -26,7 +26,7 @@
 }
 
 .closedForm {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.4rem;
   font-weight: 700;
   color: #1a1a1a;
@@ -39,7 +39,7 @@ body.sans .closedForm {
 }
 
 .closedExample {
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 0.85rem;
   color: #555;
   line-height: 1.2;

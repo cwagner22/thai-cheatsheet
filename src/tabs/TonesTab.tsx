@@ -96,13 +96,13 @@ export function TonesTab() {
           <strong>The other two tone marks (Mid class only):</strong>
         </p>
         <p style={{ fontSize: '0.83rem' }}>
-          • <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>ก๊</span>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้ตรี #3</span> →{' '}
+          • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๊</span>{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้ตรี #3</span> →{' '}
           <strong>High</strong> tone.
         </p>
         <p style={{ fontSize: '0.83rem' }}>
-          • <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>ก๋</span>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้จัตวา #4</span> →{' '}
+          • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๋</span>{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้จัตวา #4</span> →{' '}
           <strong>Rising</strong> tone.
         </p>
         <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 4 }}>
@@ -145,11 +145,11 @@ export function TonesTab() {
       <div className={styles.drillBox}>
         <strong>How to practice:</strong> say each tone while tracing the curve with your finger or voice.<br />
         <strong>Classic drill (5 real words):</strong>{' '}
-        <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>คา · ข่า · ค่า · ค้า · ขา</span>
+        <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>คา · ข่า · ค่า · ค้า · ขา</span>
         {' '}<span style={{ color: '#666' }}>(khaa · khàa · khâa · kháa · khǎa) = <em>stuck · galangal · cost · to trade · leg</em></span>
         {' '}— all 5 tones in canonical order (Mid · Low · Falling · High · Rising).<br />
         <strong>Alt drill (one mid-class letter + all 4 tone marks):</strong>{' '}
-        <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ปา · ป่า · ป้า · ป๊า · ป๋า</span>
+        <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ปา · ป่า · ป้า · ป๊า · ป๋า</span>
         {' '}<span style={{ color: '#666' }}>(paa · pàa · pâa · páa · pǎa) = <em>throw · forest · aunt · dad · dad (slang)</em></span>
         {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
       </div>

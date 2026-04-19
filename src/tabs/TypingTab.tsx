@@ -95,14 +95,14 @@ export function TypingTab() {
         </p>
         <p style={{ fontSize: '0.86rem', margin: '4px 0' }}>
           <strong>Exception:</strong>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}> ำ </span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}> ำ </span>
           is a full key, so a tone mark comes <em>before</em> it. E.g.,{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.05rem' }}>ต่ำ</span>
+          <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ต่ำ</span>
           {' '}= <kbd>ต</kbd> <kbd>่</kbd> <kbd>ำ</kbd>.
         </p>
         <p style={{ fontSize: '0.86rem', margin: '4px 0' }}>
           <strong>Pre-posed vowels</strong>{' '}
-          (<span style={{ fontFamily: "'Noto Serif Thai', serif" }}>เ แ โ ใ ไ</span>)
+          (<span style={{ fontFamily: 'var(--thai-font)' }}>เ แ โ ใ ไ</span>)
           are typed <em>in reading order</em>.
         </p>
         <p style={{ fontSize: '0.86rem', margin: '4px 0' }}>

@@ -1,11 +1,11 @@
 import styles from './QuirksTab.module.css';
 
 function Thai({ children }: { children: React.ReactNode }) {
-  return <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>{children}</span>;
+  return <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>{children}</span>;
 }
 
 function ThaiInline({ children }: { children: React.ReactNode }) {
-  return <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>{children}</span>;
+  return <span style={{ fontFamily: 'var(--thai-font)' }}>{children}</span>;
 }
 
 export function QuirksTab() {

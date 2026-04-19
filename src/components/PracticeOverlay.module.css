@@ -108,7 +108,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-family: 'Noto Serif Thai', serif;
+  font-family: var(--thai-font);
   font-size: 1.5rem;
   line-height: 1.4;
   cursor: text;
