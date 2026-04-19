@@ -89,12 +89,41 @@ function KeyRow({ zone, color }: { zone: Zone; color: string }) {
         {zone.rows.map((r, i) => (
           <div key={i} className={styles.rowKeyCell}>
             <div className={styles.rowKeyChar}>{r.key}</div>
-            {r.shortThai && <div className={styles.rowKeyThai}>{r.shortThai}</div>}
+            <div className={styles.rowKeyThai}>{r.shortThai || <span className={styles.rowKeyDash}>—</span>}</div>
             {r.shortEng && (
               <div className={styles.rowKeyEng}>{renderMnemonic(r.shortEng)}</div>
             )}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function ShiftKeyRow({ zone }: { zone: Zone }) {
+  if (!zone.shiftRows || zone.shiftRows.length === 0) return null;
+  const shiftByBase = new Map(zone.shiftRows.map(sr => [sr.base, sr] as const));
+  return (
+    <div className={styles.shiftRowLayout}>
+      <div className={styles.shiftRowLabel}>Shift layer</div>
+      <div className={styles.rowKeys}>
+        {zone.rows.map((r, i) => {
+          const sr = shiftByBase.get(r.key);
+          if (!sr) {
+            return <div key={i} className={styles.shiftEmptyCell} aria-hidden />;
+          }
+          return (
+            <div key={i} className={`${styles.rowKeyCell} ${styles.shiftRowCell}`}>
+              <div className={styles.rowKeyChar}>
+                {sr.isPunct ? <kbd className={styles.shiftPunct}>{sr.shifted}</kbd> : sr.shifted}
+              </div>
+              <div className={styles.rowKeyThai}>{sr.shortThai || <span className={styles.rowKeyDash}>—</span>}</div>
+              {sr.shortEng && (
+                <div className={styles.rowKeyEng}>{renderMnemonic(sr.shortEng)}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -157,30 +186,34 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
         </table>
       )}
 
-      {zone.shiftRows && zone.shiftRows.length > 0 && (
-        <>
-          <p className={styles.shiftLabel}><strong>Shift layer:</strong></p>
-          <table className={styles.table}>
-            <thead>
-              <tr style={{ background: zone.headBg }}>
-                <th style={{ borderColor: zone.headBorder }}>Key</th>
-                <th style={{ borderColor: zone.headBorder }}>+⇧</th>
-                <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
-              </tr>
-            </thead>
-            <tbody>
-              {zone.shiftRows.map((sr, i) => (
-                <tr key={i}>
-                  <td className={styles.keyCell}><Circle char={sr.base} combining={sr.base.startsWith('◌')} /></td>
-                  <td className={styles.keyCell}>
-                    {sr.isPunct ? <kbd>{sr.shifted}</kbd> : <Circle char={sr.shifted} />}
-                  </td>
-                  <td>{renderMnemonic(sr.mnemonic)}</td>
+      {isRowLayout ? (
+        <ShiftKeyRow zone={zone} />
+      ) : (
+        zone.shiftRows && zone.shiftRows.length > 0 && (
+          <>
+            <p className={styles.shiftLabel}><strong>Shift layer:</strong></p>
+            <table className={styles.table}>
+              <thead>
+                <tr style={{ background: zone.headBg }}>
+                  <th style={{ borderColor: zone.headBorder }}>Key</th>
+                  <th style={{ borderColor: zone.headBorder }}>+⇧</th>
+                  <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+              </thead>
+              <tbody>
+                {zone.shiftRows.map((sr, i) => (
+                  <tr key={i}>
+                    <td className={styles.keyCell}><Circle char={sr.base} combining={sr.base.startsWith('◌')} /></td>
+                    <td className={styles.keyCell}>
+                      {sr.isPunct ? <kbd>{sr.shifted}</kbd> : <Circle char={sr.shifted} />}
+                    </td>
+                    <td>{renderMnemonic(sr.mnemonic)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )
       )}
     </div>
   );

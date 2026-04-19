@@ -191,6 +191,7 @@ export function PracticeOverlay({ lessons, initialLessonId, title, onExit, onLes
                 active={li === lineIdx}
                 done={li < lineIdx}
                 mistakeMap={mistakeMap}
+                isolateChars={lesson.kind === 'drill'}
               />
             ))}
           </div>
@@ -226,17 +227,36 @@ function lessonKindIcon(kind: Lesson['kind']): string {
   }
 }
 
-function DrillLine({ text, lineIdx, cursor, active, done, mistakeMap }: {
+// Thai combining marks (tone marks, above/below vowels) and SARA AM. These
+// render "on top of" a base consonant in Thai fonts, so when they appear
+// in the drill text without a consonant immediately before them, the glyph
+// visually bleeds onto the preceding character — which breaks the per-char
+// cursor highlight (yellow background ends up in empty space).
+const COMBINING_RE = /[\u0E31\u0E33-\u0E3A\u0E47-\u0E4E]/;
+function isThaiConsonant(ch: string): boolean {
+  if (!ch) return false;
+  const code = ch.codePointAt(0)!;
+  return code >= 0x0E01 && code <= 0x0E2E;
+}
+
+function DrillLine({ text, lineIdx, cursor, active, done, mistakeMap, isolateChars }: {
   text: string;
   lineIdx: number;
   cursor: number;
   active: boolean;
   done: boolean;
   mistakeMap: Set<string>;
+  /** When true, every combining mark in the line gets an explicit ◌ base
+   * so its glyph has stable bounds and the cursor highlight aligns with
+   * what the user sees — even when a consonant precedes it. Enabled for
+   * drill lines (key-sequence practice). Disabled for word lines so real
+   * Thai words like `คำ` render naturally. */
+  isolateChars?: boolean;
 }) {
+  const chars = text.split('');
   return (
     <div className={`${styles.line} ${active ? styles.lineActive : ''} ${done ? styles.lineDone : ''}`}>
-      {text.split('').map((ch, i) => {
+      {chars.map((ch, i) => {
         const isDone = done || i < cursor;
         const isCursor = active && i === cursor;
         // Only show "mistake" styling if the cursor is *currently* on that
@@ -250,7 +270,11 @@ function DrillLine({ text, lineIdx, cursor, active, done, mistakeMap }: {
           isCursor ? styles.chCursor : '',
           isMistake ? styles.chMistake : '',
         ].filter(Boolean).join(' ');
-        return <span key={i} className={cls}>{ch === ' ' ? '\u00A0' : ch}</span>;
+        const isComb = COMBINING_RE.test(ch);
+        const prev = i > 0 ? chars[i - 1] : '';
+        const needsBase = isComb && (isolateChars || !isThaiConsonant(prev));
+        const display = ch === ' ' ? '\u00A0' : (needsBase ? '◌' + ch : ch);
+        return <span key={i} className={cls}>{display}</span>;
       })}
     </div>
   );

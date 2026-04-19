@@ -275,6 +275,18 @@ export function ConsonantsTab() {
   const [view, setView] = useState<View>('sound');
   return (
     <div id="tab-consonants">
+      <a
+        className={styles.videoBookmark}
+        href="https://www.youtube.com/watch?v=pxLHURprYuI"
+        target="_blank"
+        rel="noopener"
+      >
+        <span className={styles.videoIcon} aria-hidden>▶</span>
+        <span>
+          <strong>Video:</strong> alphabet walkthrough on YouTube
+        </span>
+        <span className={styles.videoArrow} aria-hidden>↗</span>
+      </a>
       <div className="view-toggle">
         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555' }}>View:</span>
         <button className={`view-btn ${view === 'sound' ? 'active' : ''}`} onClick={() => setView('sound')}>By Sound</button>

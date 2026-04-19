@@ -134,6 +134,42 @@
   color: #333;
 }
 
+/* Shift layer as a second row below the main row */
+
+.shiftRowLayout {
+  margin-top: 10px;
+}
+
+.shiftRowLabel {
+  font-size: 0.7rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  margin-left: 2px;
+}
+
+.shiftRowCell {
+  background: #fafafa;
+  border-style: dashed;
+}
+
+.shiftEmptyCell {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.shiftPunct {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 1.1rem;
+  padding: 1px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+}
+
 .rowKeyCell {
   background: #fff;
   border: 1px solid #e5e5e5;
@@ -160,6 +196,12 @@
   font-size: 0.88rem;
   color: #333;
   line-height: 1.2;
+  min-height: 1.1em;
+}
+
+.rowKeyDash {
+  color: #bbb;
+  font-family: 'Inter', sans-serif;
 }
 
 .rowKeyEng {

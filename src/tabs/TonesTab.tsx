@@ -57,12 +57,12 @@ export function TonesTab() {
               <th>Dead<br /><span className={styles.subcol}>(short)</span></th>
               <th className={styles.thaiCol}>
                 <span style={{ fontSize: '1.1rem' }}>ก่</span>{' '}
-                <span className={styles.subcol}>ไม้เอก</span><br />
+                <span className={styles.subcol}>ไม้เอก #1</span><br />
                 <span className={styles.subcolEn}>= Dead (long)</span>
               </th>
               <th className={styles.thaiCol}>
                 <span style={{ fontSize: '1.1rem' }}>ก้</span>{' '}
-                <span className={styles.subcol}>ไม้โท</span>
+                <span className={styles.subcol}>ไม้โท #2</span>
               </th>
             </tr>
           </thead>
@@ -97,12 +97,12 @@ export function TonesTab() {
         </p>
         <p style={{ fontSize: '0.83rem' }}>
           • <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>ก๊</span>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้ตรี</span> →{' '}
+          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้ตรี #3</span> →{' '}
           <strong>High</strong> tone.
         </p>
         <p style={{ fontSize: '0.83rem' }}>
           • <span style={{ fontFamily: "'Noto Serif Thai', serif", fontSize: '1.1rem' }}>ก๋</span>{' '}
-          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้จัตวา</span> →{' '}
+          <span style={{ fontFamily: "'Noto Serif Thai', serif" }}>ไม้จัตวา #4</span> →{' '}
           <strong>Rising</strong> tone.
         </p>
         <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 4 }}>

@@ -32,6 +32,10 @@ export interface ShiftRow {
   shifted: string;   // punctuation or letter that shifts produce
   mnemonic: string;
   isPunct?: boolean; // if shifted is punctuation (rendered in <kbd>)
+  /** Short English phrase for row-layout shift cells (supports **bold**). */
+  shortEng?: string;
+  /** Thai anchor word for row-layout shift cells. */
+  shortThai?: string;
 }
 
 export interface Zone {
@@ -83,7 +87,7 @@ export const ZONES: Zone[] = [
       { finger: 'index →', key: '◌ุ', combining: true, mnemonic: 'short /u/ below', shortEng: 'short /u/ below', shortThai: '' },
     ],
     shiftRows: [
-      { base: '◌ุ', shifted: '◌ู', mnemonic: 'long /uː/ — two dots = "longer"' },
+      { base: '◌ุ', shifted: '◌ู', mnemonic: 'long /uː/', shortEng: 'long /uː/', shortThai: '' },
     ],
     practice: { drills: [18], words: [21] },
   },
@@ -125,9 +129,9 @@ export const ZONES: Zone[] = [
       { finger: 'index →', key: 'ะ', mnemonic: 'short /a/', shortEng: 'short /a/ after', shortThai: '' },
     ],
     shiftRows: [
-      { base: '◌ำ', shifted: 'ฎ', mnemonic: 'a **headdress** (ช**ฎ**า) worn when dancing รำ' },
-      { base: 'พ', shifted: 'ฑ', mnemonic: '**Montho** (ม**ณโฑ**) on her พ่อ\'s shoulders' },
-      { base: 'ะ', shifted: 'ธ', mnemonic: 'Ploy Chermarn (เ**ฌ**อมาลย์) holds a **flag** (**ธ**ง)' },
+      { base: '◌ำ', shifted: 'ฎ', mnemonic: 'headdress', shortEng: 'with a **headdress**', shortThai: 'ชฎา' },
+      { base: 'พ', shifted: 'ฑ', mnemonic: 'Montho', shortEng: '**Montho** (queen) dancing', shortThai: 'มณโฑ' },
+      { base: 'ะ', shifted: 'ธ', mnemonic: 'flag', shortEng: 'with a **flag**', shortThai: 'ธง' },
     ],
     practice: { drills: [9], words: [12], extras: [{ lesson: 27, note: 'adds ธ' }] },
   },
@@ -149,11 +153,11 @@ export const ZONES: Zone[] = [
       { finger: 'pinky', key: 'ย', mnemonic: 'ogre', shortEng: 'chased by an **ogre**', shortThai: 'ยักษ์' },
     ],
     shiftRows: [
-      { base: '◌ั', shifted: '◌ํ', mnemonic: 'นิคหิต (nikkhahit) — nasal /am/ marker' },
-      { base: '◌ี', shifted: '◌๊', mnemonic: 'ไม้ตรี (tone-mark 3)' },
-      { base: 'ร', shifted: 'ณ', mnemonic: '**novice** (เ**ณ**ร) studying at โ**ร**งเรียน (school)' },
-      { base: 'น', shifted: 'ฯ', mnemonic: 'paiyan-noi — "et cetera" abbreviation mark' },
-      { base: 'ย', shifted: 'ญ', mnemonic: 'same start sound — **ogre** & ห**ญ**ิง (woman) cohabit' },
+      { base: '◌ั', shifted: '◌ํ', mnemonic: 'nasal /am/', shortEng: 'nasal /am/', shortThai: 'นิคหิต' },
+      { base: '◌ี', shifted: '◌๊', mnemonic: 'tone 3', shortEng: 'tone 3', shortThai: 'ไม้ตรี' },
+      { base: 'ร', shifted: 'ณ', mnemonic: 'novice', shortEng: 'a **novice**', shortThai: 'เณร' },
+      { base: 'น', shifted: 'ฯ', mnemonic: 'et cetera', shortEng: '**et cetera** mark', shortThai: '' },
+      { base: 'ย', shifted: 'ญ', mnemonic: 'woman', shortEng: '**woman** (ogre)', shortThai: 'หญิง' },
     ],
     practice: { drills: [10], words: [12] },
   },
@@ -175,11 +179,11 @@ export const ZONES: Zone[] = [
       { finger: 'index →', key: 'เ', mnemonic: 'pre-vowel', shortEng: 'pre-vowel /eː/', shortThai: '' },
     ],
     shiftRows: [
-      { base: 'ฟ', shifted: 'ฤ', mnemonic: 'a **tooth** pulled out, leaving the odd vowel ฤ (/rɯ/)' },
-      { base: 'ห', shifted: 'ฆ', mnemonic: 'a **bell** (ระ**ฆ**ัง) on the chest' },
-      { base: 'ก', shifted: 'ฏ', mnemonic: 'chasing the **chicken** with a ป**ฏ**ัก spear' },
-      { base: 'ด', shifted: 'โ', mnemonic: 'the **child** yells "D\'oh!" Homer-style' },
-      { base: 'เ', shifted: 'ฌ', mnemonic: 'a **tree** (เ**ฌ**อ) — same spot as pre-posed เ' },
+      { base: 'ฟ', shifted: 'ฤ', mnemonic: 'odd vowel /rɯ/', shortEng: 'odd vowel /rɯ/', shortThai: '' },
+      { base: 'ห', shifted: 'ฆ', mnemonic: 'bell', shortEng: 'a **bell**', shortThai: 'ระฆัง' },
+      { base: 'ก', shifted: 'ฏ', mnemonic: 'spear', shortEng: 'a **spear**', shortThai: 'ปฏัก' },
+      { base: 'ด', shifted: 'โ', mnemonic: 'pre-vowel', shortEng: 'pre-vowel /oː/', shortThai: '' },
+      { base: 'เ', shifted: 'ฌ', mnemonic: 'tree', shortEng: 'a **tree**', shortThai: 'เฌอ' },
     ],
     practice: { drills: [1], words: [4], extras: [{ lesson: 22, note: 'โ' }, { lesson: 27, note: 'ฌ' }] },
   },
@@ -197,15 +201,15 @@ export const ZONES: Zone[] = [
       { finger: 'index ←', key: '◌้', combining: true, mnemonic: 'tone 2', shortEng: 'tone 2', shortThai: 'ไม้โท' },
       { finger: 'index', key: '◌่', combining: true, indexHome: true, mnemonic: 'tone 1', shortEng: 'tone 1 — vertical tick', shortThai: 'ไม้เอก' },
       { finger: 'middle', key: 'า', mnemonic: 'hahh', shortEng: 'mouth says **hahh**', shortThai: '/aː/' },
-      { finger: 'ring', key: 'ส', mnemonic: 'tiger', shortEng: '**tiger** on ring', shortThai: 'เสือ' },
+      { finger: 'ring', key: 'ส', mnemonic: 'tiger', shortEng: '**tiger** on ring finger', shortThai: 'เสือ' },
       { finger: 'pinky', key: 'ว', mnemonic: 'ring', shortEng: '**ring** bumped to pinky', shortThai: 'แหวน' },
     ],
     shiftRows: [
-      { base: '◌้', shifted: '◌็', mnemonic: 'ไม้ไต่คู้ (mai-taikhu) — shortens a vowel' },
-      { base: '◌่', shifted: '◌๋', mnemonic: 'ไม้จัตวา (tone-mark 4)' },
-      { base: 'ว', shifted: 'ซ', mnemonic: 'a **chain** (โ**ซ**่) — looks like ว with a zigzag' },
-      { base: 'ส', shifted: 'ศ', mnemonic: '**ศาลา** (saalaa) sheltering the tiger' },
-      { base: 'า', shifted: 'ษ', mnemonic: '**hermit** (ฤๅ**ษ**ี) beside the saalaa' },
+      { base: '◌้', shifted: '◌็', mnemonic: 'shortens vowel', shortEng: 'shortens vowel', shortThai: 'ไม้ไต่คู้' },
+      { base: '◌่', shifted: '◌๋', mnemonic: 'tone 4', shortEng: 'tone 4', shortThai: 'ไม้จัตวา' },
+      { base: 'ว', shifted: 'ซ', mnemonic: 'chain', shortEng: 'with a **chain**', shortThai: 'โซ่' },
+      { base: 'ส', shifted: 'ศ', mnemonic: 'pavilion', shortEng: 'at a **pavilion**', shortThai: 'ศาลา' },
+      { base: 'า', shifted: 'ษ', mnemonic: 'hermit', shortEng: 'a **hermit**', shortThai: 'ฤๅษี' },
     ],
     practice: { drills: [2], words: [4], extras: [{ lesson: 13, note: 'adds ้' }, { lesson: 43, note: 'ศ ษ' }] },
   },
@@ -227,10 +231,10 @@ export const ZONES: Zone[] = [
       { finger: 'index →', key: '◌ิ', combining: true, mnemonic: 'short /i/', shortEng: 'short /i/ above', shortThai: '' },
     ],
     shiftRows: [
-      { base: 'ผ', shifted: '(', isPunct: true, mnemonic: 'open paren — leftmost key' },
-      { base: 'ป', shifted: ')', isPunct: true, mnemonic: 'close paren — right next to open' },
-      { base: 'แ', shifted: 'ฉ', mnemonic: 'small **cymbals** (**ฉ**ิ่ง) — shape is แ + extra stroke' },
-      { base: 'อ', shifted: 'ฮ', mnemonic: 'an **owl** (นก**ฮ**ูก) — same key as อ, similar shape' },
+      { base: 'ผ', shifted: '(', isPunct: true, mnemonic: 'open paren', shortEng: 'open paren', shortThai: '' },
+      { base: 'ป', shifted: ')', isPunct: true, mnemonic: 'close paren', shortEng: 'close paren', shortThai: '' },
+      { base: 'แ', shifted: 'ฉ', mnemonic: 'cymbals', shortEng: 'small **cymbals**', shortThai: 'ฉิ่ง' },
+      { base: 'อ', shifted: 'ฮ', mnemonic: 'owl', shortEng: 'an **owl**', shortThai: 'นกฮูก' },
     ],
     practice: { drills: [5], words: [8], extras: [{ lesson: 44, note: 'ฮ' }] },
   },
@@ -252,10 +256,10 @@ export const ZONES: Zone[] = [
       { finger: 'pinky', key: 'ฝ', mnemonic: 'lid', shortEng: 'a **lid** as shield', shortThai: 'ฝา' },
     ],
     shiftRows: [
-      { base: 'ท', shifted: '?', isPunct: true, mnemonic: 'the **soldier** has a question' },
-      { base: 'ม', shifted: 'ฒ', mnemonic: 'หมู ("Moo", nickname) grows into an **old man** (ผู้เ**ฒ่**า)' },
-      { base: 'ใ', shifted: 'ฬ', mnemonic: 'a **mute** (**ใ**บ้) flies a **kite** (จุ**ฬ**า)' },
-      { base: 'ฝ', shifted: 'ฦ', mnemonic: 'so rare it\'s virtually obsolete — safe to ignore' },
+      { base: 'ท', shifted: '?', isPunct: true, mnemonic: 'question', shortEng: '**?**', shortThai: '' },
+      { base: 'ม', shifted: 'ฒ', mnemonic: 'old man', shortEng: 'the **old man**', shortThai: 'ผู้เฒ่า' },
+      { base: 'ใ', shifted: 'ฬ', mnemonic: 'kite', shortEng: 'with his **kite**', shortThai: 'จุฬา' },
+      { base: 'ฝ', shifted: 'ฦ', mnemonic: 'obsolete', shortEng: 'unused', shortThai: '' },
     ],
     practice: { drills: [6], words: [8], extras: [{ lesson: 44, note: 'ฬ' }] },
   },
@@ -276,9 +280,9 @@ export const ZONES: Zone[] = [
       { finger: 'top row → (far)', key: 'ล', mnemonic: 'monkey', shortEng: 'with a **monkey**', shortThai: 'ลิง' },
     ],
     shiftRows: [
-      { base: 'ง', shifted: '.', isPunct: true, mnemonic: 'full stop / period' },
-      { base: 'บ', shifted: 'ฐ', mnemonic: 'a pedestal / base (**ฐ**าน) under the tree' },
-      { base: 'ล', shifted: ',', isPunct: true, mnemonic: 'comma' },
+      { base: 'ง', shifted: '.', isPunct: true, mnemonic: 'period', shortEng: 'period', shortThai: '' },
+      { base: 'บ', shifted: 'ฐ', mnemonic: 'pedestal', shortEng: 'a **pedestal**', shortThai: 'ฐาน' },
+      { base: 'ล', shifted: ',', isPunct: true, mnemonic: 'comma', shortEng: 'comma', shortThai: '' },
     ],
     practice: { drills: [16], words: [17] },
   },
