@@ -1,0 +1,83 @@
+.mnemBoxMid {
+  background: #eff6ff;
+  border-left: 3px solid #2563eb;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.mnemBoxHigh {
+  background: #f0fdf4;
+  border-left: 3px solid #16a34a;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.mnemBoxLow {
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.mnemLetters {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.sectionSub {
+  font-size: 0.78rem;
+  color: #555;
+  margin-left: 6px;
+}
+
+.pairSub {
+  font-size: 0.78rem;
+  color: #555;
+  margin: -4px 0 8px 0;
+}
+
+.videoBookmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 3px solid #dc2626;
+  border-radius: 8px;
+  color: #222;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.videoBookmark:hover {
+  background: #fef2f2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.videoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.videoArrow {
+  margin-left: auto;
+  color: #999;
+  font-size: 0.9rem;
+}

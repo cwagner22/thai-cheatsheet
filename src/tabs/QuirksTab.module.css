@@ -1,0 +1,34 @@
+.quirkH {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.quirkSub {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.quirkSubWarn {
+  font-size: 0.85rem;
+  color: #dc2626;
+  font-weight: 400;
+}
+
+.para {
+  font-size: 0.88rem;
+}
+
+.examples {
+  background: #f8f9fa;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: #666;
+}

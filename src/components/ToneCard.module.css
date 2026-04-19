@@ -1,0 +1,60 @@
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.header strong {
+  font-size: 1rem;
+}
+
+.thaiName {
+  font-family: var(--thai-font);
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.code {
+  color: #888;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.desc {
+  font-size: 0.72rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.ipa {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.svg {
+  width: 100%;
+  height: 70px;
+  display: block;
+}
+
+.example {
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.exampleWord {
+  font-family: var(--thai-font);
+  font-size: 1.2rem;
+}
+
+.exampleGloss {
+  color: #888;
+  font-size: 0.78rem;
+}

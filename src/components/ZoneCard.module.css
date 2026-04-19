@@ -1,0 +1,226 @@
+.card {
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.05s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.titleKeys {
+  font-family: var(--thai-font);
+  font-size: 1.3rem;
+  color: #222;
+}
+
+.titleKey + .titleKey {
+  margin-left: 0.4rem;
+}
+
+.intro {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 4px 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 6px 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.table th {
+  padding: 4px 6px;
+  border: 1px solid;
+  text-align: left;
+  color: #222;
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
+  background: transparent;
+}
+
+.table td {
+  padding: 3px 6px;
+  border: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.keyCell {
+  font-family: var(--thai-font);
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.keyGlyph {
+  font-family: var(--thai-font);
+}
+
+.shiftLabel {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 8px 0 4px;
+}
+
+.practice {
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  border-top: 1px dashed;
+  padding-top: 6px;
+}
+
+.practice a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Row layout (prototype on Far Right Upper) */
+
+.rowLayout {
+  margin: 10px 0 4px;
+}
+
+.rowMarker,
+.rowKeys {
+  display: flex;
+  gap: 6px;
+}
+
+.rowMarkerCell,
+.rowKeyCell {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.rowMarker {
+  margin-bottom: 2px;
+}
+
+.rowMarkerCell {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+  min-height: 14px;
+}
+
+.indexTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.story {
+  margin: 8px 2px 0;
+  font-size: 0.78rem;
+  color: #666;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.story strong {
+  font-style: normal;
+  color: #333;
+}
+
+/* Shift layer as a second row below the main row */
+
+.shiftRowLayout {
+  margin-top: 10px;
+}
+
+.shiftRowLabel {
+  font-size: 0.7rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  margin-left: 2px;
+}
+
+.shiftRowCell {
+  background: #fafafa;
+  border-style: dashed;
+}
+
+.shiftEmptyCell {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.shiftPunct {
+  font-family: 'SF Mono', Menlo, monospace;
+  font-size: 1.1rem;
+  padding: 1px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+}
+
+.rowKeyCell {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 8px 2px 6px;
+  text-align: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rowKeyChar {
+  font-family: var(--thai-font);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.rowKeyThai {
+  font-family: var(--thai-font);
+  font-size: 0.88rem;
+  color: #333;
+  line-height: 1.2;
+  min-height: 1.1em;
+}
+
+.rowKeyDash {
+  color: #bbb;
+  font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 600px) {
+  .card { padding: 10px 12px; }
+  .rowKeyCell { padding: 6px 2px 5px; }
+  .rowKeyChar { font-size: 1.2rem; margin-bottom: 2px; }
+  .rowKeyThai { font-size: 0.75rem; }
+  .rowKeyEng { font-size: 0.62rem; }
+  .rowMarkerCell { font-size: 0.6rem; }
+  .titleKeys { font-size: 1.05rem; }
+  .rowKeys,
+  .rowMarker { gap: 4px; }
+}
+
+.rowKeyEng {
+  font-size: 0.68rem;
+  color: #777;
+  line-height: 1.2;
+  margin-top: 2px;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
