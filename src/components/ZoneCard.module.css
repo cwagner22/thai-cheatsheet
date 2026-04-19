@@ -82,3 +82,91 @@
   color: inherit;
   text-decoration: underline;
 }
+
+/* Row layout (prototype on Far Right Upper) */
+
+.rowLayout {
+  margin: 10px 0 4px;
+}
+
+.rowMarker,
+.rowKeys {
+  display: flex;
+  gap: 6px;
+}
+
+.rowMarkerCell,
+.rowKeyCell {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.rowMarker {
+  margin-bottom: 2px;
+}
+
+.rowMarkerCell {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+  min-height: 14px;
+}
+
+.indexTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.story {
+  margin: 8px 2px 0;
+  font-size: 0.78rem;
+  color: #666;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.story strong {
+  font-style: normal;
+  color: #333;
+}
+
+.rowKeyCell {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 8px 2px 6px;
+  text-align: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rowKeyChar {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.rowKeyThai {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 0.88rem;
+  color: #333;
+  line-height: 1.2;
+}
+
+.rowKeyEng {
+  font-size: 0.68rem;
+  color: #777;
+  line-height: 1.2;
+  margin-top: 2px;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}

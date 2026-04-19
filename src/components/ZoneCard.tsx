@@ -68,12 +68,46 @@ function Circle({ char }: { char: string; combining?: boolean }) {
   return <span className={styles.keyGlyph}>{char}</span>;
 }
 
+function KeyRow({ zone, color }: { zone: Zone; color: string }) {
+  const hasIndex = zone.rows.some(r => r.indexHome);
+  return (
+    <div className={styles.rowLayout}>
+      {hasIndex && (
+        <div className={styles.rowMarker} aria-hidden>
+          {zone.rows.map((r, i) => (
+            <div key={i} className={styles.rowMarkerCell}>
+              {r.indexHome && (
+                <span className={styles.indexTag} style={{ color }}>
+                  index ↓
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      <div className={styles.rowKeys}>
+        {zone.rows.map((r, i) => (
+          <div key={i} className={styles.rowKeyCell}>
+            <div className={styles.rowKeyChar}>{r.key}</div>
+            {r.shortThai && <div className={styles.rowKeyThai}>{r.shortThai}</div>}
+            {r.shortEng && (
+              <div className={styles.rowKeyEng}>{renderMnemonic(r.shortEng)}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCardProps) {
   const style: React.CSSProperties = {
     background: zone.bg,
     borderLeftColor: zone.color,
     ...(isHovered ? { boxShadow: `0 0 0 3px ${zone.color}` } : {}),
   };
+
+  const isRowLayout = zone.layout === 'row';
 
   return (
     <div
@@ -87,35 +121,41 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
         <strong style={{ color: zone.color }}>
           {zone.arrow} {zone.title}
         </strong>
-        <span className={styles.titleKeys}>
-          {zone.titleKeys.map((k, i) => (
-            <span key={i} className={styles.titleKey}>{k}</span>
-          ))}
-        </span>
+        {zone.titleKeys.length > 0 && (
+          <span className={styles.titleKeys}>
+            {zone.titleKeys.map((k, i) => (
+              <span key={i} className={styles.titleKey}>{k}</span>
+            ))}
+          </span>
+        )}
       </div>
 
       {zone.intro && <p className={styles.intro}>{zone.intro}</p>}
 
-      <table className={styles.table}>
-        <thead>
-          <tr style={{ background: zone.headBg }}>
-            <th style={{ borderColor: zone.headBorder }}>{zone.rows.some(r => r.finger.includes('stretch') || r.finger.includes('row')) ? 'Finger / position' : 'Finger'}</th>
-            <th style={{ borderColor: zone.headBorder }}>Key</th>
-            <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
-          </tr>
-        </thead>
-        <tbody>
-          {zone.rows.map((r, i) => (
-            <tr key={i}>
-              <td>{r.finger}</td>
-              <td className={styles.keyCell}>
-                <Circle char={r.key} combining={r.combining} />
-              </td>
-              <td>{renderMnemonic(r.mnemonic)}</td>
+      {isRowLayout ? (
+        <KeyRow zone={zone} color={zone.color} />
+      ) : (
+        <table className={styles.table}>
+          <thead>
+            <tr style={{ background: zone.headBg }}>
+              <th style={{ borderColor: zone.headBorder }}>{zone.rows.some(r => r.finger.includes('stretch') || r.finger.includes('row')) ? 'Finger / position' : 'Finger'}</th>
+              <th style={{ borderColor: zone.headBorder }}>Key</th>
+              <th style={{ borderColor: zone.headBorder }}>Mnemonic</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {zone.rows.map((r, i) => (
+              <tr key={i}>
+                <td>{r.finger}</td>
+                <td className={styles.keyCell}>
+                  <Circle char={r.key} combining={r.combining} />
+                </td>
+                <td>{renderMnemonic(r.mnemonic)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       {zone.shiftRows && zone.shiftRows.length > 0 && (
         <>
@@ -142,7 +182,6 @@ export function ZoneCard({ zone, onPracticeClick, onHover, isHovered }: ZoneCard
           </table>
         </>
       )}
-
     </div>
   );
 }

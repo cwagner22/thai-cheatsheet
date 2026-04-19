@@ -19,6 +19,12 @@ export interface ZoneRow {
   key: string;           // display char (e.g., 'ภ', '้', 'ุ')
   combining?: boolean;   // render circle placeholder before?
   mnemonic: string;      // React-friendly markdown-ish — we'll render as plain text with simple bold
+  /** Concise English label for row-layout cards (e.g., "buffalo"). */
+  shortEng?: string;
+  /** Thai anchor word for row-layout cards (e.g., "ควาย"). */
+  shortThai?: string;
+  /** Whether this key sits under the index finger's resting position. */
+  indexHome?: boolean;
 }
 
 export interface ShiftRow {
@@ -43,6 +49,18 @@ export interface Zone {
   // Narrative line shown above table (optional, only for zones that mechanics)
   intro?: string;
   practice: { drills: number[]; words: number[]; extras?: { lesson: number; note: string }[] };
+  /**
+   * Layout style for the card body.
+   * - 'table' (default): Finger | Key | Mnemonic rows in a table.
+   * - 'row': horizontal sequence of keys with short English + Thai anchors;
+   *   only the index position is labelled.
+   */
+  layout?: 'table' | 'row';
+  /**
+   * One-line narrative that ties all the keys together. Shown under the
+   * key row in the row layout. Supports **bold** / *italic* markers.
+   */
+  story?: string;
 }
 
 const trainerUrl = 'https://thai-notes.com/typing/typingtrainer.html';
@@ -57,11 +75,12 @@ export const ZONES: Zone[] = [
     bg: '#fffbeb',
     headBg: '#fef3c7',
     headBorder: '#fde68a',
-    titleKeys: ['ภ', 'ถ', '◌ุ'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'middle', key: 'ภ', mnemonic: 'an **Asian sailboat** (สำเ**ภ**า) — loop opens *left* → sits on the *left*' },
-      { finger: 'index', key: 'ถ', mnemonic: 'a **bag** (**ถ**ุง) — loop opens *right* → sits on the *right*' },
-      { finger: 'index →', key: '◌ุ', combining: true, mnemonic: 'short /u/ vowel below' },
+      { finger: 'middle', key: 'ภ', mnemonic: 'Asian sailboat', shortEng: '**Asian sailboat** · loop ←', shortThai: 'สำเภา' },
+      { finger: 'index', key: 'ถ', indexHome: true, mnemonic: 'bag', shortEng: 'a **bag** · loop →', shortThai: 'ถุง' },
+      { finger: 'index →', key: '◌ุ', combining: true, mnemonic: 'short /u/ below', shortEng: 'short /u/ below', shortThai: '' },
     ],
     shiftRows: [
       { base: '◌ุ', shifted: '◌ู', mnemonic: 'long /uː/ — two dots = "longer"' },
@@ -76,14 +95,15 @@ export const ZONES: Zone[] = [
     bg: '#eff6ff',
     headBg: '#dbeafe',
     headBorder: '#bfdbfe',
-    titleKeys: ['◌ึ', 'ค', 'ต', 'จ', 'ข', 'ช'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'index ←', key: '◌ึ', combining: true, mnemonic: 'short /ɯ/ vowel above' },
-      { finger: 'index', key: 'ค', mnemonic: 'a **buffalo** (**ค**วาย)…' },
-      { finger: 'middle', key: 'ต', mnemonic: '…and a **turtle** (เ**ต**่า)…' },
-      { finger: 'ring', key: 'จ', mnemonic: '…share a **plate** (**จ**าน)…' },
-      { finger: 'pinky', key: 'ข', mnemonic: '…with an **egg** (ไ**ข**่)…' },
-      { finger: 'pinky →', key: 'ช', mnemonic: '…watched by an **elephant** (**ช**้าง)' },
+      { finger: 'index ←', key: '◌ึ', combining: true, mnemonic: 'short /ɯ/', shortEng: 'short /ɯ/', shortThai: '' },
+      { finger: 'index', key: 'ค', indexHome: true, mnemonic: 'buffalo', shortEng: 'A **buffalo**', shortThai: 'ควาย' },
+      { finger: 'middle', key: 'ต', mnemonic: 'turtle', shortEng: 'and **turtle**', shortThai: 'เต่า' },
+      { finger: 'ring', key: 'จ', mnemonic: 'plate', shortEng: 'share a **plate**', shortThai: 'จาน' },
+      { finger: 'pinky', key: 'ข', mnemonic: 'egg', shortEng: 'with an **egg**', shortThai: 'ไข่' },
+      { finger: 'pinky →', key: 'ช', mnemonic: 'elephant', shortEng: 'watched by an **elephant**', shortThai: 'ช้าง' },
     ],
     practice: { drills: [19], words: [21], extras: [{ lesson: 20, note: 'adds ◌ึ ช' }] },
   },
@@ -95,13 +115,14 @@ export const ZONES: Zone[] = [
     bg: '#fef2f2',
     headBg: '#fee2e2',
     headBorder: '#fecaca',
-    titleKeys: ['ๆ', 'ไ', '◌ำ', 'พ', 'ะ'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'pinky', key: 'ๆ', mnemonic: '**Quickly** (เร็ว **ๆ**)…' },
-      { finger: 'ring', key: 'ไ', mnemonic: '…**go** (**ไ**ป)…' },
-      { finger: 'middle', key: '◌ำ', combining: true, mnemonic: '…and **dance** (ร**ำ**)…' },
-      { finger: 'index', key: 'พ', mnemonic: '…next to the **tray** (**พ**าน)' },
-      { finger: 'index →', key: 'ะ', mnemonic: 'short /a/ vowel after' },
+      { finger: 'pinky', key: 'ๆ', mnemonic: 'Quickly', shortEng: '**Quickly**', shortThai: 'เร็ว ๆ' },
+      { finger: 'ring', key: 'ไ', mnemonic: 'go', shortEng: '**go**', shortThai: 'ไป' },
+      { finger: 'middle', key: '◌ำ', combining: true, mnemonic: 'dance', shortEng: 'and **dance**', shortThai: 'รำ' },
+      { finger: 'index', key: 'พ', indexHome: true, mnemonic: 'tray', shortEng: 'next to the **tray**', shortThai: 'พาน' },
+      { finger: 'index →', key: 'ะ', mnemonic: 'short /a/', shortEng: 'short /a/ after', shortThai: '' },
     ],
     shiftRows: [
       { base: '◌ำ', shifted: 'ฎ', mnemonic: 'a **headdress** (ช**ฎ**า) worn when dancing รำ' },
@@ -118,13 +139,14 @@ export const ZONES: Zone[] = [
     bg: '#f0fdf4',
     headBg: '#dcfce7',
     headBorder: '#bbf7d0',
-    titleKeys: ['◌ั', '◌ี', 'ร', 'น', 'ย'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'index ←', key: '◌ั', combining: true, mnemonic: 'short /a/ vowel above' },
-      { finger: 'index', key: '◌ี', combining: true, mnemonic: '**Again** (อ**ี**กครั้งหนึ่ง)…' },
-      { finger: 'middle', key: 'ร', mnemonic: '…a **boat** (เ**ร**ือ)…' },
-      { finger: 'ring', key: 'น', mnemonic: '…with a **mouse** (ห**น**ู) in it…' },
-      { finger: 'pinky', key: 'ย', mnemonic: '…chased by an **ogre** (**ย**ักษ์)' },
+      { finger: 'index ←', key: '◌ั', combining: true, mnemonic: 'short /a/', shortEng: 'short /a/ above', shortThai: '' },
+      { finger: 'index', key: '◌ี', combining: true, indexHome: true, mnemonic: 'again', shortEng: '**Again**', shortThai: 'อีก' },
+      { finger: 'middle', key: 'ร', mnemonic: 'boat', shortEng: 'a **boat**', shortThai: 'เรือ' },
+      { finger: 'ring', key: 'น', mnemonic: 'mouse', shortEng: 'with a **mouse**', shortThai: 'หนู' },
+      { finger: 'pinky', key: 'ย', mnemonic: 'ogre', shortEng: 'chased by an **ogre**', shortThai: 'ยักษ์' },
     ],
     shiftRows: [
       { base: '◌ั', shifted: '◌ํ', mnemonic: 'นิคหิต (nikkhahit) — nasal /am/ marker' },
@@ -143,13 +165,14 @@ export const ZONES: Zone[] = [
     bg: '#f5f3ff',
     headBg: '#ede9fe',
     headBorder: '#ddd6fe',
-    titleKeys: ['ฟ', 'ห', 'ก', 'ด', 'เ'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'pinky', key: 'ฟ', mnemonic: 'a **tooth** (**ฟ**ัน)…' },
-      { finger: 'ring', key: 'ห', mnemonic: '…sits on a **chest** (**ห**ีบ)…' },
-      { finger: 'middle', key: 'ก', mnemonic: '…with a **chicken** (ไ**ก**่) next to it…' },
-      { finger: 'index', key: 'ด', mnemonic: '…and a **child** (เ**ด**็ก) looking on' },
-      { finger: 'index →', key: 'เ', mnemonic: 'pre-posed vowel /eː/' },
+      { finger: 'pinky', key: 'ฟ', mnemonic: 'tooth', shortEng: 'a **tooth**', shortThai: 'ฟัน' },
+      { finger: 'ring', key: 'ห', mnemonic: 'chest', shortEng: 'on a **chest**', shortThai: 'หีบ' },
+      { finger: 'middle', key: 'ก', mnemonic: 'chicken', shortEng: 'with a **chicken**', shortThai: 'ไก่' },
+      { finger: 'index', key: 'ด', indexHome: true, mnemonic: 'child', shortEng: 'and a **child**', shortThai: 'เด็ก' },
+      { finger: 'index →', key: 'เ', mnemonic: 'pre-vowel', shortEng: 'pre-vowel /eː/', shortThai: '' },
     ],
     shiftRows: [
       { base: 'ฟ', shifted: 'ฤ', mnemonic: 'a **tooth** pulled out, leaving the odd vowel ฤ (/rɯ/)' },
@@ -168,13 +191,14 @@ export const ZONES: Zone[] = [
     bg: '#fff7ed',
     headBg: '#ffedd5',
     headBorder: '#fed7aa',
-    titleKeys: ['◌้', '◌่', 'า', 'ส', 'ว'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'index ←', key: '◌้', combining: true, mnemonic: 'ไม้โท (tone-mark 2)' },
-      { finger: 'index', key: '◌่', combining: true, mnemonic: 'index **draws a vertical tick** — ไม้เอก (tone-mark 1)' },
-      { finger: 'middle', key: 'า', mnemonic: 'you **open your mouth to say "hahh"**' },
-      { finger: 'ring', key: 'ส', mnemonic: 'your ring finger doesn\'t have a ring on it — it\'s got a **tiny tiger** (เ**ส**ือ)' },
-      { finger: 'pinky', key: 'ว', mnemonic: '…so the **ring** (แห**ว**น) got bumped to your pinky' },
+      { finger: 'index ←', key: '◌้', combining: true, mnemonic: 'tone 2', shortEng: 'tone 2', shortThai: 'ไม้โท' },
+      { finger: 'index', key: '◌่', combining: true, indexHome: true, mnemonic: 'tone 1', shortEng: 'tone 1 — vertical tick', shortThai: 'ไม้เอก' },
+      { finger: 'middle', key: 'า', mnemonic: 'hahh', shortEng: 'mouth says **hahh**', shortThai: '/aː/' },
+      { finger: 'ring', key: 'ส', mnemonic: 'tiger', shortEng: '**tiger** on ring', shortThai: 'เสือ' },
+      { finger: 'pinky', key: 'ว', mnemonic: 'ring', shortEng: '**ring** bumped to pinky', shortThai: 'แหวน' },
     ],
     shiftRows: [
       { base: '◌้', shifted: '◌็', mnemonic: 'ไม้ไต่คู้ (mai-taikhu) — shortens a vowel' },
@@ -193,13 +217,14 @@ export const ZONES: Zone[] = [
     bg: '#ecfeff',
     headBg: '#cffafe',
     headBorder: '#a5f3fc',
-    titleKeys: ['ผ', 'ป', 'แ', 'อ', '◌ิ'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'pinky', key: 'ผ', mnemonic: 'a **bee** (**ผ**ึ้ง)…' },
-      { finger: 'ring', key: 'ป', mnemonic: '…and a **fish** (**ป**ลา)…' },
-      { finger: 'middle', key: 'แ', mnemonic: '…both **peek** (**แ**อบดู)…' },
-      { finger: 'index', key: 'อ', mnemonic: '…at a **bowl** (**อ**่าง)' },
-      { finger: 'index →', key: '◌ิ', combining: true, mnemonic: 'short /i/ vowel above' },
+      { finger: 'pinky', key: 'ผ', mnemonic: 'bee', shortEng: 'A **bee**', shortThai: 'ผึ้ง' },
+      { finger: 'ring', key: 'ป', mnemonic: 'fish', shortEng: 'and a **fish**', shortThai: 'ปลา' },
+      { finger: 'middle', key: 'แ', mnemonic: 'peek', shortEng: 'both **peek**', shortThai: 'แอบดู' },
+      { finger: 'index', key: 'อ', indexHome: true, mnemonic: 'bowl', shortEng: 'at a **bowl**', shortThai: 'อ่าง' },
+      { finger: 'index →', key: '◌ิ', combining: true, mnemonic: 'short /i/', shortEng: 'short /i/ above', shortThai: '' },
     ],
     shiftRows: [
       { base: 'ผ', shifted: '(', isPunct: true, mnemonic: 'open paren — leftmost key' },
@@ -217,13 +242,14 @@ export const ZONES: Zone[] = [
     bg: '#faf5ff',
     headBg: '#f3e8ff',
     headBorder: '#e9d5ff',
-    titleKeys: ['◌ื', 'ท', 'ม', 'ใ', 'ฝ'],
+    titleKeys: [],
+    layout: 'row',
     rows: [
-      { finger: 'index ←', key: '◌ื', combining: true, mnemonic: 'long /ɯː/ vowel above' },
-      { finger: 'index', key: 'ท', mnemonic: 'the **soldier** (**ท**หาร)…' },
-      { finger: 'middle', key: 'ม', mnemonic: '…on a **horse** (**ม**้า)…' },
-      { finger: 'ring', key: 'ใ', mnemonic: '…**uses** (**ใ**ช้)…' },
-      { finger: 'pinky', key: 'ฝ', mnemonic: '…a **lid** (**ฝ**า) as a shield' },
+      { finger: 'index ←', key: '◌ื', combining: true, mnemonic: 'long /ɯː/', shortEng: 'long /ɯː/ above', shortThai: '' },
+      { finger: 'index', key: 'ท', indexHome: true, mnemonic: 'soldier', shortEng: 'A **soldier**', shortThai: 'ทหาร' },
+      { finger: 'middle', key: 'ม', mnemonic: 'horse', shortEng: 'on a **horse**', shortThai: 'ม้า' },
+      { finger: 'ring', key: 'ใ', mnemonic: 'uses', shortEng: '**uses**', shortThai: 'ใช้' },
+      { finger: 'pinky', key: 'ฝ', mnemonic: 'lid', shortEng: 'a **lid** as shield', shortThai: 'ฝา' },
     ],
     shiftRows: [
       { base: 'ท', shifted: '?', isPunct: true, mnemonic: 'the **soldier** has a question' },
@@ -241,12 +267,13 @@ export const ZONES: Zone[] = [
     bg: '#fdf2f8',
     headBg: '#fce7f3',
     headBorder: '#fbcfe8',
-    titleKeys: ['ง', 'บ', 'ล'],
+    titleKeys: [],
+    layout: 'row',
     intro: 'All three reached by stretching the right pinky further right (ง on home row), then further up (บ ล on row above).',
     rows: [
-      { finger: 'home row →', key: 'ง', mnemonic: 'a **snake** (**ง**ู) on the ground (home row)' },
-      { finger: 'top row → (near)', key: 'บ', mnemonic: 'a **leafy** (ใ**บ**) tree…' },
-      { finger: 'top row → (far)', key: 'ล', mnemonic: '…with a **monkey** (**ล**ิง) climbing highest' },
+      { finger: 'home row →', key: 'ง', mnemonic: 'snake', shortEng: 'A **snake**', shortThai: 'งู' },
+      { finger: 'top row → (near)', key: 'บ', mnemonic: 'leafy tree', shortEng: 'a **leafy** tree', shortThai: 'ใบ' },
+      { finger: 'top row → (far)', key: 'ล', mnemonic: 'monkey', shortEng: 'with a **monkey**', shortThai: 'ลิง' },
     ],
     shiftRows: [
       { base: 'ง', shifted: '.', isPunct: true, mnemonic: 'full stop / period' },
