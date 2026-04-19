@@ -5,10 +5,18 @@
   padding: 14px;
   margin-bottom: 18px;
   text-align: center;
+  /* On narrow screens the keyboard is wider than the viewport; let users
+     pan horizontally rather than clipping or squashing. */
+  overflow-x: auto;
 }
 
 .rows {
   display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .panel { padding: 10px; }
+  .legend { font-size: 0.65rem; }
 }
 
 .row {

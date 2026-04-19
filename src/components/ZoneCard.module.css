@@ -204,6 +204,18 @@
   font-family: 'Inter', sans-serif;
 }
 
+@media (max-width: 600px) {
+  .card { padding: 10px 12px; }
+  .rowKeyCell { padding: 6px 2px 5px; }
+  .rowKeyChar { font-size: 1.2rem; margin-bottom: 2px; }
+  .rowKeyThai { font-size: 0.75rem; }
+  .rowKeyEng { font-size: 0.62rem; }
+  .rowMarkerCell { font-size: 0.6rem; }
+  .titleKeys { font-size: 1.05rem; }
+  .rowKeys,
+  .rowMarker { gap: 4px; }
+}
+
 .rowKeyEng {
   font-size: 0.68rem;
   color: #777;

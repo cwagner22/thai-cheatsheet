@@ -116,6 +116,10 @@
 
 .line {
   letter-spacing: 0.5px;
+  /* Drill lines have no natural break points — allow wrapping anywhere so
+     long runs of Thai chars don't overflow the drill area on mobile. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .lineActive {
@@ -193,4 +197,17 @@
 }
 .retry:hover {
   background: #dbeafe;
+}
+
+@media (max-width: 600px) {
+  .overlay { padding: 14px 12px 16px; }
+  .headerBar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .exit { align-self: flex-end; }
+  .title { font-size: 1.05rem; }
+  .sub { font-size: 0.78rem; max-width: 100%; }
+  .tabs { gap: 4px; }
+  .tab { padding: 5px 10px; font-size: 0.76rem; }
+  .stats { flex-wrap: wrap; row-gap: 2px; font-size: 0.76rem; }
+  .drillArea { padding: 12px 10px; min-height: 140px; }
+  .lines { font-size: 1.2rem; }
 }

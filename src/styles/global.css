@@ -153,3 +153,42 @@ td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
   .thai-letter { font-size: 1.4rem; }
   td { padding: 5px 6px; }
 }
+
+/* ===== MOBILE ADJUSTMENTS (≤ 600px) ===== */
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  h1 { font-size: 1.45rem; }
+  .subtitle { font-size: 0.82rem; margin-bottom: 10px; }
+
+  /* Tab bar: keep buttons tight so all 6 fit in 2 rows or fewer */
+  .tab-bar { gap: 4px; margin-bottom: 14px; }
+  .tab-btn { padding: 6px 12px; font-size: 0.82rem; }
+
+  .font-toggle { margin-bottom: 12px; gap: 6px; }
+  .toggle-btn { padding: 5px 10px; font-size: 0.76rem; }
+
+  /* Tone-rules boxes get tighter padding on mobile */
+  .tone-rules { padding: 12px 14px; }
+
+  /* View toggle (Consonants) */
+  .view-btn { padding: 4px 10px; font-size: 0.76rem; }
+
+  /* Vowel cards: the default grid uses 3 columns; collapse to 2 on mobile
+     so each card has enough room and the SHORT/LONG sides stay readable. */
+  .vowel-grid,
+  .vowel-grid-header { grid-template-columns: repeat(2, 1fr) !important; }
+  .vowel-form { font-size: 1.4rem; }
+
+  /* Legend: the 3 class dots can wrap tightly */
+  .legend { gap: 10px; margin-bottom: 10px; }
+
+  /* Generic tables (consonants, clusters, tones): let them scroll
+     horizontally when they can't fit. Each table is wrapped in a
+     `<div style="overflow-x:auto">` is overkill — instead wrap from CSS. */
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+  table thead,
+  table tbody { display: table; width: 100%; }
+  /* Re-allow wrapping inside cells so long phrases don't force horizontal
+     scroll when they don't need to. */
+  td { white-space: normal; }
+}
