@@ -1,0 +1,89 @@
+.slot {
+  position: relative;
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.sizeDefault {
+  width: 96px;
+  height: 96px;
+}
+
+.sizeCompact {
+  width: 70px;
+  height: 70px;
+}
+
+.sizeWord {
+  /* width is set inline (scales with word length); height is fixed so a row
+     of word canvases lines up neatly */
+  height: 64px;
+}
+
+.guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--thai-font);
+  line-height: 1;
+  color: #e5e7eb;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.sizeDefault .guide { font-size: 4.2rem; }
+.sizeCompact .guide { font-size: 3rem; }
+.sizeWord .guide { font-size: 2rem; }
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+  z-index: 1;
+}
+
+.clear {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.slot:hover .clear,
+.slot:focus-within .clear {
+  opacity: 1;
+}
+.clear:hover {
+  color: #dc2626;
+  background: #fff;
+}
+
+@media (max-width: 600px) {
+  .sizeDefault { width: 70px; height: 70px; }
+  .sizeDefault .guide { font-size: 3rem; }
+  .sizeCompact { width: 58px; height: 58px; }
+  .sizeCompact .guide { font-size: 2.4rem; }
+  .sizeWord { height: 56px; }
+  .sizeWord .guide { font-size: 1.7rem; }
+  .clear { opacity: 1; }
+}
