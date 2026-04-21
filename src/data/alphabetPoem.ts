@@ -70,7 +70,7 @@ export const CONFUSABLES: ConfusablePair[] = [
   { letters: ['ด', 'ต'], note: 'ด has a round top; ต has a pointed spike' },
   { letters: ['พ', 'ผ'], note: 'same body — พ has tail below, ผ has tail up' },
   { letters: ['ฟ', 'ฝ'], note: 'same body — ฟ has tail down, ฝ has tail up' },
-  { letters: ['ค', 'ด'], note: 'ค has two loops, ด has one with a tick' },
+  { letters: ['ค', 'ด'], note: 'ด has a small head-loop at the top; ค has a bare hooked curve' },
   { letters: ['ข', 'ช'], note: 'ข has two notches, ช has one' },
 ];
 
