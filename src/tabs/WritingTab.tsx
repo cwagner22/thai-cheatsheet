@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import { POEM, CONFUSABLES, MID_MNEMONIC, HIGH_MNEMONIC } from '../data/alphabetPoem';
 import type { PoemEntry } from '../data/alphabetPoem';
 import { CONSONANTS } from '../data/consonants';
@@ -42,6 +43,25 @@ function renderAnchor(anchorThai: string, name: string) {
   );
 }
 
+function clearCanvasesIn(container: Element | null) {
+  if (!container) return;
+  container.querySelectorAll('canvas').forEach(c => {
+    const ctx = c.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+  });
+}
+
+function ClearButton({ containerRef }: { containerRef: React.RefObject<HTMLElement | null> }) {
+  const onClick = useCallback(() => clearCanvasesIn(containerRef.current), [containerRef]);
+  return (
+    <div className={styles.clearRow}>
+      <button type="button" className={styles.clearBtn} onClick={onClick}>
+        Clear
+      </button>
+    </div>
+  );
+}
+
 /** Row of word canvases. */
 function WordRow({ words }: { words: string[] }) {
   return (
@@ -67,9 +87,10 @@ function WordRowStack({ words }: { words: string[] }) {
 function LetterRow({ letter }: { letter: string }) {
   const entry = POEM.find(p => p.letter === letter);
   const meta = consonantFor(letter);
+  const rowRef = useRef<HTMLDivElement>(null);
   if (!entry || !meta) return null;
   return (
-    <div className={styles.row}>
+    <div ref={rowRef} className={styles.row}>
       <div className={styles.rowTop}>
         <div className={styles.rowLetter}>{entry.letter}</div>
         <div className={styles.rowMeta}>
@@ -93,13 +114,15 @@ function LetterRow({ letter }: { letter: string }) {
         </div>
       </div>
       <WordRowStack words={poemWords(entry)} />
+      <ClearButton containerRef={rowRef} />
     </div>
   );
 }
 
 function ConfusableCard({ letters, note }: { letters: string[]; note: string }) {
+  const cardRef = useRef<HTMLDivElement>(null);
   return (
-    <div className={styles.confusable}>
+    <div ref={cardRef} className={styles.confusable}>
       <div className={styles.confusableLetters}>
         {letters.map(l => (
           <div key={l} className={styles.confusablePair}>
@@ -112,6 +135,7 @@ function ConfusableCard({ letters, note }: { letters: string[]; note: string }) 
         ))}
       </div>
       <div className={styles.confusableNote}>{note}</div>
+      <ClearButton containerRef={cardRef} />
     </div>
   );
 }
@@ -123,9 +147,10 @@ function MnemonicCard({
   data: { thai: string; rom: string; meaning: string; keyLetters: string[]; words: string[] };
   highlightClass: string;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const keys = new Set(data.keyLetters);
   return (
-    <div className={styles.mnemonicCard}>
+    <div ref={cardRef} className={styles.mnemonicCard}>
       <div className={styles.mnemonicSentence}>
         {Array.from(data.thai).map((ch, i) =>
           keys.has(ch) ? (
@@ -138,15 +163,29 @@ function MnemonicCard({
       <div className={styles.mnemonicRom}>{data.rom}</div>
       <div className={styles.mnemonicMeaning}>{data.meaning}</div>
       <WordRowStack words={data.words} />
+      <ClearButton containerRef={cardRef} />
+    </div>
+  );
+}
+
+function PangramLine({ line }: { line: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={ref} className={styles.pangramLineBlock}>
+      <div className={styles.pangramLine}>{line}</div>
+      <WordRowStack words={line.split(/\s+/).filter(Boolean)} />
+      <ClearButton containerRef={ref} />
     </div>
   );
 }
 
 export function WritingTab() {
+  const tabRef = useRef<HTMLDivElement>(null);
   const pangramLessons = LESSONS.filter(l => l.kind === 'pangram');
+  const clearAll = useCallback(() => clearCanvasesIn(tabRef.current), []);
 
   return (
-    <div id="tab-writing">
+    <div ref={tabRef} id="tab-writing">
       <a
         className={styles.videoBookmark}
         href="https://www.youtube.com/watch?v=pXV-MzO4Acs"
@@ -162,13 +201,19 @@ export function WritingTab() {
       <div className={styles.intro}>
         <p>
           Handwriting practice. Each letter row has four single-letter slots (first has a faded
-          guide) and a row of word slots for tracing the alphabet-song phrase. Hover a slot and tap{' '}
-          <strong>×</strong> to clear just that one.
+          guide) and three repeated word-slot rows for tracing the alphabet-song phrase. Use the{' '}
+          <strong>Clear</strong> button on any card to wipe just its slots.
         </p>
         <p>
           Thai letters are drawn in <strong>one continuous stroke</strong>, usually starting from
           the head (small loop or hook). Go slow — muscle memory beats speed.
         </p>
+      </div>
+
+      <div className={styles.clearAllBar}>
+        <button type="button" className={styles.clearAllBtn} onClick={clearAll}>
+          Clear all
+        </button>
       </div>
 
       <div className="class-section" style={{ marginBottom: 8 }}>
@@ -221,10 +266,7 @@ export function WritingTab() {
         <div key={lesson.id} className={styles.pangramCard}>
           <div className={styles.pangramLabel}>{lesson.title}</div>
           {lesson.lines.map((line, i) => (
-            <div key={i} className={styles.pangramLineBlock}>
-              <div className={styles.pangramLine}>{line}</div>
-              <WordRowStack words={line.split(/\s+/).filter(Boolean)} />
-            </div>
+            <PangramLine key={i} line={line} />
           ))}
         </div>
       ))}
