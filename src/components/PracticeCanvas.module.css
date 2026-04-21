@@ -5,6 +5,9 @@
   border-radius: 6px;
   flex: 0 0 auto;
   overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .sizeDefault {
@@ -51,33 +54,6 @@
   z-index: 1;
 }
 
-.clear {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  color: #94a3b8;
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-}
-.slot:hover .clear,
-.slot:focus-within .clear {
-  opacity: 1;
-}
-.clear:hover {
-  color: #dc2626;
-  background: #fff;
-}
-
 @media (max-width: 600px) {
   .sizeDefault { width: 70px; height: 70px; }
   .sizeDefault .guide { font-size: 3rem; }
@@ -85,5 +61,4 @@
   .sizeCompact .guide { font-size: 2.4rem; }
   .sizeWord { height: 56px; }
   .sizeWord .guide { font-size: 1.7rem; }
-  .clear { opacity: 1; }
 }

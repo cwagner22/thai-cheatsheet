@@ -93,13 +93,6 @@ export function PracticeCanvas({ guide, variant = 'default' }: Props) {
     lastRef.current = null;
   };
 
-  const clear = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
   const sizeClass =
     variant === 'compact' ? styles.sizeCompact :
     variant === 'word' ? styles.sizeWord :
@@ -123,15 +116,6 @@ export function PracticeCanvas({ guide, variant = 'default' }: Props) {
         onPointerUp={onUp}
         onPointerCancel={onUp}
       />
-      <button
-        type="button"
-        className={styles.clear}
-        onClick={clear}
-        aria-label="Clear this slot"
-        title="Clear"
-      >
-        ×
-      </button>
     </div>
   );
 }
