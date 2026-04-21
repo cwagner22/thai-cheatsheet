@@ -5,19 +5,17 @@ import { TonesTab } from './tabs/TonesTab';
 import { ClustersTab } from './tabs/ClustersTab';
 import { TypingTab } from './tabs/TypingTab';
 import { WritingTab } from './tabs/WritingTab';
-import { QuirksTab } from './tabs/QuirksTab';
 
-export type TabId = 'consonants' | 'vowels' | 'tones' | 'clusters' | 'typing' | 'writing' | 'quirks';
+export type TabId = 'consonants' | 'vowels' | 'tones' | 'reading' | 'typing' | 'writing';
 export type Font = 'serif' | 'sans';
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'consonants', label: 'Consonants' },
-  { id: 'vowels', label: 'Vowels' },
-  { id: 'tones', label: 'Tones' },
-  { id: 'clusters', label: 'Clusters' },
-  { id: 'typing', label: 'Typing' },
-  { id: 'writing', label: 'Writing' },
-  { id: 'quirks', label: 'Quirks' },
+const TABS: { id: TabId; label: string; icon: string }[] = [
+  { id: 'consonants', label: 'Consonants', icon: 'ก' },
+  { id: 'vowels',     label: 'Vowels',     icon: 'อา' },
+  { id: 'tones',      label: 'Tones',      icon: '🎵' },
+  { id: 'reading',    label: 'Reading',    icon: '📖' },
+  { id: 'typing',     label: 'Typing',     icon: '⌨️' },
+  { id: 'writing',    label: 'Writing',    icon: '✏️' },
 ];
 
 export function App() {
@@ -31,7 +29,6 @@ export function App() {
   return (
     <>
       <h1>Thai Cheat Sheet</h1>
-      <p className="subtitle">Consonants, Vowels &amp; Tone Rules</p>
 
       <div className="font-toggle">
         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555' }}>Font:</span>
@@ -40,24 +37,33 @@ export function App() {
       </div>
 
       <div className="tab-bar">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            className={`tab-btn ${tab === t.id ? 'active' : ''}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TABS.map(t => {
+          const isThai = t.icon === 'ก' || t.icon === 'อา';
+          return (
+            <button
+              key={t.id}
+              className={`tab-btn ${tab === t.id ? 'active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
+              <span
+                className="tab-icon"
+                style={isThai ? { fontFamily: 'var(--thai-font)' } : undefined}
+                aria-hidden
+              >
+                {t.icon}
+              </span>
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {tab === 'consonants' && <ConsonantsTab />}
       {tab === 'vowels' && <VowelsTab />}
       {tab === 'tones' && <TonesTab />}
-      {tab === 'clusters' && <ClustersTab />}
+      {tab === 'reading' && <ClustersTab />}
       {tab === 'typing' && <TypingTab />}
       {tab === 'writing' && <WritingTab />}
-      {tab === 'quirks' && <QuirksTab />}
 
       <p className="footer">Thai Cheat Sheet · built for quick reference</p>
     </>
