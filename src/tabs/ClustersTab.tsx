@@ -17,7 +17,7 @@ function TrueClusterCell({
       <span className="thai-letter">{entry.form}</span>{' '}
       <span className={styles.ipa}>{entry.ipa}</span><br />
       <span className={styles.ex}>
-        {entry.example} <span className={styles.ipa}>/{entry.rom}/</span> {entry.gloss}
+        {entry.example} <span className={styles.ipa}>/{entry.rom}/</span> ({entry.gloss})
       </span>
     </td>
   );
@@ -73,10 +73,15 @@ export function ClustersTab() {
         <span className={styles.sectionSub}>The ร is silent — only the first consonant is heard</span>
       </div>
 
-      <table style={{ marginBottom: 18 }}>
+      <table style={{ marginBottom: 18, tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '22%' }} />
+          <col />
+        </colgroup>
         <thead>
           <tr>
-            <th style={{ background: '#dc2626', width: 140 }}>Cluster</th>
+            <th style={{ background: '#dc2626' }}>Cluster</th>
             <th style={{ background: '#dc2626' }}>Sounds like</th>
             <th style={{ background: '#dc2626' }}>Examples</th>
           </tr>
@@ -93,7 +98,7 @@ export function ClustersTab() {
                   <span key={i}>
                     {i > 0 && ' • '}
                     <span className="thai-name">{e.word}</span>{' '}
-                    <span className={styles.ipa}>/{e.rom}/</span> {e.gloss}
+                    <span className={styles.ipa}>/{e.rom}/</span> ({e.gloss})
                   </span>
                 ))}
                 {fc.altExamples && (
@@ -105,7 +110,7 @@ export function ClustersTab() {
                         <span key={i}>
                           {i > 0 && ' • '}
                           <span className="thai-name">{e.word}</span>{' '}
-                          <span className={styles.ipa}>/{e.rom}/</span> {e.gloss}
+                          <span className={styles.ipa}>/{e.rom}/</span> ({e.gloss})
                         </span>
                       ))}
                     </span>
@@ -130,13 +135,17 @@ export function ClustersTab() {
         </p>
       </div>
 
-      <table style={{ marginBottom: 10 }}>
+      <table style={{ marginBottom: 10, tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '22%' }} />
+          <col />
+        </colgroup>
         <thead>
           <tr>
             <th style={{ background: '#16a34a' }}>หอ นำ</th>
             <th style={{ background: '#16a34a' }}>Sounds like</th>
             <th style={{ background: '#16a34a' }}>Example</th>
-            <th style={{ background: '#16a34a' }}>Meaning</th>
           </tr>
         </thead>
         <tbody>
@@ -146,15 +155,19 @@ export function ClustersTab() {
               <td className="initial-sound">{row.sound}</td>
               <td>
                 <span className="thai-name">{row.example}</span>{' '}
-                <span className={styles.ipa}>/{row.rom}/</span>
+                <span className={styles.ipa}>/{row.rom}/</span> ({row.meaning})
               </td>
-              <td>{row.meaning}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <table style={{ marginBottom: 18 }}>
+      <table style={{ marginBottom: 18, tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '22%' }} />
+          <col />
+        </colgroup>
         <thead>
           <tr>
             <th style={{ background: '#16a34a' }}>ออ นำ</th>
@@ -172,7 +185,7 @@ export function ClustersTab() {
                   <span key={i}>
                     {i > 0 && ' • '}
                     <span className="thai-name">{e.word}</span>{' '}
-                    <span className={styles.ipa}>/{e.rom}/</span> {e.meaning}
+                    <span className={styles.ipa}>/{e.rom}/</span> ({e.meaning})
                   </span>
                 ))}
               </td>
@@ -251,8 +264,8 @@ export function ClustersTab() {
           to preserve etymology while trimming pronunciation.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สัตว์</Thai> /sàt/ animal · <Thai>จันทร์</Thai> /jan/ Monday ·{' '}
-          <Thai>เสาร์</Thai> /sǎo/ Saturday · <Thai>ศุกร์</Thai> /sùk/ Friday
+          <Thai>สัตว์</Thai> /sàt/ (animal) · <Thai>จันทร์</Thai> /jan/ (Monday) ·{' '}
+          <Thai>เสาร์</Thai> /sǎo/ (Saturday) · <Thai>ศุกร์</Thai> /sùk/ (Friday)
         </div>
         <p className={styles.quirkHint}>
           <strong>Rule of thumb:</strong> the mark cancels the letter it sits on <em>and</em> often
@@ -270,7 +283,7 @@ export function ClustersTab() {
           <em>starts</em> with a vowel sound, <strong>อ</strong> sits silently as the carrier.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>อาหาร</Thai> /aa-hǎan/ food · <Thai>เอา</Thai> /ao/ take ·{' '}
+          <Thai>อาหาร</Thai> /aa-hǎan/ (food) · <Thai>เอา</Thai> /ao/ (take) ·{' '}
           <Thai>อิน</Thai> /in/ (slang)
         </div>
         <p className={styles.quirkHint}>
@@ -289,8 +302,8 @@ export function ClustersTab() {
           an unwritten short <strong>/o/</strong> fills the gap.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>นก</Thai> /nók/ bird · <Thai>คน</Thai> /khon/ person ·{' '}
-          <Thai>ผม</Thai> /phǒm/ I (m.) · <Thai>จบ</Thai> /jòp/ finish
+          <Thai>นก</Thai> /nók/ (bird) · <Thai>คน</Thai> /khon/ (person) ·{' '}
+          <Thai>ผม</Thai> /phǒm/ (I, masc.) · <Thai>จบ</Thai> /jòp/ (finish)
         </div>
         <p className={styles.quirkHint}>
           <strong>Tell them apart from /a/ clusters:</strong> two syllables pronounced = /a/
@@ -308,8 +321,8 @@ export function ClustersTab() {
           thanthakhat required. This is a native convention, not a Sanskrit quirk.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สมัคร</Thai> /sa-màk/ apply · <Thai>บัตร</Thai> /bàt/ card ·{' '}
-          <Thai>จักร</Thai> /jàk/ wheel · <Thai>มิตร</Thai> /mít/ friend
+          <Thai>สมัคร</Thai> /sa-màk/ (apply) · <Thai>บัตร</Thai> /bàt/ (card) ·{' '}
+          <Thai>จักร</Thai> /jàk/ (wheel) · <Thai>มิตร</Thai> /mít/ (friend)
         </div>
       </div>
 
