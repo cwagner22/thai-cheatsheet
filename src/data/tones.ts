@@ -17,7 +17,7 @@ export interface ToneEntry {
   path: string;
   /** Example Thai word */
   example: string;
-  /** Romanized reading + gloss, e.g. "pii · year" */
+  /** IPA reading + gloss, e.g. "piː · year" */
   exampleGloss: string;
 }
 
@@ -26,19 +26,19 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'Mid', thaiName: 'สามัญ', code: 'A2', color: '#2563eb',
     desc: 'Mid', chao: '33332', ipa: '˧',
     path: 'M 14,40 L 50,40 L 90,40 L 125,40 L 155,55',
-    example: 'ปี', exampleGloss: 'pii · year',
+    example: 'ปี', exampleGloss: 'piː · year',
   },
   {
     name: 'Low', thaiName: 'เอก', code: 'B1', color: '#dc2626',
     desc: 'Low', chao: '21111', ipa: '˨˩',
     path: 'M 14,55 L 50,70 L 90,70 L 125,70 L 155,70',
-    example: 'ไข่', exampleGloss: 'khài · egg',
+    example: 'ไข่', exampleGloss: 'kʰàj · egg',
   },
   {
     name: 'Falling', thaiName: 'โท', code: 'B4', color: '#7c3aed',
     desc: 'Falling', chao: '552', ipa: '˥˩',
     path: 'M 14,10 L 85,10 L 155,55',
-    example: 'พี่', exampleGloss: 'phîi · older sibling',
+    example: 'พี่', exampleGloss: 'pʰîː · older sibling',
   },
   {
     name: 'High', thaiName: 'ตรี', code: 'C4', color: '#16a34a',
@@ -50,7 +50,7 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'Rising', thaiName: 'จัตวา', code: 'A1', color: '#db2777',
     desc: 'Rising', chao: '214', ipa: '˩˩˦',
     path: 'M 14,55 L 85,70 L 155,25',
-    example: 'หา', exampleGloss: 'hǎa · search',
+    example: 'หา', exampleGloss: 'hǎː · search',
   },
 ];
 
@@ -59,7 +59,7 @@ export const NORTHERN_TONES: ToneEntry[] = [
     name: 'Mid Rising', code: 'T1', color: '#db2777',
     desc: 'contour', chao: '324', ipa: '˧˨˦',
     path: 'M 14,40 L 85,55 L 155,25',
-    example: 'หา', exampleGloss: 'hǎa · search',
+    example: 'หา', exampleGloss: 'hǎː · search',
   },
   {
     name: 'High Rising', code: 'T2', color: '#db2777',
@@ -71,19 +71,19 @@ export const NORTHERN_TONES: ToneEntry[] = [
     name: 'Low Level', code: 'T3', color: '#dc2626',
     desc: 'contour', chao: '22', ipa: '˨˨',
     path: 'M 14,55 L 155,55',
-    example: 'ไข่', exampleGloss: 'khài · egg',
+    example: 'ไข่', exampleGloss: 'kʰàj · egg',
   },
   {
     name: 'High Falling', code: 'T4', color: '#7c3aed',
     desc: 'contour', chao: '453', ipa: '˦˥˧',
     path: 'M 14,25 L 85,10 L 155,40',
-    example: 'พี่', exampleGloss: 'phîi · older sibling',
+    example: 'พี่', exampleGloss: 'pʰîː · older sibling',
   },
   {
     name: 'High Falling', code: 'T5', color: '#7c3aed',
     desc: 'contour', chao: '553', ipa: '˥˥˧',
     path: 'M 14,10 L 85,10 L 155,40',
-    example: 'ข้าว', exampleGloss: 'khâaw · rice',
+    example: 'ข้าว', exampleGloss: 'kʰâːw · rice',
   },
   {
     name: 'High', code: 'T6', color: '#16a34a',
@@ -95,12 +95,12 @@ export const NORTHERN_TONES: ToneEntry[] = [
     name: 'Low Rising', code: 'T7', color: '#db2777',
     desc: 'contour', chao: '24', ipa: '˨˦',
     path: 'M 14,55 L 155,25',
-    example: 'หมัด', exampleGloss: 'mat · flea',
+    example: 'หมัด', exampleGloss: 'màt · flea',
   },
   {
     name: 'High Falling', code: 'T8', color: '#7c3aed',
     desc: 'contour', chao: '441', ipa: '˦˦˩',
     path: 'M 14,25 L 85,25 L 155,70',
-    example: 'มีด', exampleGloss: 'mîit · knife',
+    example: 'มีด', exampleGloss: 'mîːt · knife',
   },
 ];

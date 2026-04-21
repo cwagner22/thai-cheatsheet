@@ -206,13 +206,13 @@ export function ClustersTab() {
           on these.
         </p>
         <p style={{ marginTop: 6 }}>
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>ขนม</span> → /kʰa-nom/ (snack) &nbsp;•&nbsp;
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>สนุก</span> → /sa-nuk/ (fun) &nbsp;•&nbsp;
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>แขนง</span> → /kʰa-nɛːŋ/ (branch)
+          <span className="thai-name" style={{ fontSize: '1.1rem' }}>ขนม</span> → /kʰà.nǒm/ (snack) &nbsp;•&nbsp;
+          <span className="thai-name" style={{ fontSize: '1.1rem' }}>สนุก</span> → /sà.nùk/ (fun) &nbsp;•&nbsp;
+          <span className="thai-name" style={{ fontSize: '1.1rem' }}>แขนง</span> → /kʰà.nɛ̌ːŋ/ (branch)
         </p>
         <p style={{ marginTop: 6 }}>
           Some clusters produce <strong>/aː/</strong> (long) instead:{' '}
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>มรกต</span> → /mɔː-ra-got/ (emerald) &nbsp;•&nbsp;
+          <span className="thai-name" style={{ fontSize: '1.1rem' }}>มรกต</span> → /mɔː.rá.kòt/ (emerald) &nbsp;•&nbsp;
           <span className="thai-name" style={{ fontSize: '1.1rem' }}>ทราบ</span> → handled as false cluster above
         </p>
       </div>
@@ -225,12 +225,12 @@ export function ClustersTab() {
           <strong>If 2nd consonant is a sonorant</strong> (ง น ม ย ร ล ว):<br />
           → Tone is determined by the <strong>1st consonant's class</strong><br />
           <span className={styles.ex}>
-            ปลูก /bpluːk/ — low tone from mid-class ป &nbsp;•&nbsp; สนุก /sa-nuk/ — low tone from high-class ส
+            ปลูก /plùːk/ — low tone from mid-class ป &nbsp;•&nbsp; สนุก /sà.nùk/ — low tone from high-class ส
           </span><br /><br />
           <strong>If 2nd consonant is NOT a sonorant:</strong><br />
           → Tone is determined by the <strong>2nd consonant's class</strong><br />
           <span className={styles.ex}>
-            แสดง /sa-dɛːŋ/ — mid tone from mid-class ด &nbsp;•&nbsp; เฉพาะ /tɕʰa-pʰɔ/ — low tone from low-class พ
+            แสดง /sà.dɛːŋ/ — mid tone from mid-class ด &nbsp;•&nbsp; เฉพาะ /tɕʰà.pʰɔ́ʔ/ — low tone from low-class พ
           </span>
         </div>
 
@@ -238,14 +238,14 @@ export function ClustersTab() {
         <div className={styles.ruleBox}>
           <strong>Preposed vowels</strong> go before the <em>entire</em> cluster:{' '}
           <span className="thai-name" style={{ fontSize: '1.05rem' }}>โปรด</span>{' '}
-          <span className={styles.ipa}>/bpròht/</span> (please) — not ป
+          <span className={styles.ipa}>/pròːt/</span> (please) — not ป
           <span style={{ color: 'red' }}>โ</span>รด<br />
           <strong>Tone marks &amp; superscript vowels</strong> sit above the <em>2nd</em> consonant:{' '}
           <span className="thai-name" style={{ fontSize: '1.05rem' }}>กล้อง</span>{' '}
-          <span className={styles.ipa}>/glâwng/</span> (camera — mark on ล not ก)<br />
+          <span className={styles.ipa}>/klɔ̂ːŋ/</span> (camera — mark on ล not ก)<br />
           <strong>Subscript vowels</strong> go under the <em>2nd</em> consonant:{' '}
           <span className="thai-name" style={{ fontSize: '1.05rem' }}>พริ้ม</span>{' '}
-          <span className={styles.ipa}>/phrím/</span> (lovely — อิ under ร not พ)
+          <span className={styles.ipa}>/pʰrím/</span> (lovely — อิ under ร not พ)
         </div>
       </div>
 
@@ -264,8 +264,8 @@ export function ClustersTab() {
           to preserve etymology while trimming pronunciation.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สัตว์</Thai> /sàt/ (animal) · <Thai>จันทร์</Thai> /jan/ (Monday) ·{' '}
-          <Thai>เสาร์</Thai> /sǎo/ (Saturday) · <Thai>ศุกร์</Thai> /sùk/ (Friday)
+          <Thai>สัตว์</Thai> /sàt/ (animal) · <Thai>จันทร์</Thai> /tɕan/ (Monday) ·{' '}
+          <Thai>เสาร์</Thai> /sǎw/ (Saturday) · <Thai>ศุกร์</Thai> /sùk/ (Friday)
         </div>
         <p className={styles.quirkHint}>
           <strong>Rule of thumb:</strong> the mark cancels the letter it sits on <em>and</em> often
@@ -283,8 +283,8 @@ export function ClustersTab() {
           <em>starts</em> with a vowel sound, <strong>อ</strong> sits silently as the carrier.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>อาหาร</Thai> /aa-hǎan/ (food) · <Thai>เอา</Thai> /ao/ (take) ·{' '}
-          <Thai>อิน</Thai> /in/ (slang)
+          <Thai>อาหาร</Thai> /ʔaː.hǎːn/ (food) · <Thai>เอา</Thai> /ʔaw/ (take) ·{' '}
+          <Thai>อิน</Thai> /ʔin/ (slang: feel it)
         </div>
         <p className={styles.quirkHint}>
           Carrier อ still counts as mid-class for tone rules — that's why อา, อิ, อุ, เอ default
@@ -302,8 +302,8 @@ export function ClustersTab() {
           an unwritten short <strong>/o/</strong> fills the gap.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>นก</Thai> /nók/ (bird) · <Thai>คน</Thai> /khon/ (person) ·{' '}
-          <Thai>ผม</Thai> /phǒm/ (I, masc.) · <Thai>จบ</Thai> /jòp/ (finish)
+          <Thai>นก</Thai> /nók/ (bird) · <Thai>คน</Thai> /kʰon/ (person) ·{' '}
+          <Thai>ผม</Thai> /pʰǒm/ (I, masc.) · <Thai>จบ</Thai> /tɕòp/ (finish)
         </div>
         <p className={styles.quirkHint}>
           <strong>Tell them apart from /a/ clusters:</strong> two syllables pronounced = /a/
@@ -321,8 +321,8 @@ export function ClustersTab() {
           thanthakhat required. This is a native convention, not a Sanskrit quirk.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สมัคร</Thai> /sa-màk/ (apply) · <Thai>บัตร</Thai> /bàt/ (card) ·{' '}
-          <Thai>จักร</Thai> /jàk/ (wheel) · <Thai>มิตร</Thai> /mít/ (friend)
+          <Thai>สมัคร</Thai> /sà.màk/ (apply) · <Thai>บัตร</Thai> /bàt/ (card) ·{' '}
+          <Thai>จักร</Thai> /tɕàk/ (wheel) · <Thai>มิตร</Thai> /mít/ (friend)
         </div>
       </div>
 
@@ -338,9 +338,9 @@ export function ClustersTab() {
           the whole word.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>ขนม</Thai> /kha-nǒm/ — ข (high) makes นม rise, even though ม alone is low class<br />
-          <Thai>ตลาด</Thai> /ta-làat/ — ต (mid) makes ลาด follow mid-class rules → low tone (dead)<br />
-          <Thai>สนุก</Thai> /sa-nùk/ — ส (high) → นุก gets low tone (dead-short, high class rule)
+          <Thai>ขนม</Thai> /kʰà.nǒm/ — ข (high) makes นม rise, even though ม alone is low class<br />
+          <Thai>ตลาด</Thai> /tà.làːt/ — ต (mid) makes ลาด follow mid-class rules → low tone (dead)<br />
+          <Thai>สนุก</Thai> /sà.nùk/ — ส (high) → นุก gets low tone (dead-short, high class rule)
         </div>
         <p className={styles.quirkHint}>
           This is the #1 reason the "consonant class + live/dead" rule can seem to break on longer words.

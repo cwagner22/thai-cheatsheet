@@ -42,6 +42,12 @@
   margin: -4px 0 8px 0;
 }
 
+.nameRom {
+  font-size: 0.72rem;
+  color: #666;
+  font-family: 'SF Mono', Menlo, monospace;
+}
+
 .videoBookmark {
   display: flex;
   align-items: center;
