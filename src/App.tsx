@@ -4,9 +4,10 @@ import { VowelsTab } from './tabs/VowelsTab';
 import { TonesTab } from './tabs/TonesTab';
 import { ClustersTab } from './tabs/ClustersTab';
 import { TypingTab } from './tabs/TypingTab';
+import { WritingTab } from './tabs/WritingTab';
 import { QuirksTab } from './tabs/QuirksTab';
 
-export type TabId = 'consonants' | 'vowels' | 'tones' | 'clusters' | 'typing' | 'quirks';
+export type TabId = 'consonants' | 'vowels' | 'tones' | 'clusters' | 'typing' | 'writing' | 'quirks';
 export type Font = 'serif' | 'sans';
 
 const TABS: { id: TabId; label: string }[] = [
@@ -15,6 +16,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'tones', label: 'Tones' },
   { id: 'clusters', label: 'Clusters' },
   { id: 'typing', label: 'Typing' },
+  { id: 'writing', label: 'Writing' },
   { id: 'quirks', label: 'Quirks' },
 ];
 
@@ -54,6 +56,7 @@ export function App() {
       {tab === 'tones' && <TonesTab />}
       {tab === 'clusters' && <ClustersTab />}
       {tab === 'typing' && <TypingTab />}
+      {tab === 'writing' && <WritingTab />}
       {tab === 'quirks' && <QuirksTab />}
 
       <p className="footer">Thai Cheat Sheet · built for quick reference</p>
