@@ -119,22 +119,74 @@ function LetterRow({ letter }: { letter: string }) {
   );
 }
 
-function ConfusableCard({ letters, note }: { letters: string[]; note: string }) {
+function ConfusableCard({
+  rows,
+  displayOnly,
+  note,
+  practiceWords,
+}: {
+  rows: string[][];
+  displayOnly?: string[];
+  note: string;
+  practiceWords?: { word: string; rom: string; gloss: string }[];
+}) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const displayOnlySet = new Set(displayOnly ?? []);
   return (
     <div ref={cardRef} className={styles.confusable}>
-      <div className={styles.confusableLetters}>
-        {letters.map(l => (
-          <div key={l} className={styles.confusablePair}>
-            <div className={styles.confusableLetter}>{l}</div>
-            <div className={styles.confusableSlots}>
-              <PracticeCanvas variant="compact" guide={l} />
-              <PracticeCanvas variant="compact" />
-            </div>
-          </div>
-        ))}
-      </div>
+      {rows.map((letters, i) => (
+        <div key={i} className={styles.confusableLetters}>
+          {letters.map(l => {
+            const isDisplayOnly = displayOnlySet.has(l);
+            return (
+              <div key={l} className={styles.confusablePair}>
+                <div className={styles.confusableLetter}>
+                  {l}
+                  {isDisplayOnly && <span className={styles.obsoleteLabel}>obsolete</span>}
+                </div>
+                <div className={styles.confusableSlots}>
+                  {isDisplayOnly ? (
+                    // Invisible placeholders preserve row alignment with the
+                    // real practice letters next to this one.
+                    <>
+                      <div className={styles.slotPlaceholder} aria-hidden />
+                      <div className={styles.slotPlaceholder} aria-hidden />
+                      <div className={styles.slotPlaceholder} aria-hidden />
+                    </>
+                  ) : (
+                    <>
+                      <PracticeCanvas variant="compact" guide={l} />
+                      <PracticeCanvas variant="compact" />
+                      <PracticeCanvas variant="compact" />
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
       <div className={styles.confusableNote}>{note}</div>
+      {practiceWords && practiceWords.length > 0 && (
+        <div className={styles.practiceList}>
+          {practiceWords.map(pw => (
+            <div key={pw.word} className={styles.practiceItem}>
+              <div className={styles.practiceGloss}>
+                <span className={styles.practiceWordLine}>
+                  <span className={styles.practiceWord}>{pw.word}</span>
+                  <span className={styles.practiceRom}>{pw.rom}</span>
+                </span>
+                <span className={styles.practiceMeaning}>{pw.gloss}</span>
+              </div>
+              <div className={styles.practiceSlots}>
+                <PracticeCanvas variant="word" guide={pw.word} />
+                <PracticeCanvas variant="word" guide={pw.word} />
+                <PracticeCanvas variant="word" guide={pw.word} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <ClearButton containerRef={cardRef} />
     </div>
   );
@@ -236,7 +288,13 @@ export function WritingTab() {
 
       <div className={styles.confusableGrid}>
         {CONFUSABLES.map(c => (
-          <ConfusableCard key={c.letters.join('')} letters={c.letters} note={c.note} />
+          <ConfusableCard
+            key={c.rows.flat().join('')}
+            rows={c.rows}
+            displayOnly={c.displayOnly}
+            note={c.note}
+            practiceWords={c.practiceWords}
+          />
         ))}
       </div>
 
