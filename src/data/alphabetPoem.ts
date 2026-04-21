@@ -58,20 +58,100 @@ export const POEM: PoemEntry[] = [
 ];
 
 // Confusable pairs — letters that look almost the same, distinguished by a
-// small detail. Useful for handwriting to notice the difference.
+// small detail. Some cards stack multiple rows when the contrast spans more
+// than one pair (e.g. ด/ต vs ค, where the dental pair loops left and the
+// velar family loops right). `practiceWords` (optional) lists real words that
+// mix the contrasted letters, for hands-on tracing practice.
 export interface ConfusablePair {
-  letters: string[];
+  rows: string[][];
+  /** Letters shown as reference only (no practice slots) — e.g. obsolete letters referenced in the note. */
+  displayOnly?: string[];
   note: string;
+  practiceWords?: { word: string; rom: string; gloss: string }[];
 }
 
 export const CONFUSABLES: ConfusablePair[] = [
-  { letters: ['ถ', 'ภ'], note: 'ถ has its loop opening left; ภ opens right with a hook' },
-  { letters: ['บ', 'ป', 'ษ'], note: 'same bowl — บ flat top, ป tick, ษ curled notch' },
-  { letters: ['ด', 'ต'], note: 'ด has a round top; ต has a pointed spike' },
-  { letters: ['พ', 'ผ'], note: 'same body — พ has tail below, ผ has tail up' },
-  { letters: ['ฟ', 'ฝ'], note: 'same body — ฟ has tail down, ฝ has tail up' },
-  { letters: ['ค', 'ด'], note: 'ค has two loops, ด has one with a tick' },
-  { letters: ['ข', 'ช'], note: 'ข has two notches, ช has one' },
+  {
+    rows: [['ถ', 'ภ']],
+    note: 'ถ has its loop opening left; ภ opens right with a hook',
+    practiceWords: [
+      { word: 'ถุง', rom: 'thǔng', gloss: 'bag' },
+      { word: 'ถาม', rom: 'thǎam', gloss: 'ask' },
+      { word: 'ถนน', rom: 'thà-nǒn', gloss: 'road' },
+      { word: 'ภาษา', rom: 'phaa-sǎa', gloss: 'language' },
+      { word: 'ภาพ', rom: 'phâap', gloss: 'picture' },
+      { word: 'ภาพถ่าย', rom: 'phâap-thàai', gloss: 'photograph' },
+    ],
+  },
+  {
+    rows: [['บ', 'ป', 'ษ']],
+    note: 'same bowl — บ flat top, ป tick, ษ curled notch',
+    practiceWords: [
+      { word: 'บ้าน', rom: 'bâan', gloss: 'house' },
+      { word: 'ปลา', rom: 'bplaa', gloss: 'fish' },
+      { word: 'ปี', rom: 'bpii', gloss: 'year' },
+      { word: 'บาป', rom: 'bàap', gloss: 'sin' },
+      { word: 'พิเศษ', rom: 'phí-sèt', gloss: 'special' },
+      { word: 'อังกฤษ', rom: 'ang-grìt', gloss: 'English' },
+    ],
+  },
+  {
+    rows: [['ด', 'ต'], ['ค', 'ฅ']],
+    displayOnly: ['ฅ'],
+    note: 'ด and ต: the head-loop is drawn going LEFT (ต is the dented form of ด).\nค (and obsolete ฅ): the loop is drawn going RIGHT.',
+    // Practice words from Learn Thai Happily's ค vs ด worksheet — mix of
+    // ค-only, ด-only, and words containing both letters.
+    practiceWords: [
+      { word: 'ค้างคืน', rom: 'káang kheun', gloss: 'stay overnight' },
+      { word: 'คนไทย', rom: 'khon thai', gloss: 'Thai person' },
+      { word: 'คุกคาม', rom: 'khúk-khaam', gloss: 'threaten' },
+      { word: 'ดวงดี', rom: 'duang dii', gloss: 'lucky' },
+      { word: 'ดีเด่น', rom: 'dii dèn', gloss: 'outstanding' },
+      { word: 'ดวงดาว', rom: 'duang daao', gloss: 'star' },
+      { word: 'ดินแดน', rom: 'din daen', gloss: 'territory' },
+      { word: 'คำพูด', rom: 'kham phûut', gloss: 'speech' },
+      { word: 'ความดี', rom: 'khwaam dii', gloss: 'goodness' },
+      { word: 'ความคิด', rom: 'khwaam khít', gloss: 'idea' },
+      { word: 'คดโกง', rom: 'khót kohng', gloss: 'dishonest' },
+      { word: 'โดดเด่น', rom: 'dòht dèn', gloss: 'prominent' },
+    ],
+  },
+  {
+    rows: [['พ', 'ผ']],
+    note: 'same body — พ has tail below, ผ has tail up',
+    practiceWords: [
+      { word: 'ผม', rom: 'phǒm', gloss: 'I / hair' },
+      { word: 'ผิว', rom: 'phǐw', gloss: 'skin' },
+      { word: 'แผน', rom: 'phǎen', gloss: 'plan' },
+      { word: 'พ่อ', rom: 'phâw', gloss: 'father' },
+      { word: 'พูด', rom: 'phûut', gloss: 'speak' },
+      { word: 'ผลไม้', rom: 'phǒn-lá-máai', gloss: 'fruit' },
+    ],
+  },
+  {
+    rows: [['ฟ', 'ฝ']],
+    note: 'same body — ฟ has tail down, ฝ has tail up',
+    practiceWords: [
+      { word: 'ฝน', rom: 'fǒn', gloss: 'rain' },
+      { word: 'ฝัน', rom: 'fǎn', gloss: 'dream' },
+      { word: 'ฝาก', rom: 'fàak', gloss: 'deposit' },
+      { word: 'ฟัน', rom: 'fan', gloss: 'tooth' },
+      { word: 'ฟ้า', rom: 'fáa', gloss: 'sky' },
+      { word: 'ฝ่าฟัน', rom: 'fàa-fan', gloss: 'struggle through' },
+    ],
+  },
+  {
+    rows: [['ข', 'ช']],
+    note: 'ข has two notches, ช has one',
+    practiceWords: [
+      { word: 'ข้าว', rom: 'khâao', gloss: 'rice' },
+      { word: 'ขาย', rom: 'khǎai', gloss: 'sell' },
+      { word: 'ช้าง', rom: 'cháang', gloss: 'elephant' },
+      { word: 'ชื่อ', rom: 'chêu', gloss: 'name' },
+      { word: 'ข้าวเช้า', rom: 'khâao-cháao', gloss: 'breakfast' },
+      { word: 'ชาวเขา', rom: 'chaao-khǎo', gloss: 'hill tribe' },
+    ],
+  },
 ];
 
 // Class mnemonic sentences (also shown on the Consonants tab). Each sentence

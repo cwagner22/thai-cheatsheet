@@ -243,8 +243,8 @@
 /* --- Confusables --- */
 
 .confusableGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
 }
@@ -279,6 +279,31 @@
   text-align: center;
 }
 
+.obsoleteLabel {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-top: 4px;
+}
+
+.slotPlaceholder {
+  width: 70px;
+  height: 70px;
+  flex: 0 0 auto;
+  visibility: hidden;
+}
+
+@media (max-width: 600px) {
+  .slotPlaceholder { width: 58px; height: 58px; }
+}
+
 .confusableSlots {
   display: flex;
   gap: 4px;
@@ -289,6 +314,68 @@
   color: #555;
   line-height: 1.4;
   font-style: italic;
+  white-space: pre-line;
+}
+
+.practiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.practiceItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.practiceGloss {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.practiceWordLine {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.practiceWord {
+  font-family: var(--thai-font);
+  font-size: 1rem;
+  color: #222;
+  line-height: 1.2;
+}
+
+.practiceRom {
+  font-size: 0.72rem;
+  color: #666;
+  line-height: 1.2;
+}
+
+.practiceMeaning {
+  font-size: 0.7rem;
+  color: #777;
+  line-height: 1.2;
+}
+
+.practiceSlots {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .practiceItem { gap: 6px; }
+  .practiceGloss { min-width: 0; flex-basis: 100%; }
+  .practiceWord { font-size: 0.9rem; }
 }
 
 /* --- Class mnemonics --- */
