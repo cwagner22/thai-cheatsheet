@@ -3,7 +3,6 @@ import {
   VOWELS,
   VOWEL_ROWS,
   VOWEL_COLS,
-  CONSONANTS,
   MANNERS,
   PLACES,
   LANGUAGE_OPTIONS,
@@ -38,10 +37,6 @@ function Example({ word, className }: { word: string; className?: string }) {
       {parts.map((p, i) => (p.bold ? <strong key={i}>{p.text}</strong> : <React.Fragment key={i}>{p.text}</React.Fragment>))}
     </span>
   );
-}
-
-function hasAnyExample(examples: Partial<Record<ExampleLang, string>>, langs: ExampleLang[]): boolean {
-  return langs.some(l => !!examples[l]);
 }
 
 /** Primary language has an example for this phoneme. */
