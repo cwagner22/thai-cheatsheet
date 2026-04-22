@@ -80,6 +80,8 @@ export interface IPAVowel {
   rounded: boolean;
   examples: Partial<Record<ExampleLang, string>>;
   wiki: string;
+  /** Audio basename on Commons when it differs from `wiki` (some don't match). */
+  audio?: string;
 }
 
 export const VOWELS: IPAVowel[] = [
@@ -177,6 +179,8 @@ export interface IPAConsonant {
   voiced: boolean;
   examples: Partial<Record<ExampleLang, string>>;
   wiki: string;
+  /** Audio basename on Commons when it differs from `wiki` (some don't match). */
+  audio?: string;
 }
 
 /** Places where an articulation is physically impossible (kept dark grey). */
@@ -236,8 +240,8 @@ export const CONSONANTS: IPAConsonant[] = [
 
   // Trill
   { symbol: 'ʙ', manner: 'trill', place: 'bilabial', voiced: true, examples: {}, wiki: 'Bilabial_trill' },
-  { symbol: 'r', manner: 'trill', place: 'alveolar', voiced: true, examples: { es: 'pe**rr**o', it: '**r**osa', th: 'เ**รือ**' }, wiki: 'Voiced_alveolar_trill' },
-  { symbol: 'ʀ', manner: 'trill', place: 'uvular',   voiced: true, examples: { fr: '**r**ouge', de: '**r**ot' }, wiki: 'Voiced_uvular_trill' },
+  { symbol: 'r', manner: 'trill', place: 'alveolar', voiced: true, examples: { es: 'pe**rr**o', it: '**r**osa', th: 'เ**รือ**' }, wiki: 'Voiced_alveolar_trill', audio: 'Alveolar_trill' },
+  { symbol: 'ʀ', manner: 'trill', place: 'uvular',   voiced: true, examples: { fr: '**r**ouge', de: '**r**ot' },                 wiki: 'Voiced_uvular_trill',   audio: 'Uvular_trill' },
 
   // Tap or Flap
   { symbol: 'ⱱ', manner: 'tap', place: 'labiodental', voiced: true, examples: {}, wiki: 'Labiodental_flap' },
@@ -310,8 +314,10 @@ export function audioUrl(slug: string): string {
 
 let currentAudio: HTMLAudioElement | null = null;
 
-/** Play the IPA reference recording for a phoneme. Stops any previous clip. */
-export function playIpaSound(slug: string): void {
+/** Play the IPA reference recording for a phoneme. Stops any previous clip.
+ *  Uses `entry.audio` when set, falling back to the Wikipedia article slug. */
+export function playIpaSound(entry: { wiki: string; audio?: string }): void {
+  const slug = entry.audio ?? entry.wiki;
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
@@ -333,6 +339,8 @@ export interface IPALabelled {
   label: string;
   examples: Partial<Record<ExampleLang, string>>;
   wiki: string;
+  /** Audio basename on Commons when it differs from `wiki` (some don't match). */
+  audio?: string;
 }
 
 export const CLICKS: IPALabelled[] = [
