@@ -5,8 +5,9 @@ import { TonesTab } from './tabs/TonesTab';
 import { ClustersTab } from './tabs/ClustersTab';
 import { TypingTab } from './tabs/TypingTab';
 import { WritingTab } from './tabs/WritingTab';
+import { IPATab } from './tabs/IPATab';
 
-export type TabId = 'consonants' | 'vowels' | 'tones' | 'reading' | 'typing' | 'writing';
+export type TabId = 'consonants' | 'vowels' | 'tones' | 'reading' | 'ipa' | 'typing' | 'writing';
 export type Font = 'serif' | 'sans';
 
 const TABS: { id: TabId; label: string; icon: string }[] = [
@@ -14,6 +15,7 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
   { id: 'vowels',     label: 'Vowels',     icon: 'อา' },
   { id: 'tones',      label: 'Tones',      icon: '🎵' },
   { id: 'reading',    label: 'Reading',    icon: '📖' },
+  { id: 'ipa',        label: 'IPA',        icon: 'ɪ' },
   { id: 'typing',     label: 'Typing',     icon: '⌨️' },
   { id: 'writing',    label: 'Writing',    icon: '✏️' },
 ];
@@ -62,6 +64,7 @@ export function App() {
       {tab === 'vowels' && <VowelsTab />}
       {tab === 'tones' && <TonesTab />}
       {tab === 'reading' && <ClustersTab />}
+      {tab === 'ipa' && <IPATab />}
       {tab === 'typing' && <TypingTab />}
       {tab === 'writing' && <WritingTab />}
 

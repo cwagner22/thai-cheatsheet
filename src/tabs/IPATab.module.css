@@ -1,0 +1,414 @@
+.intro {
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.intro p + p { margin-top: 8px; }
+
+.legendChip {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+/* ============ Controls ============ */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.ctrlRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ctrlRow > label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  min-width: 90px;
+}
+
+.ctrlRow select {
+  padding: 5px 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.langTag {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #555;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.langTag:hover { background: #e2e8f0; }
+
+.langTagActive {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+
+.langTagLocked {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+  cursor: default;
+  opacity: 1;
+}
+
+/* ============ Sections ============ */
+
+.sectionHeader {
+  display: inline-block;
+  padding: 5px 18px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.sectionSub {
+  font-size: 0.82rem;
+  color: #555;
+  margin-left: 10px;
+}
+
+/* ============ Vowels ============ */
+
+.vowelGrid {
+  display: grid;
+  grid-template-columns: 110px repeat(5, 1fr);
+  gap: 2px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 22px;
+}
+
+.vowelColHeader,
+.vowelRowHeader {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.vowelRowHeader {
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.vowelCell {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: stretch;
+  padding: 3px;
+  min-height: 70px;
+}
+
+.vowelSymbolGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  background: #ecfccb;
+  min-width: 44px;
+  flex: 1 1 0;
+}
+
+.vowelSymbolGroup.unused {
+  background: #ececec;
+  color: #999;
+}
+
+.vowelSymbol {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #1a1a1a;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 1px;
+}
+
+.vowelSymbolGroup.unused .vowelSymbol {
+  color: #8a8a8a;
+  cursor: default;
+}
+
+.vowelSymbol:hover { color: #2563eb; }
+
+.vowelExample {
+  font-size: 0.64rem;
+  line-height: 1.1;
+  text-align: center;
+  color: #444;
+  white-space: nowrap;
+}
+
+/* Language-specific tinting for examples, so the eye can tell them apart */
+.lang-th { color: #111; font-family: var(--thai-font), inherit; font-size: 0.9rem; }
+.lang-en { color: #1f2937; }
+.lang-fr { color: #7c3aed; font-style: italic; }
+.lang-de { color: #b45309; }
+.lang-es { color: #dc2626; }
+.lang-it { color: #16a34a; }
+
+/* ============ Consonants ============ */
+
+.consonantTableWrap {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.consonantTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 0.82rem;
+  min-width: 600px;
+}
+
+.consonantTable thead th {
+  background: #475569;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 6px 3px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.mannerHeader {
+  width: 110px;
+  background: #f8fafc !important;
+  color: #333 !important;
+  text-align: right !important;
+  padding: 4px 8px !important;
+  white-space: nowrap;
+  font-size: 0.72rem !important;
+  font-weight: 700;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  border-right: 1px solid #e5e7eb;
+}
+
+.consonantTable tbody td {
+  padding: 0;
+  border: 1px solid #f1f5f9;
+  vertical-align: top;
+  overflow: visible;
+  position: relative;
+}
+
+.consonantCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5px 3px;
+  font-size: 1rem;
+  line-height: 1.15;
+  text-decoration: none;
+  color: #1a1a1a;
+  gap: 1px;
+  min-height: 44px;
+  overflow: visible;
+}
+
+.consonantSymbol {
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.3em;
+}
+
+.consonantCellUsed {
+  background: #ecfccb;
+  cursor: pointer;
+}
+.consonantCellUsed:hover {
+  background: #d9f99d;
+  color: #2563eb;
+}
+
+.consonantCellUnused {
+  background: #ececec;
+  color: #8a8a8a;
+  cursor: default;
+}
+
+.consonantCellImpossible {
+  background: #d4d4d4;
+}
+
+.consonantExample {
+  display: block;
+  font-size: 0.62rem;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.placeGroupDivider {
+  border-left: 2px solid #cbd5e1 !important;
+}
+
+/* abbr with tooltip (manner/place/non-pulmonic labels) */
+.abbr {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
+/* ============ Labelled list sections ============ */
+
+.subHeading {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #666;
+  margin: 0 0 6px;
+}
+
+.threeCol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.labelledList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.labelledItem {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.labelledCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: #222;
+  border-radius: 6px;
+  background: #ecfccb;
+  flex-wrap: wrap;
+}
+
+.labelledItem.labelledUnused .labelledCell {
+  background: #ececec;
+  color: #777;
+  cursor: default;
+}
+
+a.labelledCell:hover { background: #d9f99d; }
+
+.labelledSymbol {
+  font-size: 1.3rem;
+  line-height: 1;
+  min-width: 32px;
+  text-align: center;
+}
+
+.labelledText {
+  font-size: 0.8rem;
+  line-height: 1.25;
+  flex: 1 1 auto;
+}
+
+.labelledExampleTag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 0.78rem;
+}
+
+/* ============ Mobile ============ */
+
+@media (max-width: 700px) {
+  .vowelGrid {
+    grid-template-columns: 70px repeat(5, 1fr);
+  }
+  .vowelColHeader,
+  .vowelRowHeader { font-size: 0.58rem; padding: 3px 2px; }
+  .vowelRowHeader { padding-right: 4px; }
+  .vowelSymbol { font-size: 1.05rem; }
+  .vowelExample { font-size: 0.55rem; }
+  .vowelCell { padding: 2px; min-height: 58px; }
+  .vowelSymbolGroup { padding: 3px 2px; min-width: 0; }
+
+  .mannerHeader { width: 86px; font-size: 0.66rem !important; }
+  .consonantCell { font-size: 0.85rem; }
+  .consonantSymbol { font-size: 0.95rem; }
+  .consonantExample { font-size: 0.56rem; }
+
+  .threeCol { grid-template-columns: 1fr; }
+}

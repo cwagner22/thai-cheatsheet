@@ -1,23 +1,17 @@
 import { useCallback, useRef } from 'react';
 import { POEM, CONFUSABLES, MID_MNEMONIC, HIGH_MNEMONIC } from '../data/alphabetPoem';
-import type { PoemEntry } from '../data/alphabetPoem';
 import { CONSONANTS } from '../data/consonants';
 import { LESSONS } from '../data/lessons';
+import { COMMON_WORDS, WORD_BOX_COUNT } from '../data/commonWords';
+import type { PracticeWord } from '../data/commonWords';
 import { PracticeCanvas } from '../components/PracticeCanvas';
 import styles from './WritingTab.module.css';
 
 const CLASS_STYLE = { mid: styles.classMid, high: styles.classHigh, low: styles.classLow } as const;
 const LETTER_SLOT_COUNT = 4;
-const WORD_ROW_REPEAT = 3;
 
 function consonantFor(letter: string) {
   return CONSONANTS.find(c => c.letter === letter);
-}
-
-/** Break a poem phrase like "กอ ไก่ ในเล้า" into its space-separated word tokens. */
-function poemWords(entry: PoemEntry): string[] {
-  const full = entry.extThai ? `${entry.anchorThai} ${entry.extThai}` : entry.anchorThai;
-  return full.split(/\s+/).filter(Boolean);
 }
 
 /**
@@ -73,6 +67,8 @@ function WordRow({ words }: { words: string[] }) {
   );
 }
 
+const WORD_ROW_REPEAT = 3;
+
 /** Stack of {@link WORD_ROW_REPEAT} identical word rows for repeated practice. */
 function WordRowStack({ words }: { words: string[] }) {
   return (
@@ -81,6 +77,34 @@ function WordRowStack({ words }: { words: string[] }) {
         <WordRow key={rep} words={words} />
       ))}
     </>
+  );
+}
+
+/**
+ * For each practice word, show the word + romanization + gloss on the left
+ * and {@link WORD_BOX_COUNT} tracing canvases on the right.
+ */
+function PracticeWordList({ words }: { words: PracticeWord[] }) {
+  if (words.length === 0) return null;
+  return (
+    <div className={styles.practiceList}>
+      {words.map(pw => (
+        <div key={pw.word} className={styles.practiceItem}>
+          <div className={styles.practiceGloss}>
+            <span className={styles.practiceWordLine}>
+              <span className={styles.practiceWord}>{pw.word}</span>
+              <span className={styles.practiceRom}>{pw.rom}</span>
+            </span>
+            <span className={styles.practiceMeaning}>{pw.gloss}</span>
+          </div>
+          <div className={styles.practiceSlots}>
+            {Array.from({ length: WORD_BOX_COUNT }).map((_, i) => (
+              <PracticeCanvas key={i} variant="word" guide={pw.word} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -113,7 +137,7 @@ function LetterRow({ letter }: { letter: string }) {
           ))}
         </div>
       </div>
-      <WordRowStack words={poemWords(entry)} />
+      <PracticeWordList words={COMMON_WORDS[letter] ?? []} />
       <ClearButton containerRef={rowRef} />
     </div>
   );
@@ -253,7 +277,7 @@ export function WritingTab() {
       <div className={styles.intro}>
         <p>
           Handwriting practice. Each letter row has four single-letter slots (first has a faded
-          guide) and three repeated word-slot rows for tracing the alphabet-song phrase. Use the{' '}
+          guide), then three common words with four tracing boxes each. Use the{' '}
           <strong>Clear</strong> button on any card to wipe just its slots.
         </p>
         <p>
