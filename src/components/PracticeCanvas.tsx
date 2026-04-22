@@ -27,6 +27,12 @@ interface Props {
    *  - 'word'    — rectangular slot that scales width to the guide word
    */
   variant?: 'default' | 'compact' | 'word';
+  /**
+   * When true (and variant='word'), the slot fills its container width
+   * instead of being sized by the guide's character count. Used in pangrams
+   * so every phrase — short or long — gets the same wide tracing area.
+   */
+  block?: boolean;
 }
 
 /**
@@ -34,7 +40,7 @@ interface Props {
  * driven by CSS classes so the media query can shrink slots on mobile; the
  * canvas bitmap resolution is measured from the rendered element on mount.
  */
-export function PracticeCanvas({ guide, variant = 'default' }: Props) {
+export function PracticeCanvas({ guide, variant = 'default', block = false }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawingRef = useRef(false);
   const lastRef = useRef<{ x: number; y: number } | null>(null);
@@ -100,13 +106,18 @@ export function PracticeCanvas({ guide, variant = 'default' }: Props) {
 
   // For word slots, widen the box to roughly fit the guide. Thai combining
   // marks take no horizontal space, so we subtract them from the char count.
+  // Multiplier scales with the 2.6rem font-size; slight padding on both ends
+  // so the faded guide isn't glued to the dashed border. `block` mode skips
+  // this and lets CSS fill the container instead.
   const wordStyle =
-    variant === 'word' && guide
-      ? { width: Math.max(80, visibleWidth(guide) * 22 + 24) }
+    variant === 'word' && guide && !block
+      ? { width: Math.max(72, visibleWidth(guide) * 36 + 20) }
       : undefined;
 
+  const blockClass = block && variant === 'word' ? styles.block : '';
+
   return (
-    <div className={`${styles.slot} ${sizeClass}`} style={wordStyle}>
+    <div className={`${styles.slot} ${sizeClass} ${blockClass}`} style={wordStyle}>
       {guide && <div className={styles.guide}>{guide}</div>}
       <canvas
         ref={canvasRef}

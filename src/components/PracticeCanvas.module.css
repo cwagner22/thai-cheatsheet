@@ -23,7 +23,31 @@
 .sizeWord {
   /* width is set inline (scales with word length); height is fixed so a row
      of word canvases lines up neatly */
-  height: 64px;
+  height: 72px;
+}
+
+/* Pangram mode: each sentence fills the row horizontally regardless of length,
+   and grows vertically so long sentences wrap onto multiple lines instead of
+   being clipped at the right edge. */
+.block {
+  width: 100% !important;
+  flex: 1 1 100%;
+  height: auto;
+  min-height: 72px;
+}
+
+/* In block mode the guide flows with the box (so it can push height) and
+   wraps naturally — unlike the default sizeWord rule which pins it absolutely
+   and forbids wrap. */
+.sizeWord.block .guide {
+  position: relative;
+  inset: auto;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  padding: 10px 8px;
+  min-height: 72px;
+  box-sizing: border-box;
 }
 
 .guide {
@@ -40,9 +64,19 @@
   z-index: 0;
 }
 
+/* Word-variant guides left-align so stacked rows of different-width boxes
+   still line up at the same text start-x. */
+.sizeWord .guide {
+  justify-content: flex-start;
+  padding-left: 8px;
+  /* Never wrap the guide: if the box is a hair too narrow the text clips
+     at the edge, but we avoid confusing two-line fallback. */
+  white-space: nowrap;
+}
+
 .sizeDefault .guide { font-size: 4.2rem; }
 .sizeCompact .guide { font-size: 3rem; }
-.sizeWord .guide { font-size: 2rem; }
+.sizeWord .guide { font-size: 2.6rem; }
 
 .canvas {
   position: absolute;
@@ -59,6 +93,6 @@
   .sizeDefault .guide { font-size: 3rem; }
   .sizeCompact { width: 58px; height: 58px; }
   .sizeCompact .guide { font-size: 2.4rem; }
-  .sizeWord { height: 56px; }
-  .sizeWord .guide { font-size: 1.7rem; }
+  .sizeWord { height: 64px; }
+  .sizeWord .guide { font-size: 2.1rem; }
 }

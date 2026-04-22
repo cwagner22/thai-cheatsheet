@@ -1,7 +1,7 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { POEM, CONFUSABLES, MID_MNEMONIC, HIGH_MNEMONIC } from '../data/alphabetPoem';
 import type { PoemEntry } from '../data/alphabetPoem';
-import { CONSONANTS } from '../data/consonants';
+import { CONSONANTS, MID_UNPAIRED_GROUPS, SONORANT_GROUPS, HIGH_LOW_PAIRS } from '../data/consonants';
 import { LESSONS } from '../data/lessons';
 import { COMMON_WORDS, WORD_BOX_COUNT } from '../data/commonWords';
 import type { PracticeWord } from '../data/commonWords';
@@ -63,12 +63,12 @@ function ClearButton({ containerRef }: { containerRef: React.RefObject<HTMLEleme
   );
 }
 
-/** Row of word canvases. */
-function WordRow({ words }: { words: string[] }) {
+/** Row of word canvases. `block` forces each slot to fill the row. */
+function WordRow({ words, block = false }: { words: string[]; block?: boolean }) {
   return (
     <div className={styles.wordRow}>
       {words.map((w, i) => (
-        <PracticeCanvas key={`${w}-${i}`} variant="word" guide={w} />
+        <PracticeCanvas key={`${w}-${i}`} variant="word" guide={w} block={block} />
       ))}
     </div>
   );
@@ -77,11 +77,11 @@ function WordRow({ words }: { words: string[] }) {
 const WORD_ROW_REPEAT = 3;
 
 /** Stack of {@link WORD_ROW_REPEAT} identical word rows for repeated practice. */
-function WordRowStack({ words }: { words: string[] }) {
+function WordRowStack({ words, block = false }: { words: string[]; block?: boolean }) {
   return (
     <>
       {Array.from({ length: WORD_ROW_REPEAT }).map((_, rep) => (
-        <WordRow key={rep} words={words} />
+        <WordRow key={rep} words={words} block={block} />
       ))}
     </>
   );
@@ -122,27 +122,34 @@ function LetterRow({ letter }: { letter: string }) {
   if (!entry || !meta) return null;
   return (
     <div ref={rowRef} className={styles.row}>
+      <div className={styles.letterHeader}>
+        <span className={`${styles.classTag} ${CLASS_STYLE[meta.klass]}`}>{meta.klass}</span>
+        <span className={styles.letterHeaderName}>{meta.name}</span>
+        <span className={styles.letterHeaderRom}>/{meta.nameRom}/</span>
+        <span className={styles.letterHeaderMeaning}>{meta.meaning}</span>
+        {meta.rare && <span className={styles.rareFlag}>rare</span>}
+        {meta.obsolete && <span className={styles.obsoleteFlag}>obsolete</span>}
+      </div>
       <div className={styles.rowTop}>
         <div className={styles.rowLetter}>{entry.letter}</div>
-        <div className={styles.rowMeta}>
-          <div className={styles.poemThai}>
-            <span className={`${styles.classTag} ${CLASS_STYLE[meta.klass]}`}>{meta.klass}</span>
-            {renderAnchor(entry.anchorThai, meta.nameShort)}
-            {entry.extThai && <span className={styles.poemExt}>{entry.extThai}</span>}
-            {meta.rare && <span className={styles.rareFlag}>rare</span>}
-            {meta.obsolete && <span className={styles.obsoleteFlag}>obsolete</span>}
-          </div>
-          <div className={styles.poemRom}>
-            {entry.anchorRom}
-            {entry.extRom && <span className={styles.poemRomExt}>{entry.extRom}</span>}
-          </div>
-          <div className={styles.poemMeaning}>{entry.meaning}</div>
-        </div>
         <div className={styles.slots}>
           {Array.from({ length: LETTER_SLOT_COUNT }).map((_, i) => (
             <PracticeCanvas key={i} guide={i === 0 ? entry.letter : undefined} />
           ))}
         </div>
+      </div>
+      <div className={styles.poemExample}>
+        <div className={styles.poemExampleLine}>
+          <span className={styles.poemExampleThai}>
+            {renderAnchor(entry.anchorThai, meta.nameShort)}
+            {entry.extThai && <span className={styles.poemExt}>{entry.extThai}</span>}
+          </span>
+          <span className={styles.poemExampleRom}>
+            {entry.anchorRom}
+            {entry.extRom && <span className={styles.poemRomExt}>{entry.extRom}</span>}
+          </span>
+        </div>
+        <div className={styles.poemExampleMeaning}>{entry.meaning}</div>
       </div>
       <WordRowStack words={poemWords(entry)} />
       <PracticeWordList words={COMMON_WORDS[letter] ?? []} />
@@ -257,31 +264,68 @@ function PangramLine({ line }: { line: string }) {
   return (
     <div ref={ref} className={styles.pangramLineBlock}>
       <div className={styles.pangramLine}>{line}</div>
-      <WordRowStack words={line.split(/\s+/).filter(Boolean)} />
+      <WordRowStack words={[line]} block />
       <ClearButton containerRef={ref} />
     </div>
   );
 }
 
+type AlphabetSort = 'alphabet' | 'class' | 'sound';
+
+const CLASS_ORDER: Record<'mid' | 'high' | 'low', number> = { mid: 0, high: 1, low: 2 };
+
+/**
+ * Flat letter order used for the "By sound" sort. Mirrors the Consonants tab
+ * grouping: mid unpaired → sonorants → high/low pairs (high first, then low
+ * within each pair). Letters not found (shouldn't happen) sink to the end.
+ */
+const SOUND_ORDER: string[] = [
+  ...MID_UNPAIRED_GROUPS.flatMap(g => g.letters.map(l => l.letter)),
+  ...SONORANT_GROUPS.flatMap(g => g.letters.map(l => l.letter)),
+  ...HIGH_LOW_PAIRS.flatMap(p => [...p.high, ...p.low].map(l => l.letter)),
+];
+
 export function WritingTab() {
   const tabRef = useRef<HTMLDivElement>(null);
   const pangramLessons = LESSONS.filter(l => l.kind === 'pangram');
   const clearAll = useCallback(() => clearCanvasesIn(tabRef.current), []);
+  const [sort, setSort] = useState<AlphabetSort>('alphabet');
+
+  const orderedPoem = useMemo(() => {
+    if (sort === 'alphabet') return POEM;
+    if (sort === 'sound') {
+      return [...POEM].sort((a, b) => {
+        const ia = SOUND_ORDER.indexOf(a.letter);
+        const ib = SOUND_ORDER.indexOf(b.letter);
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      });
+    }
+    return [...POEM].sort((a, b) => {
+      const ka = consonantFor(a.letter)?.klass;
+      const kb = consonantFor(b.letter)?.klass;
+      const da = ka ? CLASS_ORDER[ka] : 99;
+      const db = kb ? CLASS_ORDER[kb] : 99;
+      if (da !== db) return da - db;
+      // Preserve alphabetical order within each class group.
+      return POEM.indexOf(a) - POEM.indexOf(b);
+    });
+  }, [sort]);
 
   return (
     <div ref={tabRef} id="tab-writing">
-      <a
-        className={styles.videoBookmark}
-        href="https://www.youtube.com/watch?v=pXV-MzO4Acs"
-        target="_blank"
-        rel="noopener"
-      >
+      <div className={styles.videoBookmark}>
         <span className={styles.videoIcon} aria-hidden>▶</span>
-        <span>
-          <strong>Video:</strong> how to write the Thai alphabet on YouTube
+        <span className={styles.videoLinks}>
+          <strong>How to write the Thai alphabet:</strong>{' '}
+          <a href="https://www.youtube.com/watch?v=pXV-MzO4Acs" target="_blank" rel="noopener">
+            full walkthrough ↗
+          </a>
+          {' · '}
+          <a href="https://www.youtube.com/watch?v=6Sm39k3CRFA" target="_blank" rel="noopener">
+            shorter version ↗
+          </a>
         </span>
-        <span className={styles.videoArrow} aria-hidden>↗</span>
-      </a>
+      </div>
       <div className={styles.intro}>
         <p>
           Handwriting practice. Each letter row has four single-letter slots (first has a faded
@@ -302,12 +346,46 @@ export function WritingTab() {
       </div>
 
       <div className="class-section" style={{ marginBottom: 8 }}>
-        <div className={styles.sectionHeader}>Alphabet — ก to ฮ</div>
-        <span className={styles.sectionSub}>44 consonants in alphabetical order</span>
+        <div className={styles.sectionHeader}>Alphabet</div>
+        <span className={styles.sectionSub}>
+          {sort === 'alphabet' && '44 consonants in alphabetical order'}
+          {sort === 'class' && '44 consonants grouped by class (mid → high → low)'}
+          {sort === 'sound' && '44 consonants grouped by sound (same as Consonants tab)'}
+        </span>
+      </div>
+
+      <div className={styles.sortToggle} role="radiogroup" aria-label="Sort alphabet">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={sort === 'alphabet'}
+          className={`${styles.sortBtn} ${sort === 'alphabet' ? styles.sortBtnActive : ''}`}
+          onClick={() => setSort('alphabet')}
+        >
+          Alphabetical
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={sort === 'class'}
+          className={`${styles.sortBtn} ${sort === 'class' ? styles.sortBtnActive : ''}`}
+          onClick={() => setSort('class')}
+        >
+          By class
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={sort === 'sound'}
+          className={`${styles.sortBtn} ${sort === 'sound' ? styles.sortBtnActive : ''}`}
+          onClick={() => setSort('sound')}
+        >
+          By sound
+        </button>
       </div>
 
       <div className={styles.list}>
-        {POEM.map(p => (
+        {orderedPoem.map(p => (
           <LetterRow key={p.letter} letter={p.letter} />
         ))}
       </div>
