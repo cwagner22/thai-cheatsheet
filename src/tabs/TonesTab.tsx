@@ -146,11 +146,11 @@ export function TonesTab() {
         <strong>How to practice:</strong> say each tone while tracing the curve with your finger or voice.<br />
         <strong>Classic drill (5 real words):</strong>{' '}
         <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>คา · ข่า · ค่า · ค้า · ขา</span>
-        {' '}<span style={{ color: '#666' }}>(khaa · khàa · khâa · kháa · khǎa) = <em>stuck · galangal · cost · to trade · leg</em></span>
+        {' '}<span style={{ color: '#666' }}>(kʰaː · kʰàː · kʰâː · kʰáː · kʰǎː) = <em>stuck · galangal · cost · to trade · leg</em></span>
         {' '}— all 5 tones in canonical order (Mid · Low · Falling · High · Rising).<br />
         <strong>Alt drill (one mid-class letter + all 4 tone marks):</strong>{' '}
         <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ปา · ป่า · ป้า · ป๊า · ป๋า</span>
-        {' '}<span style={{ color: '#666' }}>(paa · pàa · pâa · páa · pǎa) = <em>throw · forest · aunt · dad · dad (slang)</em></span>
+        {' '}<span style={{ color: '#666' }}>(paː · pàː · pâː · páː · pǎː) = <em>throw · forest · aunt · dad · dad (slang)</em></span>
         {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
       </div>
     </div>

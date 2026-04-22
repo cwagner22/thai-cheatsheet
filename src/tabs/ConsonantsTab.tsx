@@ -40,7 +40,10 @@ function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerC
           <tr key={c.num}>
             <td>{c.num}</td>
             <td className="thai-letter">{c.letter}</td>
-            <td className="thai-name">{c.name}</td>
+            <td>
+              <span className="thai-name">{c.name}</span>{' '}
+              <span className={styles.nameRom}>/{c.nameRom}/</span>
+            </td>
             <td>{c.meaning}</td>
             <td className="initial-sound">{c.initial}</td>
             <td className="final-sound">{c.final}</td>
@@ -59,6 +62,7 @@ function PairLetter({ c, dim }: { c: Consonant; dim?: boolean }) {
     <span className="pair-letter" style={dim ? { opacity: 0.4 } : undefined}>
       <span className="thai-letter">{c.letter}</span>
       <span className="thai-name">{c.nameShort}</span>
+      <span className={styles.nameRom}>/{c.nameRom}/</span>
       <span className="pair-eng">
         {c.meaning}{c.rare && <span className="rare-tag"> R</span>}{c.obsolete && <span className="obsolete-tag"> OBS</span>}
       </span>
