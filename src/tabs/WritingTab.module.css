@@ -331,6 +331,13 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  /* Don't let long-press/tap-and-drag in the gap or padding hijack
+     text selection across the row — only the text runs below are
+     explicitly selectable. Fixes stray word selection on tablets
+     when drawing near a drawing slot with a stylus. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .practiceGloss {
@@ -338,6 +345,9 @@
   flex-direction: column;
   min-width: 110px;
   flex-shrink: 0;
+  /* Re-enable selection only on the text block itself. */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .practiceWordLine {
