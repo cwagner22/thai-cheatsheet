@@ -63,12 +63,12 @@ function ClearButton({ containerRef }: { containerRef: React.RefObject<HTMLEleme
   );
 }
 
-/** Row of word canvases. */
-function WordRow({ words }: { words: string[] }) {
+/** Row of word canvases. `block` forces each slot to fill the row. */
+function WordRow({ words, block = false }: { words: string[]; block?: boolean }) {
   return (
     <div className={styles.wordRow}>
       {words.map((w, i) => (
-        <PracticeCanvas key={`${w}-${i}`} variant="word" guide={w} />
+        <PracticeCanvas key={`${w}-${i}`} variant="word" guide={w} block={block} />
       ))}
     </div>
   );
@@ -77,11 +77,11 @@ function WordRow({ words }: { words: string[] }) {
 const WORD_ROW_REPEAT = 3;
 
 /** Stack of {@link WORD_ROW_REPEAT} identical word rows for repeated practice. */
-function WordRowStack({ words }: { words: string[] }) {
+function WordRowStack({ words, block = false }: { words: string[]; block?: boolean }) {
   return (
     <>
       {Array.from({ length: WORD_ROW_REPEAT }).map((_, rep) => (
-        <WordRow key={rep} words={words} />
+        <WordRow key={rep} words={words} block={block} />
       ))}
     </>
   );
@@ -257,7 +257,7 @@ function PangramLine({ line }: { line: string }) {
   return (
     <div ref={ref} className={styles.pangramLineBlock}>
       <div className={styles.pangramLine}>{line}</div>
-      <WordRowStack words={line.split(/\s+/).filter(Boolean)} />
+      <WordRowStack words={[line]} block />
       <ClearButton containerRef={ref} />
     </div>
   );
