@@ -15,7 +15,7 @@ import {
   OTHER_SYMBOLS,
   AFFRICATES,
   findConsonant,
-  wikiUrl,
+  playIpaSound,
   parseBold,
 } from '../data/ipa';
 import type {
@@ -61,11 +61,17 @@ function VowelSymbol({
   // use a neutral background. When it's on, primary-used cells get the green
   // tint; non-primary ones stay muted grey.
   const toneClass = !showOther ? '' : primaryUsed ? styles.used : styles.unused;
+  const clickable = !showOther || primaryUsed;
   return (
-    <div className={`${styles.vowelSymbolGroup} ${toneClass}`}>
-      <a className={styles.vowelSymbol} href={wikiUrl(entry.wiki)} target="_blank" rel="noopener">
-        {entry.symbol}
-      </a>
+    <div
+      className={`${styles.vowelSymbolGroup} ${toneClass} ${clickable ? styles.playable : ''}`}
+      onClick={clickable ? () => playIpaSound(entry.wiki) : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playIpaSound(entry.wiki); } } : undefined}
+      aria-label={clickable ? `Play ${entry.symbol}` : undefined}
+    >
+      <span className={styles.vowelSymbol}>{entry.symbol}</span>
       {visibleLangs.map(l => {
         const w = entry.examples[l];
         if (!w) return null;
@@ -203,7 +209,16 @@ function ConsonantCell({
     </>
   );
   if (clickable) {
-    return <a className={cls} href={wikiUrl(entry.wiki)} target="_blank" rel="noopener">{inner}</a>;
+    return (
+      <button
+        type="button"
+        className={`${cls} ${styles.playable}`}
+        onClick={() => playIpaSound(entry.wiki)}
+        aria-label={`Play ${entry.symbol}`}
+      >
+        {inner}
+      </button>
+    );
   }
   return <span className={cls}>{inner}</span>;
 }
@@ -272,10 +287,9 @@ function ConsonantTable({
                   const entry = findConsonant(m.key, p.key as Place, voiced);
                   const render = cellShouldRender(m.key, p.key, voiced);
                   const key = `${m.key}-${p.key}-${voiced ? 'v' : 'u'}`;
-                  const classes = voiced ? '' : styles.placeGroupDivider;
-                  if (!render || !entry) return <td key={key} className={classes}>&nbsp;</td>;
+                  if (!render || !entry) return <td key={key}>&nbsp;</td>;
                   return (
-                    <td key={key} className={classes}>
+                    <td key={key}>
                       <ConsonantCell
                         entry={entry}
                         visibleLangs={visibleLangs}
@@ -321,25 +335,46 @@ function LabelledList({
             ? ''
             : styles.labelledUnused;
         const clickable = !showOther || primaryUsed;
-        const Tag = clickable ? 'a' : 'span';
-        const props = clickable ? { href: wikiUrl(item.wiki), target: '_blank' as const, rel: 'noopener' } : {};
         return (
           <li key={item.symbol} className={`${styles.labelledItem} ${toneClass}`}>
-            <Tag className={styles.labelledCell} {...props}>
-              <span className={styles.labelledSymbol}>{item.symbol}</span>
-              <span className={styles.labelledText}>
-                {item.label}
-                {visibleLangs.map(l => {
-                  const w = item.examples[l];
-                  if (!w) return null;
-                  return (
-                    <span key={l} className={`${styles.labelledExampleTag} ${styles[`lang-${l}`] ?? ''}`}>
-                      <Example word={w} />
-                    </span>
-                  );
-                })}
+            {clickable ? (
+              <button
+                type="button"
+                className={`${styles.labelledCell} ${styles.playable}`}
+                onClick={() => playIpaSound(item.wiki)}
+                aria-label={`Play ${item.symbol}`}
+              >
+                <span className={styles.labelledSymbol}>{item.symbol}</span>
+                <span className={styles.labelledText}>
+                  {item.label}
+                  {visibleLangs.map(l => {
+                    const w = item.examples[l];
+                    if (!w) return null;
+                    return (
+                      <span key={l} className={`${styles.labelledExampleTag} ${styles[`lang-${l}`] ?? ''}`}>
+                        <Example word={w} />
+                      </span>
+                    );
+                  })}
+                </span>
+              </button>
+            ) : (
+              <span className={styles.labelledCell}>
+                <span className={styles.labelledSymbol}>{item.symbol}</span>
+                <span className={styles.labelledText}>
+                  {item.label}
+                  {visibleLangs.map(l => {
+                    const w = item.examples[l];
+                    if (!w) return null;
+                    return (
+                      <span key={l} className={`${styles.labelledExampleTag} ${styles[`lang-${l}`] ?? ''}`}>
+                        <Example word={w} />
+                      </span>
+                    );
+                  })}
+                </span>
               </span>
-            </Tag>
+            )}
           </li>
         );
       })}
@@ -463,18 +498,14 @@ export function IPATab() {
 
       <div className="class-section" style={{ marginBottom: 8 }}>
         <div className={styles.sectionHeader} style={{ background: '#7c3aed' }}>Vowels</div>
-        <span className={styles.sectionSub}>
-          Where symbols appear in pairs, the one on the right is rounded.
-        </span>
+        <span className={styles.sectionSub}>right = rounded</span>
       </div>
 
       <VowelChart visibleLangs={visibleLangs} primaryLang={primaryLang} showOther={showOther} />
 
       <div className="class-section" style={{ marginBottom: 8 }}>
         <div className={styles.sectionHeader} style={{ background: '#0f172a' }}>Pulmonic consonants</div>
-        <span className={styles.sectionSub}>
-          Within each place-of-articulation column pair, left = voiceless, right = voiced.
-        </span>
+        <span className={styles.sectionSub}>left = voiceless, right = voiced</span>
       </div>
 
       <ConsonantTable visibleLangs={visibleLangs} primaryLang={primaryLang} showOther={showOther} />
@@ -540,8 +571,8 @@ export function IPATab() {
 
       <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 16 }}>
         Layout adapted from{' '}
-        <a href="https://www.ipachart.com/" target="_blank" rel="noopener">ipachart.com</a>. Audio &amp;
-        details via each symbol's Wikipedia article (sourced from Wikimedia Commons). Hover over any
+        <a href="https://www.ipachart.com/" target="_blank" rel="noopener">ipachart.com</a>. Click any
+        cell to hear the sound (audio sourced from Wikimedia Commons). Hover over any
         <em> manner</em> or <em>place</em> label for a short description.
       </p>
     </div>

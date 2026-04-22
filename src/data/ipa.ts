@@ -298,6 +298,34 @@ export function wikiUrl(slug: string): string {
   return `https://en.wikipedia.org/wiki/${slug}`;
 }
 
+/**
+ * URL to the Wikimedia Commons audio clip for a phoneme. By convention the
+ * file is named identically to the Wikipedia article slug (e.g. article
+ * `Voiceless_velar_plosive` → file `Voiceless_velar_plosive.ogg`).
+ * Special:FilePath redirects to the actual CDN URL.
+ */
+export function audioUrl(slug: string): string {
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${slug}.ogg`;
+}
+
+let currentAudio: HTMLAudioElement | null = null;
+
+/** Play the IPA reference recording for a phoneme. Stops any previous clip. */
+export function playIpaSound(slug: string): void {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  const a = new Audio(audioUrl(slug));
+  currentAudio = a;
+  a.play().catch(err => {
+    // Most likely: no audio file exists for this slug, or the browser
+    // blocked playback. Log quietly instead of surfacing as an error.
+    // eslint-disable-next-line no-console
+    console.warn(`[ipa] could not play audio for "${slug}":`, err?.message ?? err);
+  });
+}
+
 // --- Non-pulmonic consonants ---------------------------------------------
 
 export interface IPALabelled {

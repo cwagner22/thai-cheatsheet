@@ -137,7 +137,7 @@
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   margin-bottom: 22px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e5e7eb;
 }
 
 .vowelColHeader,
@@ -149,7 +149,7 @@
   color: #666;
   padding: 6px 4px;
   text-align: center;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e5e7eb;
   background: #f8fafc;
 }
 
@@ -168,7 +168,7 @@
   align-items: stretch;
   padding: 3px;
   min-height: 70px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e5e7eb;
 }
 
 .vowelSymbolGroup {
@@ -181,6 +181,23 @@
   background: #f8fafc;
   min-width: 44px;
   flex: 1 1 0;
+}
+
+/* Cells wired to play a sound: give them a pointer cursor and a clear hover
+   so it's discoverable that the whole cell is clickable, not just the IPA
+   symbol. Button resets are collapsed in here too (no default browser
+   chrome on the consonant/labelled <button> cells). */
+.playable {
+  cursor: pointer;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+}
+.playable:hover { background: #dbeafe; }
+.playable:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
 }
 
 .vowelSymbolGroup.used {
@@ -278,7 +295,7 @@
 
 .consonantTable tbody td {
   padding: 0;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e5e7eb;
   vertical-align: top;
   overflow: visible;
   position: relative;
@@ -344,9 +361,6 @@
   overflow: visible;
 }
 
-.placeGroupDivider {
-  border-left: 2px solid #cbd5e1 !important;
-}
 
 /* abbr with tooltip (manner/place/non-pulmonic labels) */
 .abbr {
