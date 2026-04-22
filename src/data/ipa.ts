@@ -12,10 +12,10 @@ export type ExampleLang = 'en' | 'fr' | 'de' | 'es' | 'it' | 'th';
 export const LANGUAGE_OPTIONS: { value: ExampleLang; label: string }[] = [
   { value: 'th', label: 'Thai' },
   { value: 'en', label: 'English' },
-  { value: 'fr', label: 'Français' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'es', label: 'Español' },
-  { value: 'it', label: 'Italiano' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'it', label: 'Italian' },
 ];
 
 // --- Descriptions for tooltips -------------------------------------------
