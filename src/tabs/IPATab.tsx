@@ -65,10 +65,10 @@ function VowelSymbol({
   return (
     <div
       className={`${styles.vowelSymbolGroup} ${toneClass} ${clickable ? styles.playable : ''}`}
-      onClick={clickable ? () => playIpaSound(entry.wiki) : undefined}
+      onClick={clickable ? () => playIpaSound(entry) : undefined}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
-      onKeyDown={clickable ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playIpaSound(entry.wiki); } } : undefined}
+      onKeyDown={clickable ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playIpaSound(entry); } } : undefined}
       aria-label={clickable ? `Play ${entry.symbol}` : undefined}
     >
       <span className={styles.vowelSymbol}>{entry.symbol}</span>
@@ -213,7 +213,7 @@ function ConsonantCell({
       <button
         type="button"
         className={`${cls} ${styles.playable}`}
-        onClick={() => playIpaSound(entry.wiki)}
+        onClick={() => playIpaSound(entry)}
         aria-label={`Play ${entry.symbol}`}
       >
         {inner}
@@ -341,7 +341,7 @@ function LabelledList({
               <button
                 type="button"
                 className={`${styles.labelledCell} ${styles.playable}`}
-                onClick={() => playIpaSound(item.wiki)}
+                onClick={() => playIpaSound(item)}
                 aria-label={`Play ${item.symbol}`}
               >
                 <span className={styles.labelledSymbol}>{item.symbol}</span>
