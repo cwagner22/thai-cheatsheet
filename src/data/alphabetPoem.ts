@@ -13,7 +13,7 @@ export interface PoemEntry {
 }
 
 export const POEM: PoemEntry[] = [
-  { letter: 'ก', anchorThai: 'กอ เอ๋ย กอ ไก่', anchorRom: 'kɔː ʔɤ̌ːj kɔː kàj', extThai: '',           extRom: '',                meaning: 'chicken' },
+  { letter: 'ก', anchorThai: 'กอ เอ๋ย กอ ไก่', anchorRom: 'kɔː ʔɤ̌ːj kɔː kàj', extThai: '',           extRom: '',                meaning: 'G is for chicken' },
   { letter: 'ข', anchorThai: 'ขอ ไข่',     anchorRom: 'kʰɔ̌ː kʰàj',        extThai: 'ในเล้า',      extRom: 'naj láw',          meaning: 'the eggs in the coop' },
   { letter: 'ฃ', anchorThai: 'ขอ ขวด',     anchorRom: 'kʰɔ̌ː kʰùat',       extThai: 'ของเรา',      extRom: 'kʰɔ̌ːŋ raw',        meaning: 'the bottle that is ours' },
   { letter: 'ค', anchorThai: 'คอ ควาย',   anchorRom: 'kʰɔː kʰwaːj',       extThai: 'เข้านา',       extRom: 'kʰâw naː',         meaning: 'the buffalo who enters the rice paddy' },

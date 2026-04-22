@@ -287,7 +287,7 @@ export function ConsonantsTab() {
       >
         <span className={styles.videoIcon} aria-hidden>▶</span>
         <span>
-          <strong>Video:</strong> alphabet walkthrough on YouTube
+          <strong>Video:</strong> เพลง ก เอ๋ย ก ไก่ — Thai alphabet song
         </span>
         <span className={styles.videoArrow} aria-hidden>↗</span>
       </a>
