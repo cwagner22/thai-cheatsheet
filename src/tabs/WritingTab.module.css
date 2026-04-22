@@ -127,6 +127,26 @@
   border-radius: 8px;
   padding: 10px 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  /* Block iOS long-press in any empty gap (right of the poem example line,
+     between canvases, row padding, etc.) from hijacking text selection and
+     grabbing the nearest selectable run — which, with per-element opt-in
+     below, lands arbitrarily far away. Text runs opt back in explicitly. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.letterHeaderName,
+.letterHeaderRom,
+.letterHeaderMeaning,
+.poemExampleThai,
+.poemExampleRom,
+.poemExampleMeaning,
+.practiceWord,
+.practiceRom,
+.practiceMeaning {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .clearRow {
