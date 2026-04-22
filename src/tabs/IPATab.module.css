@@ -42,9 +42,24 @@
 
 .ctrlRow > label {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #333;
   min-width: 90px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emptyNote {
+  font-size: 0.82rem;
+  color: #666;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
 }
 
 .ctrlRow select {
@@ -116,12 +131,13 @@
 .vowelGrid {
   display: grid;
   grid-template-columns: 110px repeat(5, 1fr);
-  gap: 2px;
+  gap: 0;
   background: #fff;
   border-radius: 8px;
-  padding: 12px;
+  overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   margin-bottom: 22px;
+  border: 1px solid #f1f5f9;
 }
 
 .vowelColHeader,
@@ -133,6 +149,8 @@
   color: #666;
   padding: 6px 4px;
   text-align: center;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
 }
 
 .vowelRowHeader {
@@ -150,6 +168,7 @@
   align-items: stretch;
   padding: 3px;
   min-height: 70px;
+  border: 1px solid #f1f5f9;
 }
 
 .vowelSymbolGroup {
@@ -159,14 +178,24 @@
   gap: 2px;
   padding: 5px 6px;
   border-radius: 6px;
-  background: #ecfccb;
+  background: #f8fafc;
   min-width: 44px;
   flex: 1 1 0;
+}
+
+.vowelSymbolGroup.used {
+  background: #ecfccb;
 }
 
 .vowelSymbolGroup.unused {
   background: #ececec;
   color: #999;
+}
+
+.vowelSlotPlaceholder {
+  flex: 1 1 0;
+  min-width: 44px;
+  visibility: hidden;
 }
 
 .vowelSymbol {
@@ -238,7 +267,8 @@
   color: #333 !important;
   text-align: right !important;
   padding: 4px 8px !important;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.2;
   font-size: 0.72rem !important;
   font-weight: 700;
   text-transform: none !important;
@@ -276,6 +306,15 @@
   align-items: center;
   justify-content: center;
   min-height: 1.3em;
+}
+
+.consonantCellPlain {
+  background: #fff;
+  cursor: pointer;
+}
+.consonantCellPlain:hover {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .consonantCellUsed {
@@ -359,6 +398,10 @@
   border-radius: 6px;
   background: #ecfccb;
   flex-wrap: wrap;
+}
+
+.labelledItem.labelledPlain .labelledCell {
+  background: #fff;
 }
 
 .labelledItem.labelledUnused .labelledCell {
