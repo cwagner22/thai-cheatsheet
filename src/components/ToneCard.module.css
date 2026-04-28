@@ -27,12 +27,6 @@
   font-weight: 600;
 }
 
-.desc {
-  font-size: 0.72rem;
-  color: #888;
-  margin-bottom: 4px;
-}
-
 .ipa {
   font-size: 0.9rem;
   color: #555;
@@ -45,8 +39,18 @@
 }
 
 .example {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
   font-size: 0.82rem;
   margin-top: 4px;
+}
+
+.chaoIpa {
+  font-size: 0.78rem;
+  color: #888;
+  white-space: nowrap;
 }
 
 .exampleWord {
