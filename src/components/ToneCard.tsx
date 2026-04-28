@@ -8,7 +8,7 @@ export function ToneCard({ tone }: { tone: ToneEntry }) {
         <strong style={{ color: tone.color }}>{tone.name}</strong>
         <span>
           {tone.thaiName && (
-            <span className={styles.thaiName}>{tone.thaiName}</span>
+            <span className={styles.thaiName}>เสียง{tone.thaiName}</span>
           )}{' '}
           <span className={styles.code}>{tone.code}</span>
         </span>
