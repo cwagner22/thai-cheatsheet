@@ -56,7 +56,7 @@ export function TonesTab() {
 
         <div className={styles.stepBox}>
           <strong>Step 1 — Is there a tone mark?</strong><br />
-          → Yes: check the tone mark table below. The mark + class = your tone.<br /><br />
+          → Yes: check the tone mark table below for the mark + class.<br /><br />
           <strong>Step 2 — No tone mark. Is the syllable live?</strong><br />
           → <strong style={{ color: '#2563eb' }}>Mid</strong> or{' '}
           <strong style={{ color: '#dc2626' }}>Low</strong> class → <strong>mid tone</strong><br />
@@ -123,11 +123,6 @@ export function TonesTab() {
             </tr>
           </tbody>
         </table>
-        <p className={styles.legendNote}>
-          <span className={styles.legendBlue}>blue</span> Mid &amp; Low share Mid tone (live) &nbsp;
-          <span className={styles.legendRed}>red</span> Mid &amp; High share Low on dead syllables &nbsp;
-          <span className={styles.legendPurple}>purple</span> Mid &amp; High → Falling with ไม้โท
-        </p>
 
         <p style={{ marginTop: 14, marginBottom: 4 }}>
           <strong>The other two tone marks (Mid class only):</strong>
@@ -142,15 +137,10 @@ export function TonesTab() {
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้จัตวา #4</span> →{' '}
           <Tone name="Rising" colored /> tone.
         </p>
-        <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 4 }}>
-          Used only on Mid-class letters (it's how Mid gets its High and Rising tones, since the
-          Dead / ไม้เอก / ไม้โท columns cover Low and Falling).
+        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 6 }}>
+          Mid is the only class that uses all 4 marks, so the only one that reaches all 5
+          tones. A tone mark never gives Mid — that's the no-mark default.
         </p>
-
-        <p style={{ marginTop: 14, marginBottom: 4 }}><strong>Tips:</strong></p>
-        <p style={{ fontSize: '0.83rem' }}>• <strong>ไม้เอก = Dead-long behavior</strong> for every class. Memorize one, get both.</p>
-        <p style={{ fontSize: '0.83rem' }}>• <strong>Only Mid class uses all 4 tone marks</strong> and can produce all 5 tones.</p>
-        <p style={{ fontSize: '0.83rem' }}>• <strong>With a tone mark, the result is never Mid tone.</strong></p>
       </div>
 
       <div className="tone-rules" style={{ marginTop: 24 }}>
