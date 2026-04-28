@@ -5,6 +5,43 @@ import styles from './TonesTab.module.css';
 
 type Lang = 'thai' | 'northern';
 
+type ToneName = 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising';
+
+/**
+ * Native-Thai tone numbering: เอก=1, โท=2, ตรี=3, จัตวา=4. Mid (สามัญ) is
+ * unmarked and traditionally has no number.
+ */
+const TONE_NUM: Record<ToneName, number | undefined> = {
+  Mid: undefined,
+  Low: 1,
+  Falling: 2,
+  High: 3,
+  Rising: 4,
+};
+
+/** Contour-graph colors from THAI_TONES — kept in sync by hand for now so
+ *  this file doesn't depend on the data module just for a tiny lookup. */
+const TONE_COLOR: Record<ToneName, string> = {
+  Mid: '#2563eb',     // blue
+  Low: '#dc2626',     // red
+  Falling: '#7c3aed', // purple
+  High: '#16a34a',    // green
+  Rising: '#db2777',  // pink
+};
+
+/** Tone name + small "#N" badge, e.g. "Rising #4". Mid renders unchanged.
+ *  Pass `colored` to tint the name with its contour-graph color. */
+function Tone({ name, colored }: { name: ToneName; colored?: boolean }) {
+  const n = TONE_NUM[name];
+  const style = colored ? { color: TONE_COLOR[name], fontWeight: 700 } : undefined;
+  return (
+    <span style={style}>
+      {name}
+      {n != null && <span className={styles.toneNum}>#{n}</span>}
+    </span>
+  );
+}
+
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
   const tones = lang === 'thai' ? THAI_TONES : NORTHERN_TONES;
@@ -69,26 +106,26 @@ export function TonesTab() {
           <tbody>
             <tr>
               <td className={styles.cellMid}>Mid</td>
-              <td style={{ background: '#d1fae5' }}>Mid</td>
-              <td rowSpan={2} colSpan={2} style={{ background: '#fed7aa', verticalAlign: 'middle' }}>Low</td>
-              <td rowSpan={2} style={{ background: '#ddd6fe', verticalAlign: 'middle' }}>Falling</td>
+              <td style={{ background: '#dbeafe' }}><Tone name="Mid" /></td>
+              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}><Tone name="Low" /></td>
+              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}><Tone name="Falling" /></td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
-              <td>Rising</td>
+              <td><Tone name="Rising" /></td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
-              <td style={{ background: '#d1fae5' }}>Mid</td>
-              <td>High</td>
-              <td>Falling</td>
-              <td>High</td>
+              <td style={{ background: '#dbeafe' }}><Tone name="Mid" /></td>
+              <td><Tone name="High" /></td>
+              <td><Tone name="Falling" /></td>
+              <td><Tone name="High" /></td>
             </tr>
           </tbody>
         </table>
         <p className={styles.legendNote}>
-          <span className={styles.legendGreen}>green</span> Mid &amp; Low share Mid tone (live) &nbsp;
-          <span className={styles.legendOrange}>orange</span> Mid &amp; High share Low on dead syllables &nbsp;
+          <span className={styles.legendBlue}>blue</span> Mid &amp; Low share Mid tone (live) &nbsp;
+          <span className={styles.legendRed}>red</span> Mid &amp; High share Low on dead syllables &nbsp;
           <span className={styles.legendPurple}>purple</span> Mid &amp; High → Falling with ไม้โท
         </p>
 
@@ -98,12 +135,12 @@ export function TonesTab() {
         <p style={{ fontSize: '0.83rem' }}>
           • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๊</span>{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้ตรี #3</span> →{' '}
-          <strong>High</strong> tone.
+          <Tone name="High" colored /> tone.
         </p>
         <p style={{ fontSize: '0.83rem' }}>
           • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๋</span>{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้จัตวา #4</span> →{' '}
-          <strong>Rising</strong> tone.
+          <Tone name="Rising" colored /> tone.
         </p>
         <p style={{ fontSize: '0.78rem', color: '#666', marginTop: 4 }}>
           Used only on Mid-class letters (it's how Mid gets its High and Rising tones, since the
