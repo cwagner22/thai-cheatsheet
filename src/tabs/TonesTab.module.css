@@ -66,6 +66,14 @@
   color: #dc2626;
 }
 
+/* Tone-number badge appended to a tone name (e.g. "Rising #4"). */
+.toneNum {
+  margin-left: 4px;
+  font-size: 0.78em;
+  font-weight: 600;
+  color: #666;
+}
+
 .legendNote {
   margin-top: 6px;
   font-size: 0.78rem;

@@ -5,6 +5,28 @@ import styles from './TonesTab.module.css';
 
 type Lang = 'thai' | 'northern';
 
+/**
+ * Native-Thai tone numbering: เอก=1, โท=2, ตรี=3, จัตวา=4. Mid (สามัญ) is
+ * unmarked and traditionally has no number.
+ */
+const TONE_NUM: Record<string, number> = {
+  Low: 1,
+  Falling: 2,
+  High: 3,
+  Rising: 4,
+};
+
+/** Tone name + small "#N" badge, e.g. "Rising #4". Mid renders unchanged. */
+function Tone({ name }: { name: 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising' }) {
+  const n = TONE_NUM[name];
+  return (
+    <>
+      {name}
+      {n != null && <span className={styles.toneNum}>#{n}</span>}
+    </>
+  );
+}
+
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
   const tones = lang === 'thai' ? THAI_TONES : NORTHERN_TONES;
@@ -69,20 +91,20 @@ export function TonesTab() {
           <tbody>
             <tr>
               <td className={styles.cellMid}>Mid</td>
-              <td style={{ background: '#d1fae5' }}>Mid</td>
-              <td rowSpan={2} colSpan={2} style={{ background: '#fed7aa', verticalAlign: 'middle' }}>Low</td>
-              <td rowSpan={2} style={{ background: '#ddd6fe', verticalAlign: 'middle' }}>Falling</td>
+              <td style={{ background: '#d1fae5' }}><Tone name="Mid" /></td>
+              <td rowSpan={2} colSpan={2} style={{ background: '#fed7aa', verticalAlign: 'middle' }}><Tone name="Low" /></td>
+              <td rowSpan={2} style={{ background: '#ddd6fe', verticalAlign: 'middle' }}><Tone name="Falling" /></td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
-              <td>Rising</td>
+              <td><Tone name="Rising" /></td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
-              <td style={{ background: '#d1fae5' }}>Mid</td>
-              <td>High</td>
-              <td>Falling</td>
-              <td>High</td>
+              <td style={{ background: '#d1fae5' }}><Tone name="Mid" /></td>
+              <td><Tone name="High" /></td>
+              <td><Tone name="Falling" /></td>
+              <td><Tone name="High" /></td>
             </tr>
           </tbody>
         </table>
