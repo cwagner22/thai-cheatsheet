@@ -106,20 +106,20 @@ export function TonesTab() {
           <tbody>
             <tr>
               <td className={styles.cellMid}>Mid</td>
-              <td style={{ background: '#dbeafe' }}><Tone name="Mid" /></td>
-              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}><Tone name="Low" /></td>
-              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}><Tone name="Falling" /></td>
+              <td style={{ background: '#dbeafe' }}><Tone name="Mid" colored /></td>
+              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}><Tone name="Low" colored /></td>
+              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}><Tone name="Falling" colored /></td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
-              <td><Tone name="Rising" /></td>
+              <td><Tone name="Rising" colored /></td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
-              <td style={{ background: '#dbeafe' }}><Tone name="Mid" /></td>
-              <td><Tone name="High" /></td>
-              <td><Tone name="Falling" /></td>
-              <td><Tone name="High" /></td>
+              <td style={{ background: '#dbeafe' }}><Tone name="Mid" colored /></td>
+              <td><Tone name="High" colored /></td>
+              <td><Tone name="Falling" colored /></td>
+              <td><Tone name="High" colored /></td>
             </tr>
           </tbody>
         </table>
