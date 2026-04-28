@@ -80,18 +80,21 @@
   color: #666;
 }
 
-.legendGreen {
-  background: #d1fae5;
+/* Tone-tinted backgrounds, kept in light shades to match the unified
+   table cells. Hue per tone matches the contour-graph color in
+   THAI_TONES (Mid=blue, Low=red, Falling=purple). */
+.legendBlue {
+  background: #dbeafe;
   padding: 1px 6px;
   border-radius: 3px;
 }
-.legendOrange {
-  background: #fed7aa;
+.legendRed {
+  background: #fee2e2;
   padding: 1px 6px;
   border-radius: 3px;
 }
 .legendPurple {
-  background: #ddd6fe;
+  background: #ede9fe;
   padding: 1px 6px;
   border-radius: 3px;
 }
