@@ -12,11 +12,43 @@
   font-size: 0.85rem;
   border-collapse: collapse;
   text-align: center;
-  border: 1px solid #bbb;
   background: #fff;
   box-shadow: none;
   border-radius: 0;
   overflow: visible;
+  /* Fixed layout — all data columns equal width regardless of content. */
+  table-layout: fixed;
+}
+
+.toneTable col.classCol { width: 13%; }
+.toneTable col.dataCol { width: 14.5%; }
+
+.midOnlyCell {
+  background: #f3f4f6;
+  vertical-align: middle;
+  font-size: 0.78rem;
+  color: #888;
+  font-style: italic;
+}
+
+.tonePopoverTrigger {
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* Floating contour-card popover, portaled to body so the table layout doesn't
+   clip it. Absolute positioning + document-relative coords (left/top set in
+   JS) so the popover scrolls with the page, staying anchored to the cell.
+   pointer-events left at the default `auto` so hover events on the card's
+   own elements (e.g. the title's IPA tooltip) still fire. */
+.tonePopover {
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 260px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .toneTable thead th {
@@ -66,12 +98,32 @@
   color: #dc2626;
 }
 
-/* Tone-number badge appended to a tone name (e.g. "Rising #4"). */
-.toneNum {
-  margin-left: 4px;
-  font-size: 0.78em;
-  font-weight: 600;
-  color: #666;
+/* Tone-mark glyph used inside the unified tone table. */
+.toneGlyph {
+  font-family: var(--thai-font);
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Thai combining marks (่ ้ ๊ ๋) have zero advance — the glyph paints to the
+   right of x=0. Wrap them in a 0.5em-wide box so the box centers via td
+   text-align and the glyph fills the box left-to-right. translateY keeps the
+   mark vertically centered (combining marks anchor at the line top). */
+/* Combining marks have zero advance and the glyph paints LEFT of the anchor
+   (the mark sits above where its base char would go). We use padding-left to
+   push the anchor right by half a glyph-width — when text-align: center
+   centers the box, the mark's visible glyph lands at horizontal cell center.
+   translateY shifts it down to vertically center within the cell. */
+.toneGlyphCombining {
+  padding-left: 0.4em;
+  transform: translateY(0.45em);
+}
+
+.toneTable tbody td {
+  height: 3.7rem;
 }
 
 .langToggle {
