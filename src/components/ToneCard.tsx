@@ -1,17 +1,29 @@
 import type { ToneEntry } from '../data/tones';
 import styles from './ToneCard.module.css';
 
+const isCombiningMark = (s: string) => /[่-๋]/.test(s);
+
 export function ToneCard({ tone }: { tone: ToneEntry }) {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <strong style={{ color: tone.color }}>{tone.name}</strong>
-        <span>
-          {tone.thaiName && (
-            <span className={styles.thaiName}>เสียง{tone.thaiName}</span>
-          )}{' '}
-          <span className={styles.code}>{tone.code}</span>
-        </span>
+        <strong
+          className={styles.label}
+          style={{ color: tone.color, cursor: tone.nameIpa ? 'help' : undefined }}
+          data-tooltip={tone.nameIpa}
+        >
+          {tone.name}
+          {tone.nameEn && <span className={styles.nameEn}> ({tone.nameEn})</span>}
+        </strong>
+        {tone.mark && (
+          <span
+            className={`${styles.mark} ${styles.label} ${isCombiningMark(tone.mark) ? styles.markCombining : ''}`}
+            style={{ color: tone.color, cursor: tone.markIpa ? 'help' : undefined }}
+            data-tooltip={tone.markName && tone.markIpa ? `${tone.markName} ${tone.markIpa}` : undefined}
+          >
+            {tone.mark}
+          </span>
+        )}
       </div>
       <svg viewBox="0 0 160 80" preserveAspectRatio="none" className={styles.svg}>
         {[10, 25, 40, 55, 70].map(y => (

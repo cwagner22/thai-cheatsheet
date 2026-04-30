@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { THAI_TONES, NORTHERN_TONES } from '../data/tones';
 import { ToneCard } from '../components/ToneCard';
 import styles from './TonesTab.module.css';
@@ -6,18 +7,6 @@ import styles from './TonesTab.module.css';
 type Lang = 'thai' | 'northern';
 
 type ToneName = 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising';
-
-/**
- * Native-Thai tone numbering: เอก=1, โท=2, ตรี=3, จัตวา=4. Mid (สามัญ) is
- * unmarked and traditionally has no number.
- */
-const TONE_NUM: Record<ToneName, number | undefined> = {
-  Mid: undefined,
-  Low: 1,
-  Falling: 2,
-  High: 3,
-  Rising: 4,
-};
 
 /** Contour-graph colors from THAI_TONES — kept in sync by hand for now so
  *  this file doesn't depend on the data module just for a tiny lookup. */
@@ -29,18 +18,95 @@ const TONE_COLOR: Record<ToneName, string> = {
   Rising: '#db2777',  // pink
 };
 
-/** Tone name + small "#N" badge, e.g. "Rising #4". Mid renders unchanged.
- *  Pass `colored` to tint the name with its contour-graph color. */
-function Tone({ name, colored }: { name: ToneName; colored?: boolean }) {
-  const n = TONE_NUM[name];
-  const style = colored ? { color: TONE_COLOR[name], fontWeight: 700 } : undefined;
+/** Tone-mark glyph by tone name. Mid has no mark — the cell stays empty. */
+const TONE_MARK: Record<ToneName, string> = {
+  Mid: '',
+  Low: '่',
+  Falling: '้',
+  High: '๊',
+  Rising: '๋',
+};
+
+/** Render the tone mark in tone color. Used in the unified tone table.
+ *  Mid (empty mark) renders nothing — the cell stays blank.
+ *  `color` overrides the default tone color (used in header, where dark
+ *  background needs white). Same CSS class as the cells so header & cells
+ *  land at the same horizontal X within the column. */
+function ToneGlyph({ name, color }: { name: ToneName; color?: string }) {
+  const mark = TONE_MARK[name];
+  if (!mark) return null;
   return (
-    <span style={style}>
-      {name}
-      {n != null && <span className={styles.toneNum}>#{n}</span>}
+    <span
+      className={`${styles.toneGlyph} ${styles.toneGlyphCombining}`}
+      style={{ color: color ?? TONE_COLOR[name] }}
+      title={`${name} tone`}
+    >
+      {mark}
     </span>
   );
 }
+
+/** Map ToneName to its THAI_TONES entry (for popover content). */
+function toneEntry(name: ToneName) {
+  return THAI_TONES.find(t => t.nameEn === name);
+}
+
+/** Wraps a child (the tone mark glyph) so clicking/tapping it reveals the
+ *  matching contour card in a floating popover. Hover does not open the
+ *  popover, but the cursor signals it's clickable. */
+function TonePopover({ tone, children }: { tone: ToneName; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!open || !wrapperRef.current) return;
+    const r = wrapperRef.current.getBoundingClientRect();
+    // Use document-relative coords so the popover scrolls with the page,
+    // staying anchored to the trigger cell instead of fixed in the viewport.
+    setPos({
+      x: r.left + r.width / 2 + window.scrollX,
+      y: r.bottom + window.scrollY + 8,
+    });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | TouchEvent) => {
+      if (wrapperRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [open]);
+
+  const entry = toneEntry(tone);
+  if (!entry) return <>{children}</>;
+
+  return (
+    <span
+      ref={wrapperRef}
+      className={styles.tonePopoverTrigger}
+      onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+    >
+      {children}
+      {open && pos && createPortal(
+        <div
+          className={styles.tonePopover}
+          style={{ left: pos.x, top: pos.y }}
+        >
+          <ToneCard tone={entry} />
+        </div>,
+        document.body
+      )}
+    </span>
+  );
+}
+
 
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
@@ -81,72 +147,96 @@ export function TonesTab() {
         </p>
 
         <p style={{ marginBottom: 6 }}>
-          <strong>Unified tone table</strong>{' '}
-          <span style={{ fontSize: '0.78rem', color: '#666' }}>
-            (ไม้เอก merged into Dead-long since they produce the same tones)
-          </span>
+          <strong>Unified tone table</strong>
         </p>
         <table className={styles.toneTable}>
+          <colgroup>
+            <col className={styles.classCol} />
+            <col className={styles.dataCol} />
+            <col className={styles.dataCol} />
+            <col className={styles.dataCol} />
+            <col className={styles.dataCol} />
+            <col className={styles.dataCol} />
+            <col className={styles.dataCol} />
+          </colgroup>
           <thead>
             <tr>
               <th>Class</th>
-              <th>Live<br /><span className={styles.subcol}>(no mark)</span></th>
-              <th>Dead<br /><span className={styles.subcol}>(short)</span></th>
-              <th className={styles.thaiCol}>
-                <span style={{ fontSize: '1.1rem' }}>ก่</span>{' '}
-                <span className={styles.subcol}>ไม้เอก #1</span><br />
-                <span className={styles.subcolEn}>= Dead (long)</span>
+              <th>Live</th>
+              <th>Dead short</th>
+              <th>
+                Dead long<br />
+                <ToneGlyph name="Low" color="#fff" />
               </th>
-              <th className={styles.thaiCol}>
-                <span style={{ fontSize: '1.1rem' }}>ก้</span>{' '}
-                <span className={styles.subcol}>ไม้โท #2</span>
-              </th>
+              <th><ToneGlyph name="Falling" color="#fff" /></th>
+              <th><ToneGlyph name="High" color="#fff" /></th>
+              <th><ToneGlyph name="Rising" color="#fff" /></th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className={styles.cellMid}>Mid</td>
-              <td style={{ background: '#dbeafe' }}><Tone name="Mid" colored /></td>
-              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}><Tone name="Low" colored /></td>
-              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}><Tone name="Falling" colored /></td>
+              <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
+              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}>
+                <TonePopover tone="Low"><ToneGlyph name="Low" /></TonePopover>
+              </td>
+              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}>
+                <TonePopover tone="Falling"><ToneGlyph name="Falling" /></TonePopover>
+              </td>
+              <td>
+                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
+              </td>
+              <td>
+                <TonePopover tone="Rising"><ToneGlyph name="Rising" /></TonePopover>
+              </td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
-              <td><Tone name="Rising" colored /></td>
+              <td>
+                <TonePopover tone="Rising"><ToneGlyph name="Rising" /></TonePopover>
+              </td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
-              <td style={{ background: '#dbeafe' }}><Tone name="Mid" colored /></td>
-              <td><Tone name="High" colored /></td>
-              <td><Tone name="Falling" colored /></td>
-              <td><Tone name="High" colored /></td>
+              <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
+              <td>
+                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
+              </td>
+              <td>
+                <TonePopover tone="Falling"><ToneGlyph name="Falling" /></TonePopover>
+              </td>
+              <td>
+                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
+              </td>
             </tr>
           </tbody>
         </table>
 
-        <p style={{ marginTop: 14, marginBottom: 4 }}>
-          <strong>The other two tone marks (Mid class only):</strong>
-        </p>
-        <p style={{ fontSize: '0.83rem' }}>
-          • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๊</span>{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้ตรี #3</span> →{' '}
-          <Tone name="High" colored /> tone.
-        </p>
-        <p style={{ fontSize: '0.83rem' }}>
-          • <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>ก๋</span>{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้จัตวา #4</span> →{' '}
-          <Tone name="Rising" colored /> tone.
-        </p>
-        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 6 }}>
-          Mid is the only class that uses all 4 marks, so the only one that reaches all 5
-          tones. A tone mark never gives Mid — that's the no-mark default.
+        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
+          Only mid class uses all 4 marks, reaching all 5 tones. A tone mark never gives Mid.
         </p>
       </div>
 
       <div className="tone-rules" style={{ marginTop: 24 }}>
         <h2 style={{ margin: '0 0 6px 0' }}>Pronunciation — Contour Visualization</h2>
-        <p style={{ fontSize: '0.83rem', color: '#555', margin: '0 0 10px 0' }}>
+        <p style={{ fontSize: '0.83rem', color: '#555', margin: '0 0 6px 0' }}>
           Each tone plotted as a pitch curve over time. Vertical scale = Chao tone letters (1 = lowest pitch, 5 = highest). Horizontal = duration.
+        </p>
+        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 4px 0' }}>
+          Names below abbreviate the full form prefixed with{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>{' '}
+          <em>(/sǐaŋ/, "tone")</em> — e.g.{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงสามัญ</span>,{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงจัตวา</span>,{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>T1, etc.
+        </p>
+        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
+          Tone marks themselves take{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้</span>{' '}
+          <em>(/máj/, "stick")</em> — e.g.{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้เอก</span>,{' '}
+          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้โท</span>{' '}
+          (hover the corner glyph on a card for IPA).
         </p>
       </div>
 
