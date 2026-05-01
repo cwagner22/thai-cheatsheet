@@ -20,10 +20,15 @@ function Tags({ c }: { c: Consonant }) {
   );
 }
 
-/** Render the final-sound cell. When the final equals the initial we show a
- *  trema (¨) — the conventional "ditto" mark — instead of repeating the
- *  value. De-clutters the column. Distinct from "—" (no final form). */
+/** Render the final-sound cell. Three cases:
+ *  - "—" means the consonant has no final form (can't end a syllable);
+ *    shown dimmed with an explanatory tooltip.
+ *  - final === initial: render a trema (¨) as a "ditto" mark.
+ *  - otherwise: show the final value as-is. */
 function FinalSound({ initial, final }: { initial: string; final: string }) {
+  if (final === '—') {
+    return <span className={styles.finalNone} title="no final form — this consonant can't end a syllable">—</span>;
+  }
   if (final === initial) {
     return <span className={styles.finalSame} title={`same as initial: ${final}`}>¨</span>;
   }

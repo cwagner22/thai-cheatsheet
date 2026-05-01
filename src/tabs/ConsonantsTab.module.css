@@ -49,15 +49,22 @@
 }
 
 /* "Same as initial" indicator (¨ trema, used as ditto mark) in the Final
-   column when the final equals the initial. Dimmed; bumped size since the
-   diaeresis renders small at default size. */
+   column. Dimmed and bumped size — the diaeresis paints near the top of
+   its line box, so translateY pushes it down to sit centered in the cell. */
 .finalSame {
   color: #aaa;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   cursor: help;
   display: inline-block;
-  line-height: 0.5;
+  line-height: 1;
+  transform: translateY(0.35em);
+}
+
+/* "No final form" indicator (—) when the consonant can't end a syllable. */
+.finalNone {
+  color: #aaa;
+  cursor: help;
 }
 
 .videoBookmark {
