@@ -21,18 +21,39 @@ function Tags({ c }: { c: Consonant }) {
 }
 
 /** Render the final-sound cell. Three cases:
- *  - "—" means the consonant has no final form (can't end a syllable);
- *    shown dimmed with an explanatory tooltip.
+ *  - "—" means the consonant has no final form (can't end a syllable).
  *  - final === initial: render a trema (¨) as a "ditto" mark.
  *  - otherwise: show the final value as-is. */
 function FinalSound({ initial, final }: { initial: string; final: string }) {
   if (final === '—') {
-    return <span className={styles.finalNone} title="no final form — this consonant can't end a syllable">—</span>;
+    return <span className={styles.finalNone}>—</span>;
   }
   if (final === initial) {
-    return <span className={styles.finalSame} title={`same as initial: ${final}`}>¨</span>;
+    return <span className={styles.finalSame}>¨</span>;
   }
   return <>{final}</>;
+}
+
+/** Derive the final-sound display for a group of consonants by combining the
+ *  per-letter `final` values. If they all agree we show one value (matching
+ *  the by-class view); when mixed (e.g. /f/ → ฝ has "—" but ฟ has "/p/") we
+ *  list each unique final so the by-sound view stays consistent with the
+ *  by-class view's per-letter data. */
+function GroupFinal({ initial, letters }: { initial: string; letters: Consonant[] }) {
+  const uniques = [...new Set(letters.map(l => l.final))];
+  if (uniques.length === 1) {
+    return <FinalSound initial={initial} final={uniques[0]} />;
+  }
+  return (
+    <span className={styles.finalMixed}>
+      {uniques.map((f, i) => (
+        <span key={f}>
+          {i > 0 && <span className={styles.finalSep}> · </span>}
+          <FinalSound initial={initial} final={f} />
+        </span>
+      ))}
+    </span>
+  );
 }
 
 function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerClass: string }) {
@@ -95,7 +116,7 @@ function SoundGroupRow({ g }: { g: SoundGroup }) {
         </div>
       </td>
       <td className="final-sound" style={{ whiteSpace: 'nowrap' }}>
-        <FinalSound initial={g.sound} final={g.final} />
+        <GroupFinal initial={g.sound} letters={g.letters} />
       </td>
     </tr>
   );
@@ -115,7 +136,9 @@ function HighLowRow({ p }: { p: HighLowPair }) {
           {p.low.map(c => <PairLetter key={c.letter} c={c} dim={c.obsolete} />)}
         </div>
       </td>
-      <td className="final-sound"><FinalSound initial={p.sound} final={p.final} /></td>
+      <td className="final-sound">
+        <GroupFinal initial={p.sound} letters={[...p.high, ...p.low]} />
+      </td>
     </tr>
   );
 }

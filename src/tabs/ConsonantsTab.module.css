@@ -64,7 +64,20 @@
 /* "No final form" indicator (—) when the consonant can't end a syllable. */
 .finalNone {
   color: #aaa;
-  cursor: help;
+}
+
+/* When a sound-grouped row has letters with mixed finals (e.g. /f/ pair where
+   ฝ has no final but ฟ has /p/), stack each unique final vertically so the
+   row stays consistent with per-letter data in the by-class view. */
+.finalMixed {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.finalSep {
+  display: none;
 }
 
 .videoBookmark {
