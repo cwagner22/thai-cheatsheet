@@ -48,6 +48,14 @@
   font-family: 'SF Mono', Menlo, monospace;
 }
 
+/* "Same as initial" indicator (↑) used in the Final-sound column when the
+   final equals the initial. Dimmed to signal "see initial above-left". */
+.finalSame {
+  color: #aaa;
+  font-size: 0.95rem;
+  cursor: help;
+}
+
 .videoBookmark {
   display: flex;
   align-items: center;

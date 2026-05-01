@@ -7,34 +7,18 @@
   line-height: 1.8;
 }
 
-/* Horizontal-scroll wrapper so the table stays legible on narrow viewports
-   instead of being squished. Marker overflow-x: visible so popovers above
-   the table aren't clipped — they're portaled to body anyway. */
-.tableScroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  /* Negate parent padding so the scroll surface uses the full card width. */
-  margin: 0 -14px;
-  padding: 0 14px;
-}
-
 .toneTable {
   width: 100%;
-  /* Below this width the columns become too narrow to fit "Dead short" /
-     "Dead long" headers — the wrapper scrolls horizontally instead. */
-  min-width: 560px;
   font-size: 0.85rem;
   border-collapse: collapse;
   text-align: center;
   background: #fff;
   box-shadow: none;
   border-radius: 0;
+  overflow: visible;
   /* Fixed layout — all data columns equal width regardless of content. */
   table-layout: fixed;
 }
-
-.toneTable col.classCol { width: 13%; }
-.toneTable col.dataCol { width: 14.5%; }
 
 .midOnlyCell {
   background: #f3f4f6;
@@ -137,6 +121,19 @@
 
 .toneTable tbody td {
   height: 3.7rem;
+}
+
+/* Tighter padding + smaller header font so the unified table fits 7 columns
+   on narrow viewports without needing horizontal scroll. */
+@media (max-width: 600px) {
+  .toneTable th {
+    padding: 6px 3px;
+    font-size: 0.7rem;
+    line-height: 1.15;
+  }
+  .toneTable tbody td {
+    padding: 6px 3px;
+  }
 }
 
 .langToggle {

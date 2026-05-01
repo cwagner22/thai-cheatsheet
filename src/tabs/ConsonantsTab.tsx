@@ -20,6 +20,17 @@ function Tags({ c }: { c: Consonant }) {
   );
 }
 
+/** Render the final-sound cell. When the final equals the initial we show a
+ *  small "↑" instead of repeating the value — most consonants share the same
+ *  initial and final sound, so this de-clutters the column significantly.
+ *  Distinct from "—" which means the consonant has no final form. */
+function FinalSound({ initial, final }: { initial: string; final: string }) {
+  if (final === initial) {
+    return <span className={styles.finalSame} title={`same as initial: ${final}`}>↑</span>;
+  }
+  return <>{final}</>;
+}
+
 function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerClass: string }) {
   const rows = byClass(klass);
   return (
@@ -46,7 +57,7 @@ function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerC
             </td>
             <td>{c.meaning}</td>
             <td className="initial-sound">{c.initial}</td>
-            <td className="final-sound">{c.final}</td>
+            <td className="final-sound"><FinalSound initial={c.initial} final={c.final} /></td>
             <td className="sound-type">
               {c.type}{' '}<Tags c={c} />
             </td>
@@ -79,7 +90,9 @@ function SoundGroupRow({ g }: { g: SoundGroup }) {
           {g.letters.map(c => <PairLetter key={c.letter} c={c} />)}
         </div>
       </td>
-      <td className="final-sound" style={{ whiteSpace: 'nowrap' }}>{g.final}</td>
+      <td className="final-sound" style={{ whiteSpace: 'nowrap' }}>
+        <FinalSound initial={g.sound} final={g.final} />
+      </td>
     </tr>
   );
 }
@@ -98,7 +111,7 @@ function HighLowRow({ p }: { p: HighLowPair }) {
           {p.low.map(c => <PairLetter key={c.letter} c={c} dim={c.obsolete} />)}
         </div>
       </td>
-      <td className="final-sound">{p.final}</td>
+      <td className="final-sound"><FinalSound initial={p.sound} final={p.final} /></td>
     </tr>
   );
 }
