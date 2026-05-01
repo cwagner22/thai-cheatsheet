@@ -66,18 +66,14 @@
   color: #aaa;
 }
 
-/* When a sound-grouped row has letters with mixed finals (e.g. /f/ pair where
-   ฝ has no final but ฟ has /p/), stack each unique final vertically so the
-   row stays consistent with per-letter data in the by-class view. */
+/* When a sound-grouped row has multiple real finals (e.g. /j/ pair: ญ → /n/
+   and ย → /j/), stack them vertically. "—" is filtered out when any real
+   final exists, so this only fires for groups with truly different finals. */
 .finalMixed {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-}
-
-.finalSep {
-  display: none;
 }
 
 .videoBookmark {

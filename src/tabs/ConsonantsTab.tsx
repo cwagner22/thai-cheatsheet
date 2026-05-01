@@ -34,23 +34,22 @@ function FinalSound({ initial, final }: { initial: string; final: string }) {
   return <>{final}</>;
 }
 
-/** Derive the final-sound display for a group of consonants by combining the
- *  per-letter `final` values. If they all agree we show one value (matching
- *  the by-class view); when mixed (e.g. /f/ → ฝ has "—" but ฟ has "/p/") we
- *  list each unique final so the by-sound view stays consistent with the
- *  by-class view's per-letter data. */
+/** Derive the final-sound display for a group of consonants from the
+ *  per-letter `final` values. If at least one letter has a real final, we
+ *  drop the "—" entries (no need to show "no final" alongside the real
+ *  finals — the real one is what matters for writing). When the remaining
+ *  reals still differ, stack them vertically. */
 function GroupFinal({ initial, letters }: { initial: string; letters: Consonant[] }) {
-  const uniques = [...new Set(letters.map(l => l.final))];
+  const all = [...new Set(letters.map(l => l.final))];
+  const reals = all.filter(f => f !== '—');
+  const uniques = reals.length > 0 ? reals : all;
   if (uniques.length === 1) {
     return <FinalSound initial={initial} final={uniques[0]} />;
   }
   return (
     <span className={styles.finalMixed}>
-      {uniques.map((f, i) => (
-        <span key={f}>
-          {i > 0 && <span className={styles.finalSep}> · </span>}
-          <FinalSound initial={initial} final={f} />
-        </span>
+      {uniques.map(f => (
+        <FinalSound key={f} initial={initial} final={f} />
       ))}
     </span>
   );
