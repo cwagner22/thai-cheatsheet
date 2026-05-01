@@ -149,6 +149,7 @@ export function TonesTab() {
         <p style={{ marginBottom: 6 }}>
           <strong>Unified tone table</strong>
         </p>
+        <div className={styles.tableScroll}>
         <table className={styles.toneTable}>
           <colgroup>
             <col className={styles.classCol} />
@@ -211,6 +212,7 @@ export function TonesTab() {
             </tr>
           </tbody>
         </table>
+        </div>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
           Only mid class uses all 4 marks, reaching all 5 tones. A tone mark never gives Mid.
