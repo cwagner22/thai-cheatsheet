@@ -21,12 +21,11 @@ function Tags({ c }: { c: Consonant }) {
 }
 
 /** Render the final-sound cell. When the final equals the initial we show a
- *  small "↑" instead of repeating the value — most consonants share the same
- *  initial and final sound, so this de-clutters the column significantly.
- *  Distinct from "—" which means the consonant has no final form. */
+ *  trema (¨) — the conventional "ditto" mark — instead of repeating the
+ *  value. De-clutters the column. Distinct from "—" (no final form). */
 function FinalSound({ initial, final }: { initial: string; final: string }) {
   if (final === initial) {
-    return <span className={styles.finalSame} title={`same as initial: ${final}`}>↑</span>;
+    return <span className={styles.finalSame} title={`same as initial: ${final}`}>¨</span>;
   }
   return <>{final}</>;
 }
