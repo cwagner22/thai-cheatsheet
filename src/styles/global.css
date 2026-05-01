@@ -125,7 +125,7 @@ td { padding: 7px 10px; vertical-align: middle; }
 
 .thai-letter { font-family: var(--thai-font); font-size: 1.7rem; font-weight: 700; line-height: 1; }
 .thai-name { font-family: var(--thai-font); font-size: 0.95rem; }
-td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
+td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; text-align: center; }
 .sound-type { font-size: 0.75rem; color: #888; }
 
 .rare-tag { font-size: 0.65rem; background: #fef3c7; color: #92400e; padding: 1px 5px; border-radius: 3px; margin-left: 4px; font-weight: 600; vertical-align: middle; }
@@ -222,13 +222,17 @@ td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; }
   /* Legend: the 3 class dots can wrap tightly */
   .legend { gap: 10px; margin-bottom: 10px; }
 
-  /* Generic tables (consonants, clusters, tones): let them scroll
-     horizontally when they can't fit. Each table is wrapped in a
-     `<div style="overflow-x:auto">` is overkill — instead wrap from CSS. */
-  table { display: block; overflow-x: auto; white-space: nowrap; }
-  table thead,
-  table tbody { display: table; width: 100%; }
-  /* Re-allow wrapping inside cells so long phrases don't force horizontal
-     scroll when they don't need to. */
-  td { white-space: normal; }
+  /* Generic tables (consonants, clusters, tones): allow header & body to
+     wrap so columns can fit narrow widths. Keep tables as real tables (NOT
+     display:block) so thead/tbody share the same layout context — otherwise
+     they become independent tables with mismatched column widths.
+     Tighten padding on mobile so the wider tables (consonants) fit without
+     forcing a page-level horizontal scroll. */
+  th, td { white-space: normal; padding: 5px 4px; }
+  thead th { padding: 6px 4px; font-size: 0.7rem; }
+  /* Drop the descriptive "Type" column on mobile — its long phrases like
+     "stop (unaspirated)" force the consonant tables to overflow viewport.
+     The info is still on desktop; mobile shows the essentials. */
+  .class-section table th:last-child,
+  .class-section table td:last-child { display: none; }
 }

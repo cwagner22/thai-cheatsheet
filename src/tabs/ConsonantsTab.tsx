@@ -20,6 +20,41 @@ function Tags({ c }: { c: Consonant }) {
   );
 }
 
+/** Render the final-sound cell. Three cases:
+ *  - "—" means the consonant has no final form (can't end a syllable).
+ *  - final === initial: render a trema (¨) as a "ditto" mark.
+ *  - otherwise: show the final value as-is. */
+function FinalSound({ initial, final }: { initial: string; final: string }) {
+  if (final === '—') {
+    return <span className={styles.finalNone}>—</span>;
+  }
+  if (final === initial) {
+    return <span className={styles.finalSame}>¨</span>;
+  }
+  return <>{final}</>;
+}
+
+/** Derive the final-sound display for a group of consonants from the
+ *  per-letter `final` values. If at least one letter has a real final, we
+ *  drop the "—" entries (no need to show "no final" alongside the real
+ *  finals — the real one is what matters for writing). When the remaining
+ *  reals still differ, stack them vertically. */
+function GroupFinal({ initial, letters }: { initial: string; letters: Consonant[] }) {
+  const all = [...new Set(letters.map(l => l.final))];
+  const reals = all.filter(f => f !== '—');
+  const uniques = reals.length > 0 ? reals : all;
+  if (uniques.length === 1) {
+    return <FinalSound initial={initial} final={uniques[0]} />;
+  }
+  return (
+    <span className={styles.finalMixed}>
+      {uniques.map(f => (
+        <FinalSound key={f} initial={initial} final={f} />
+      ))}
+    </span>
+  );
+}
+
 function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerClass: string }) {
   const rows = byClass(klass);
   return (
@@ -46,7 +81,7 @@ function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerC
             </td>
             <td>{c.meaning}</td>
             <td className="initial-sound">{c.initial}</td>
-            <td className="final-sound">{c.final}</td>
+            <td className="final-sound"><FinalSound initial={c.initial} final={c.final} /></td>
             <td className="sound-type">
               {c.type}{' '}<Tags c={c} />
             </td>
@@ -79,7 +114,9 @@ function SoundGroupRow({ g }: { g: SoundGroup }) {
           {g.letters.map(c => <PairLetter key={c.letter} c={c} />)}
         </div>
       </td>
-      <td className="final-sound" style={{ whiteSpace: 'nowrap' }}>{g.final}</td>
+      <td className="final-sound" style={{ whiteSpace: 'nowrap' }}>
+        <GroupFinal initial={g.sound} letters={g.letters} />
+      </td>
     </tr>
   );
 }
@@ -98,7 +135,9 @@ function HighLowRow({ p }: { p: HighLowPair }) {
           {p.low.map(c => <PairLetter key={c.letter} c={c} dim={c.obsolete} />)}
         </div>
       </td>
-      <td className="final-sound">{p.final}</td>
+      <td className="final-sound">
+        <GroupFinal initial={p.sound} letters={[...p.high, ...p.low]} />
+      </td>
     </tr>
   );
 }
