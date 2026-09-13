@@ -119,6 +119,22 @@
   transform: translateY(0.45em);
 }
 
+/* Tone-box label (T1–T8) used in the Northern Thai tone box table. */
+.toneBoxLabel {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* A header label followed by a combining tone mark, e.g. "Mai Tho ้". A plain
+ * text-node space between them isn't reliable here (collapses to 0 width
+ * against the adjacent inline-block glyph in some layouts) — flex `gap`
+ * can't collapse the same way, so it's used instead of a literal space. */
+.headerMarkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
 .toneTable tbody td {
   height: 3.7rem;
 }

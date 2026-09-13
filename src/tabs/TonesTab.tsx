@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { THAI_TONES, NORTHERN_TONES } from '../data/tones';
+import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneEntry, type ToneBoxOutcome } from '../data/tones';
 import { ToneCard } from '../components/ToneCard';
 import styles from './TonesTab.module.css';
 
 type Lang = 'thai' | 'northern';
 
 type ToneName = 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising';
+
+/** Look up a THAI_TONES entry by its English name — for the Standard Thai table below. */
+const thaiTone = (name: ToneName) => THAI_TONES.find(t => t.nameEn === name)!;
+
+/** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
+const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
 
 /** Contour-graph colors from THAI_TONES — kept in sync by hand for now so
  *  this file doesn't depend on the data module just for a tiny lookup. */
@@ -32,13 +38,13 @@ const TONE_MARK: Record<ToneName, string> = {
  *  `color` overrides the default tone color (used in header, where dark
  *  background needs white). Same CSS class as the cells so header & cells
  *  land at the same horizontal X within the column. */
-function ToneGlyph({ name, color }: { name: ToneName; color?: string }) {
+function ToneGlyph({ name, color, fontSize }: { name: ToneName; color?: string; fontSize?: string }) {
   const mark = TONE_MARK[name];
   if (!mark) return null;
   return (
     <span
       className={`${styles.toneGlyph} ${styles.toneGlyphCombining}`}
-      style={{ color: color ?? TONE_COLOR[name] }}
+      style={{ color: color ?? TONE_COLOR[name], fontSize }}
       title={`${name} tone`}
     >
       {mark}
@@ -46,15 +52,52 @@ function ToneGlyph({ name, color }: { name: ToneName; color?: string }) {
   );
 }
 
-/** Map ToneName to its THAI_TONES entry (for popover content). */
-function toneEntry(name: ToneName) {
-  return THAI_TONES.find(t => t.nameEn === name);
+/** Renders a bare combining tone mark (่ ้ ๊ ๋) with a real base to attach to,
+ *  via the same CSS trick as ToneGlyph. A combining mark with no preceding
+ *  glyph in its own text run has nothing to attach to, so the browser draws
+ *  a dotted-circle placeholder before it — this avoids that.
+ *  `fontSize` defaults to the class's own (large, card-sized) glyph; pass a
+ *  smaller value when the mark sits inline next to ordinary-sized text, or
+ *  it'll dwarf that text — the padding/offset that centers it over its
+ *  assumed base are both em-relative, so they scale down with it. */
+function MarkGlyph({ mark, color, title, fontSize }: { mark: string; color?: string; title?: string; fontSize?: string }) {
+  return (
+    <span className={`${styles.toneGlyph} ${styles.toneGlyphCombining}`} style={{ color, fontSize }} title={title}>
+      {mark}
+    </span>
+  );
 }
 
-/** Wraps a child (the tone mark glyph) so clicking/tapping it reveals the
+/** Renders one tone-box cell. Most cells resolve to a single outcome; the one
+ *  cell where Chiang Mai's mid-class letters split by which letters they are
+ *  carries two, each labeled with the letters it covers so it's unambiguous
+ *  without cross-referencing the prose above the table. */
+function ToneBoxCell({ outcomes }: { outcomes: ToneBoxOutcome[] }) {
+  return (
+    <span style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+      {outcomes.map(({ code, letters }) => (
+        <TonePopover key={code} tone={northernTone(code)}>
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span className={styles.toneBoxLabel} style={{ color: northernTone(code).color }}>
+              {code}
+            </span>
+            {letters && (
+              <span style={{ fontFamily: 'var(--thai-font)', fontSize: '0.75rem', color: '#888' }}>
+                {letters}
+              </span>
+            )}
+          </span>
+        </TonePopover>
+      ))}
+    </span>
+  );
+}
+
+/** Wraps a child (a tone glyph or label) so clicking/tapping it reveals the
  *  matching contour card in a floating popover. Hover does not open the
- *  popover, but the cursor signals it's clickable. */
-function TonePopover({ tone, children }: { tone: ToneName; children: React.ReactNode }) {
+ *  popover, but the cursor signals it's clickable. Takes the ToneEntry
+ *  directly so it works for both the Standard Thai and tone-box tables. */
+function TonePopover({ tone: entry, children }: { tone: ToneEntry; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -84,9 +127,6 @@ function TonePopover({ tone, children }: { tone: ToneName; children: React.React
     };
   }, [open]);
 
-  const entry = toneEntry(tone);
-  if (!entry) return <>{children}</>;
-
   return (
     <span
       ref={wrapperRef}
@@ -114,6 +154,22 @@ export function TonesTab() {
 
   return (
     <div id="tab-tones">
+      <div className={styles.langToggle}>
+        <button
+          className={`${styles.langBtn} ${lang === 'thai' ? styles.langBtnActive : ''}`}
+          onClick={() => setLang('thai')}
+        >
+          Thai ไทย · 5 tones
+        </button>
+        <button
+          className={`${styles.langBtn} ${lang === 'northern' ? styles.langBtnActive : ''}`}
+          onClick={() => setLang('northern')}
+        >
+          Northern Thai คำเมือง · 6 tones
+        </button>
+      </div>
+
+      {lang === 'thai' && (
       <div className="tone-rules">
         <h2>Tone Calculation</h2>
         <p style={{ marginBottom: 10 }}>
@@ -123,12 +179,12 @@ export function TonesTab() {
         <div className={styles.stepBox}>
           <strong>Step 1 — Is there a tone mark?</strong><br />
           → Yes: check the tone mark table below for the mark + class.<br /><br />
-          <strong>Step 2 — No tone mark. Is the syllable live?</strong><br />
+          <strong>Step 2 — No tone mark, live syllable:</strong><br />
           → <strong style={{ color: '#2563eb' }}>Mid</strong> or{' '}
           <strong style={{ color: '#dc2626' }}>Low</strong> class → <strong>mid tone</strong><br />
           → <strong style={{ color: '#16a34a' }}>High</strong> class → <strong>rising tone</strong>
           <br /><br />
-          <strong>Step 3 — No tone mark, dead syllable.</strong><br />
+          <strong>Step 3 — No tone mark, dead syllable:</strong><br />
           → <strong style={{ color: '#2563eb' }}>Mid</strong> or{' '}
           <strong style={{ color: '#16a34a' }}>High</strong> class → <strong>low tone</strong>{' '}
           (short or long vowel, doesn't matter)<br />
@@ -152,12 +208,10 @@ export function TonesTab() {
         <table className={styles.toneTable}>
           <colgroup>
             <col style={{ width: '13%' }} />
-            <col style={{ width: '14.5%' }} />
-            <col style={{ width: '14.5%' }} />
-            <col style={{ width: '14.5%' }} />
-            <col style={{ width: '14.5%' }} />
-            <col style={{ width: '14.5%' }} />
-            <col style={{ width: '14.5%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
           </colgroup>
           <thead>
             <tr>
@@ -166,11 +220,15 @@ export function TonesTab() {
               <th>Dead short</th>
               <th>
                 Dead long<br />
-                <ToneGlyph name="Low" color="#fff" />
+                <span className={styles.headerMarkRow}>
+                  Mai Ek <ToneGlyph name="Low" color="#fff" fontSize="1.2rem" />
+                </span>
               </th>
-              <th><ToneGlyph name="Falling" color="#fff" /></th>
-              <th><ToneGlyph name="High" color="#fff" /></th>
-              <th><ToneGlyph name="Rising" color="#fff" /></th>
+              <th>
+                <span className={styles.headerMarkRow}>
+                  Mai Tho <ToneGlyph name="Falling" color="#fff" fontSize="1.2rem" />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -178,57 +236,137 @@ export function TonesTab() {
               <td className={styles.cellMid}>Mid</td>
               <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
               <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}>
-                <TonePopover tone="Low"><ToneGlyph name="Low" /></TonePopover>
+                <TonePopover tone={thaiTone('Low')}><ToneGlyph name="Low" /></TonePopover>
               </td>
               <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}>
-                <TonePopover tone="Falling"><ToneGlyph name="Falling" /></TonePopover>
-              </td>
-              <td>
-                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
-              </td>
-              <td>
-                <TonePopover tone="Rising"><ToneGlyph name="Rising" /></TonePopover>
+                <TonePopover tone={thaiTone('Falling')}><ToneGlyph name="Falling" /></TonePopover>
               </td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
               <td>
-                <TonePopover tone="Rising"><ToneGlyph name="Rising" /></TonePopover>
+                <TonePopover tone={thaiTone('Rising')}><ToneGlyph name="Rising" /></TonePopover>
               </td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
               <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
               <td>
-                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
+                <TonePopover tone={thaiTone('High')}><ToneGlyph name="High" /></TonePopover>
               </td>
               <td>
-                <TonePopover tone="Falling"><ToneGlyph name="Falling" /></TonePopover>
+                <TonePopover tone={thaiTone('Falling')}><ToneGlyph name="Falling" /></TonePopover>
               </td>
               <td>
-                <TonePopover tone="High"><ToneGlyph name="High" /></TonePopover>
+                <TonePopover tone={thaiTone('High')}><ToneGlyph name="High" /></TonePopover>
               </td>
             </tr>
           </tbody>
         </table>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
-          Only mid class uses all 4 marks, reaching all 5 tones. A tone mark never gives Mid.
+          Table covers ่ and ้. Mid class also takes ๊ and ๋ (giving High and Rising —
+          see the contour cards below), never Mid.
         </p>
       </div>
+      )}
+
+      {lang === 'northern' && (
+      <div className="tone-rules">
+        <h2>Tone Box — Northern Thai คำเมือง (Chiang Mai)</h2>
+        <p style={{ fontSize: '0.83rem', marginBottom: 10 }}>
+          Same three consonant classes as Standard Thai, but they land on a different
+          6-tone system, and the tone depends on the syllable environment (below) rather
+          than a fixed per-class rule. Cells show the Gedney box category that produces
+          each tone — click one for its contour.
+        </p>
+        <p style={{ fontSize: '0.83rem', marginBottom: 14 }}>
+          No ๊ or ๋ columns — those two marks are Standard Thai-only inventions, layered on
+          top of the older A/B/C/dead system Northern's tones come from, and this source
+          doesn't cover what tone they'd take here. Mai Ek isn't its own column either —
+          it always matches unmarked Dead long, so the two are merged below.
+        </p>
+
+        <p style={{ marginBottom: 6 }}>
+          <strong>Tone box</strong> <span style={{ fontWeight: 400, color: '#666' }}>(Gedney 1999)</span>
+        </p>
+        <table className={styles.toneTable}>
+          <colgroup>
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
+            <col style={{ width: '21.75%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Normal</th>
+              <th>Dead (short)</th>
+              <th>
+                Dead (long)<br />
+                <span className={styles.headerMarkRow}>
+                  Mai Ek <MarkGlyph mark="่" color="#fff" title="Mai Ek" fontSize="1.2rem" />
+                </span>
+              </th>
+              <th>
+                <span className={styles.headerMarkRow}>
+                  Mai Tho <MarkGlyph mark="้" color="#fff" title="Mai Tho" fontSize="1.2rem" />
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className={styles.cellHigh}>High</td>
+              <td><ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[0]} /></td>
+              <td rowSpan={2} style={{ verticalAlign: 'middle' }}>
+                <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[1]} />
+              </td>
+              <td rowSpan={2} style={{ verticalAlign: 'middle' }}>
+                <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[2]} />
+              </td>
+              <td rowSpan={2} style={{ verticalAlign: 'middle' }}>
+                <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[3]} />
+              </td>
+            </tr>
+            <tr>
+              <td className={styles.cellMid}>Mid</td>
+              <td><ToneBoxCell outcomes={NORTHERN_TONE_BOX[1].cells[0]} /></td>
+            </tr>
+            <tr>
+              <td className={styles.cellLow}>Low</td>
+              {NORTHERN_TONE_BOX[2].cells.map((cell, i) => (
+                <td key={i}><ToneBoxCell outcomes={cell} /></td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+
+        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
+          Source: Gedney (1999), as tabulated in Wikipedia's{' '}
+          <a href="https://en.wikipedia.org/wiki/Lanna_language#Tones" target="_blank" rel="noreferrer">
+            Lanna language
+          </a>{' '}
+          article. Dead syllables don't add new tones — every cell above reuses one of
+          the 6 live-syllable tones.
+        </p>
+      </div>
+      )}
 
       <div className="tone-rules" style={{ marginTop: 24 }}>
         <h2 style={{ margin: '0 0 6px 0' }}>Pronunciation — Contour Visualization</h2>
         <p style={{ fontSize: '0.83rem', color: '#555', margin: '0 0 6px 0' }}>
           Each tone plotted as a pitch curve over time. Vertical scale = Chao tone letters (1 = lowest pitch, 5 = highest). Horizontal = duration.
         </p>
+        {lang === 'thai' && (
+        <>
         <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 4px 0' }}>
           Names below abbreviate the full form prefixed with{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>{' '}
           <em>(/sǐaŋ/, "tone")</em> — e.g.{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงสามัญ</span>,{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงจัตวา</span>,{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>T1, etc.
+          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงจัตวา</span>, etc.
         </p>
         <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
           Tone marks themselves take{' '}
@@ -238,27 +376,21 @@ export function TonesTab() {
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้โท</span>{' '}
           (hover the corner glyph on a card for IPA).
         </p>
-      </div>
-
-      <div className={styles.langToggle}>
-        <button
-          className={`${styles.langBtn} ${lang === 'thai' ? styles.langBtnActive : ''}`}
-          onClick={() => setLang('thai')}
-        >
-          Thai ไทย · 5 tones
-        </button>
-        <button
-          className={`${styles.langBtn} ${lang === 'northern' ? styles.langBtnActive : ''}`}
-          onClick={() => setLang('northern')}
-        >
-          Northern Thai คำเมือง · 8 tones
-        </button>
+        </>
+        )}
+        {lang === 'northern' && (
+        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
+          Names below are Gedney box codes — which class + environment combinations
+          (see the table above) produce that tone.
+        </p>
+        )}
       </div>
 
       <div className={styles.grid}>
         {tones.map((t, i) => <ToneCard key={i} tone={t} />)}
       </div>
 
+      {lang === 'thai' && (
       <div className={styles.drillBox}>
         <strong>How to practice:</strong> say each tone while tracing the curve with your finger or voice.<br />
         <strong>Classic drill (5 real words):</strong>{' '}
@@ -270,6 +402,7 @@ export function TonesTab() {
         {' '}<span style={{ color: '#666' }}>(paː · pàː · pâː · páː · pǎː) = <em>throw · forest · aunt · dad · dad (slang)</em></span>
         {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
       </div>
+      )}
     </div>
   );
 }

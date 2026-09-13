@@ -1,5 +1,5 @@
 export interface ToneEntry {
-  /** Primary label (Standard: Thai class name "สามัญ"; Northern: "T1"–"T8"). */
+  /** Primary label (Standard: Thai class name "สามัญ"; Northern: Gedney box code, e.g. "A1–2"). */
   name: string;
   /** English description shown in parentheses, e.g. "Mid", "Mid Rising". */
   nameEn?: string;
@@ -64,53 +64,95 @@ export const THAI_TONES: ToneEntry[] = [
   },
 ];
 
+/** Northern Thai (Kham Mueang), Chiang Mai dialect — 6 phonemic tones, named
+ *  and valued per Gedney (1999, p. 725) as tabulated in the "Lanna language"
+ *  Wikipedia article's tone-box comparison. `name` is the Gedney box code
+ *  (which consonant-class/environment categories yield this tone); `nameEn`
+ *  is the descriptive tone name. Dead (checked) syllables don't add new
+ *  tones — every cell in NORTHERN_TONE_BOX below reuses one of these 6. */
 export const NORTHERN_TONES: ToneEntry[] = [
   {
-    name: 'T1', nameEn: 'Mid Rising', color: '#db2777',
-    desc: 'contour', chao: '324', ipa: '˧˨˦',
-    path: 'M 14,40 L 85,55 L 155,25',
-    example: 'หา', exampleGloss: 'hǎː · search',
+    name: 'A1–2', nameEn: 'Low-rising', color: '#db2777',
+    desc: 'contour', chao: '14', ipa: '˩˦',
+    path: 'M 14,70 L 155,25',
+    example: 'เหลา', exampleGloss: 'laːw · to sharpen',
   },
   {
-    name: 'T2', nameEn: 'High Rising', color: '#db2777',
-    desc: 'contour', chao: '435', ipa: '˦˧˥',
-    path: 'M 14,25 L 85,40 L 155,10',
-    example: 'บิน', exampleGloss: 'bin · to fly',
-  },
-  {
-    name: 'T3', nameEn: 'Low Level', color: '#dc2626',
+    name: 'B1–3', nameEn: 'Mid-low', color: '#dc2626',
     desc: 'contour', chao: '22', ipa: '˨˨',
     path: 'M 14,55 L 155,55',
-    example: 'ไข่', exampleGloss: 'kʰàj · egg',
+    example: 'เหล่า', exampleGloss: 'laːw · forest; group',
   },
   {
-    name: 'T4', nameEn: 'High Falling', color: '#7c3aed',
-    desc: 'contour', chao: '453', ipa: '˦˥˧',
-    path: 'M 14,25 L 85,10 L 155,40',
-    example: 'พี่', exampleGloss: 'pʰîː · older sibling',
+    name: 'C1–3', nameEn: 'High-falling (glottalized)', color: '#7c3aed',
+    desc: 'contour', chao: '53ʔ', ipa: '˥˧ʔ',
+    path: 'M 14,10 L 155,40',
+    example: 'เหล้า', exampleGloss: 'laːw · liquor',
   },
   {
-    name: 'T5', nameEn: 'High Falling', color: '#7c3aed',
-    desc: 'contour', chao: '553', ipa: '˥˥˧',
-    path: 'M 14,10 L 85,10 L 155,40',
-    example: 'ข้าว', exampleGloss: 'kʰâːw · rice',
+    name: 'A3–4', nameEn: 'Mid-high', color: '#16a34a',
+    desc: 'contour', chao: '44', ipa: '˦˦',
+    path: 'M 14,25 L 155,25',
+    example: 'เลา', exampleGloss: 'laːw · pretty; reed',
   },
   {
-    name: 'T6', nameEn: 'High', color: '#16a34a',
-    desc: 'contour', chao: '454', ipa: '˦˥˦',
-    path: 'M 14,25 L 85,10 L 155,25',
-    example: 'น้ำ', exampleGloss: 'nám · water',
+    name: 'B4', nameEn: 'Falling', color: '#ea580c',
+    desc: 'contour', chao: '41', ipa: '˦˩',
+    path: 'M 14,25 L 155,70',
+    example: 'เล่า', exampleGloss: 'laːw · to tell (a story)',
   },
   {
-    name: 'T7', nameEn: 'Low Rising', color: '#db2777',
-    desc: 'contour', chao: '24', ipa: '˨˦',
-    path: 'M 14,55 L 155,25',
-    example: 'หมัด', exampleGloss: 'màt · flea',
+    name: 'C4', nameEn: 'High rising-falling (glottalized)', color: '#2563eb',
+    desc: 'contour', chao: '454ʔ', ipa: '˦˥˦ʔ',
+    path: 'M 14,25 L 84.5,10 L 155,25',
+    example: 'เล้า', exampleGloss: 'laːw · coop, pen',
+  },
+];
+
+/** One outcome in a tone-box cell: a Gedney box code, optionally scoped to
+ *  which specific letters it applies to (used only where a class splits). */
+export interface ToneBoxOutcome {
+  code: string;
+  /** Which letters this code applies to, when the row's class isn't specific
+   *  enough on its own — e.g. Mid class splits by letter for live syllables. */
+  letters?: string;
+}
+
+/** One row of the Northern Thai tone box: which NORTHERN_TONES.name results
+ *  for this consonant class in each syllable environment. Column order
+ *  matches the Standard Thai table above (Normal · Dead short · Dead long ·
+ *  Mai Tho). Mai Ek isn't its own column — it always lands on the same tone
+ *  as unmarked Dead long, for every class, so it folds into that column
+ *  (same device the Standard Thai table uses above).
+ *
+ *  Modern Thai's 9 mid-class letters split into two groups here: ก ต ป
+ *  pattern with High class in every environment, while ด บ อ (etc.) pattern
+ *  with Low class for live syllables specifically but with High for
+ *  everything else — hence the Mid row's first cell carries both outcomes,
+ *  each labeled with the letters it covers. */
+export interface ToneBoxRow {
+  cls: string;
+  cells: [ToneBoxOutcome[], ToneBoxOutcome[], ToneBoxOutcome[], ToneBoxOutcome[]];
+}
+
+export const NORTHERN_TONE_BOX: ToneBoxRow[] = [
+  {
+    cls: 'High',
+    cells: [
+      [{ code: 'A1–2' }], [{ code: 'A1–2' }], [{ code: 'B1–3' }], [{ code: 'C1–3' }],
+    ],
   },
   {
-    name: 'T8', nameEn: 'High Falling', color: '#7c3aed',
-    desc: 'contour', chao: '441', ipa: '˦˦˩',
-    path: 'M 14,25 L 85,25 L 155,70',
-    example: 'มีด', exampleGloss: 'mîːt · knife',
+    cls: 'Mid',
+    cells: [
+      [{ code: 'A1–2', letters: 'ก ต ป' }, { code: 'A3–4', letters: 'ด บ อ ฯลฯ' }],
+      [{ code: 'A1–2' }], [{ code: 'B1–3' }], [{ code: 'C1–3' }],
+    ],
+  },
+  {
+    cls: 'Low',
+    cells: [
+      [{ code: 'A3–4' }], [{ code: 'C1–3' }], [{ code: 'B4' }], [{ code: 'C4' }],
+    ],
   },
 ];
