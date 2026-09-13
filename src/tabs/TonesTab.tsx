@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneEntry, type ToneBoxOutcome } from '../data/tones';
+import { useState } from 'react';
+import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
 import { ToneCard } from '../components/ToneCard';
 import styles from './TonesTab.module.css';
 
@@ -68,89 +67,31 @@ function MarkGlyph({ mark, color, title, fontSize }: { mark: string; color?: str
   );
 }
 
-/** Renders one tone-box cell. Most cells resolve to a single outcome; the one
- *  cell where Chiang Mai's mid-class letters split by which letters they are
- *  carries two, each labeled with the letters it covers so it's unambiguous
- *  without cross-referencing the prose above the table. */
+/** Renders one tone-box cell as the full contour card(s) for its outcome(s),
+ *  embedded directly rather than behind a click. The one cell where Chiang
+ *  Mai's mid-class letters split by which letters they are carries two,
+ *  each labeled with the letters it covers so it's unambiguous without
+ *  cross-referencing the prose above the table. */
 function ToneBoxCell({ outcomes }: { outcomes: ToneBoxOutcome[] }) {
   return (
-    <span style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
-      {outcomes.map(({ code, letters }) => (
-        <TonePopover key={code} tone={northernTone(code)}>
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <span className={styles.toneBoxLabel} style={{ color: northernTone(code).color }}>
-              {code}
-            </span>
-            {letters && (
-              <span style={{ fontFamily: 'var(--thai-font)', fontSize: '0.75rem', color: '#888' }}>
-                {letters}
-              </span>
-            )}
-          </span>
-        </TonePopover>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {outcomes.map(({ code, letters, example, exampleGloss }) => (
+        <div key={code}>
+          {letters && (
+            <div style={{ fontFamily: 'var(--thai-font)', fontSize: '0.75rem', color: '#888', textAlign: 'center', marginBottom: 2 }}>
+              {letters}
+            </div>
+          )}
+          <ToneCard tone={northernTone(code)} example={example} exampleGloss={exampleGloss} />
+        </div>
       ))}
-    </span>
-  );
-}
-
-/** Wraps a child (a tone glyph or label) so clicking/tapping it reveals the
- *  matching contour card in a floating popover. Hover does not open the
- *  popover, but the cursor signals it's clickable. Takes the ToneEntry
- *  directly so it works for both the Standard Thai and tone-box tables. */
-function TonePopover({ tone: entry, children }: { tone: ToneEntry; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLSpanElement>(null);
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    if (!open || !wrapperRef.current) return;
-    const r = wrapperRef.current.getBoundingClientRect();
-    // Use document-relative coords so the popover scrolls with the page,
-    // staying anchored to the trigger cell instead of fixed in the viewport.
-    setPos({
-      x: r.left + r.width / 2 + window.scrollX,
-      y: r.bottom + window.scrollY + 8,
-    });
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent | TouchEvent) => {
-      if (wrapperRef.current?.contains(e.target as Node)) return;
-      setOpen(false);
-    };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close);
-    return () => {
-      document.removeEventListener('mousedown', close);
-      document.removeEventListener('touchstart', close);
-    };
-  }, [open]);
-
-  return (
-    <span
-      ref={wrapperRef}
-      className={styles.tonePopoverTrigger}
-      onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
-    >
-      {children}
-      {open && pos && createPortal(
-        <div
-          className={styles.tonePopover}
-          style={{ left: pos.x, top: pos.y }}
-        >
-          <ToneCard tone={entry} />
-        </div>,
-        document.body
-      )}
-    </span>
+    </div>
   );
 }
 
 
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
-  const tones = lang === 'thai' ? THAI_TONES : NORTHERN_TONES;
 
   return (
     <div id="tab-tones">
@@ -234,39 +175,33 @@ export function TonesTab() {
           <tbody>
             <tr>
               <td className={styles.cellMid}>Mid</td>
-              <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
-              <td rowSpan={2} colSpan={2} style={{ background: '#fee2e2', verticalAlign: 'middle' }}>
-                <TonePopover tone={thaiTone('Low')}><ToneGlyph name="Low" /></TonePopover>
+              <td><ToneCard tone={thaiTone('Mid')} /></td>
+              <td rowSpan={2} colSpan={2} style={{ verticalAlign: 'middle' }}>
+                <ToneCard tone={thaiTone('Low')} example="ถูก" exampleGloss="tʰùːk · correct" />
               </td>
-              <td rowSpan={2} style={{ background: '#ede9fe', verticalAlign: 'middle' }}>
-                <TonePopover tone={thaiTone('Falling')}><ToneGlyph name="Falling" /></TonePopover>
+              <td rowSpan={2} style={{ verticalAlign: 'middle' }}>
+                <ToneCard tone={thaiTone('Falling')} example="ป้า" exampleGloss="pâː · aunt" />
               </td>
             </tr>
             <tr>
               <td className={styles.cellHigh}>High</td>
-              <td>
-                <TonePopover tone={thaiTone('Rising')}><ToneGlyph name="Rising" /></TonePopover>
-              </td>
+              <td><ToneCard tone={thaiTone('Rising')} /></td>
             </tr>
             <tr>
               <td className={styles.cellLow}>Low</td>
-              <td style={{ background: '#dbeafe' }}><ToneGlyph name="Mid" /></td>
               <td>
-                <TonePopover tone={thaiTone('High')}><ToneGlyph name="High" /></TonePopover>
+                <ToneCard tone={thaiTone('Mid')} example="มา" exampleGloss="maː · to come" />
               </td>
-              <td>
-                <TonePopover tone={thaiTone('Falling')}><ToneGlyph name="Falling" /></TonePopover>
-              </td>
-              <td>
-                <TonePopover tone={thaiTone('High')}><ToneGlyph name="High" /></TonePopover>
-              </td>
+              <td><ToneCard tone={thaiTone('High')} example="นก" exampleGloss="nók · bird" /></td>
+              <td><ToneCard tone={thaiTone('Falling')} example="มาก" exampleGloss="mâːk · much" /></td>
+              <td><ToneCard tone={thaiTone('High')} /></td>
             </tr>
           </tbody>
         </table>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
-          Table covers ่ and ้. Mid class also takes ๊ and ๋ (giving High and Rising —
-          see the contour cards below), never Mid.
+          Table covers ่ and ้ only. Mid class also has ๊ (→ High) and ๋ (→ Rising), not shown
+          here. No mark ever gives Mid — only the unmarked reading does.
         </p>
       </div>
       )}
@@ -355,14 +290,14 @@ export function TonesTab() {
       )}
 
       <div className="tone-rules" style={{ marginTop: 24 }}>
-        <h2 style={{ margin: '0 0 6px 0' }}>Pronunciation — Contour Visualization</h2>
         <p style={{ fontSize: '0.83rem', color: '#555', margin: '0 0 6px 0' }}>
-          Each tone plotted as a pitch curve over time. Vertical scale = Chao tone letters (1 = lowest pitch, 5 = highest). Horizontal = duration.
+          Each card above plots its tone as a pitch curve over time. Vertical scale = Chao
+          tone letters (1 = lowest pitch, 5 = highest). Horizontal = duration.
         </p>
         {lang === 'thai' && (
         <>
         <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 4px 0' }}>
-          Names below abbreviate the full form prefixed with{' '}
+          Card names abbreviate the full form prefixed with{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>{' '}
           <em>(/sǐaŋ/, "tone")</em> — e.g.{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงสามัญ</span>,{' '}
@@ -374,20 +309,22 @@ export function TonesTab() {
           <em>(/máj/, "stick")</em> — e.g.{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้เอก</span>,{' '}
           <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้โท</span>{' '}
-          (hover the corner glyph on a card for IPA).
+          (hover a card's corner glyph for IPA).
         </p>
         </>
         )}
         {lang === 'northern' && (
         <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
-          Names below are Gedney box codes — which class + environment combinations
+          Card names are Gedney box codes — which class + environment combinations
           (see the table above) produce that tone.
         </p>
         )}
-      </div>
-
-      <div className={styles.grid}>
-        {tones.map((t, i) => <ToneCard key={i} tone={t} />)}
+        <p style={{ fontSize: '0.83rem', margin: '0 0 10px 0' }}>
+          <strong>Number of unique tones: {lang === 'thai' ? THAI_TONES.length : NORTHERN_TONES.length}</strong>
+        </p>
+        <div className={styles.grid}>
+          {(lang === 'thai' ? THAI_TONES : NORTHERN_TONES).map((t, i) => <ToneCard key={i} tone={t} />)}
+        </div>
       </div>
 
       {lang === 'thai' && (

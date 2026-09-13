@@ -116,6 +116,12 @@ export interface ToneBoxOutcome {
   /** Which letters this code applies to, when the row's class isn't specific
    *  enough on its own — e.g. Mid class splits by letter for live syllables. */
   letters?: string;
+  /** A word matching this exact class + environment, overriding the plain
+   *  NORTHERN_TONES entry's own example — that example is written for only
+   *  one of the several cells its tone appears in, and is wrong (mismatched
+   *  class or syllable shape) in the others. */
+  example?: string;
+  exampleGloss?: string;
 }
 
 /** One row of the Northern Thai tone box: which NORTHERN_TONES.name results
@@ -125,11 +131,12 @@ export interface ToneBoxOutcome {
  *  as unmarked Dead long, for every class, so it folds into that column
  *  (same device the Standard Thai table uses above).
  *
- *  Modern Thai's 9 mid-class letters split into two groups here: ก ต ป
- *  pattern with High class in every environment, while ด บ อ (etc.) pattern
+ *  Modern Thai's 9 mid-class letters split into (at least) two groups here:
+ *  ก ต ป pattern with High class in every environment, while ด บ อ pattern
  *  with Low class for live syllables specifically but with High for
  *  everything else — hence the Mid row's first cell carries both outcomes,
- *  each labeled with the letters it covers. */
+ *  each labeled with the letters it covers. The source (below) only confirms
+ *  these 6 of the 9 letters; จ ฎ ฏ aren't attested either way. */
 export interface ToneBoxRow {
   cls: string;
   cells: [ToneBoxOutcome[], ToneBoxOutcome[], ToneBoxOutcome[], ToneBoxOutcome[]];
@@ -139,20 +146,32 @@ export const NORTHERN_TONE_BOX: ToneBoxRow[] = [
   {
     cls: 'High',
     cells: [
-      [{ code: 'A1–2' }], [{ code: 'A1–2' }], [{ code: 'B1–3' }], [{ code: 'C1–3' }],
+      [{ code: 'A1–2' }],
+      [{ code: 'A1–2', example: 'ผัก', exampleGloss: 'pʰak · vegetable' }],
+      [{ code: 'B1–3' }],
+      [{ code: 'C1–3' }],
     ],
   },
   {
     cls: 'Mid',
+    // Only the Normal cell renders on this row — Dead short/long and Mai Tho
+    // are covered by High's rowSpan above (same tone, same rendered cell),
+    // so there's nothing to show a Mid-specific example for here.
     cells: [
-      [{ code: 'A1–2', letters: 'ก ต ป' }, { code: 'A3–4', letters: 'ด บ อ ฯลฯ' }],
+      [
+        { code: 'A1–2', letters: 'ก ต ป', example: 'ตา', exampleGloss: 'taː · eye' },
+        { code: 'A3–4', letters: 'ด บ อ', example: 'ดี', exampleGloss: 'diː · good' },
+      ],
       [{ code: 'A1–2' }], [{ code: 'B1–3' }], [{ code: 'C1–3' }],
     ],
   },
   {
     cls: 'Low',
     cells: [
-      [{ code: 'A3–4' }], [{ code: 'C1–3' }], [{ code: 'B4' }], [{ code: 'C4' }],
+      [{ code: 'A3–4' }],
+      [{ code: 'C1–3', example: 'มด', exampleGloss: 'mot · ant' }],
+      [{ code: 'B4' }],
+      [{ code: 'C4' }],
     ],
   },
 ];

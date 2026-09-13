@@ -1,9 +1,16 @@
 import type { ToneEntry } from '../data/tones';
 import styles from './ToneCard.module.css';
 
-const isCombiningMark = (s: string) => /[่-๋]/.test(s);
-
-export function ToneCard({ tone }: { tone: ToneEntry }) {
+/** `example`/`exampleGloss` override the entry's own — a single ToneEntry
+ *  gets reused across every class + environment that lands on its tone, but
+ *  the entry can only carry one baked-in example word, which is only ever
+ *  correct for one of those combinations. Callers embedding the same tone in
+ *  a specific class/environment cell should pass a word that actually fits
+ *  that cell, rather than defaulting to whichever combination the entry's
+ *  own example happened to be written for. */
+export function ToneCard({ tone, example, exampleGloss }: { tone: ToneEntry; example?: string; exampleGloss?: string }) {
+  const word = example ?? tone.example;
+  const gloss = exampleGloss ?? tone.exampleGloss;
   return (
     <div className={styles.card}>
       <div className={styles.header}>
@@ -15,15 +22,6 @@ export function ToneCard({ tone }: { tone: ToneEntry }) {
           {tone.name}
           {tone.nameEn && <span className={styles.nameEn}> ({tone.nameEn})</span>}
         </strong>
-        {tone.mark && (
-          <span
-            className={`${styles.mark} ${styles.label} ${isCombiningMark(tone.mark) ? styles.markCombining : ''}`}
-            style={{ color: tone.color, cursor: tone.markIpa ? 'help' : undefined }}
-            data-tooltip={tone.markName && tone.markIpa ? `${tone.markName} ${tone.markIpa}` : undefined}
-          >
-            {tone.mark}
-          </span>
-        )}
       </div>
       <svg viewBox="0 0 160 80" preserveAspectRatio="none" className={styles.svg}>
         {[10, 25, 40, 55, 70].map(y => (
@@ -35,13 +33,14 @@ export function ToneCard({ tone }: { tone: ToneEntry }) {
         <path d={tone.path} stroke={tone.color} strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div className={styles.example}>
-        <span>
-          <span className={styles.exampleWord}>{tone.example}</span>{' '}
-          <span className={styles.exampleGloss}>{tone.exampleGloss}</span>
+        <span
+          className={`${styles.exampleWord} ${styles.label}`}
+          style={{ cursor: gloss ? 'help' : undefined }}
+          data-tooltip={gloss}
+        >
+          {word}
         </span>
-        <span className={styles.chaoIpa}>
-          {tone.chao} <span className={styles.ipa}>{tone.ipa}</span>
-        </span>
+        <span className={styles.ipa}>{tone.ipa}</span>
       </div>
     </div>
   );

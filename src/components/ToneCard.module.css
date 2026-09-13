@@ -20,29 +20,6 @@
   font-weight: 500;
 }
 
-.mark {
-  font-family: var(--thai-font);
-  font-size: 2.4rem;
-  line-height: 1;
-  font-weight: 700;
-  display: inline-block;
-}
-
-/* Thai combining marks have zero advance — the glyph paints right of x=0.
-   For the right-aligned card slot we want the visible mark flush with the
-   right edge: padding-LEFT pushes the box (and thus the mark anchor) right
-   from the natural flex-end position. translateY centers vertically. */
-.markCombining {
-  padding-left: 0.4em;
-  transform: translateY(0.45em);
-}
-
-/* Position the mark's tooltip on the right edge of the header, not the left. */
-.mark.label[data-tooltip]::after {
-  left: auto;
-  right: 0;
-}
-
 /* Pure-CSS tooltip — fires instantly on hover, no native delay. */
 .label {
   position: relative;
@@ -71,11 +48,6 @@
   opacity: 1;
 }
 
-.ipa {
-  font-size: 0.9rem;
-  color: #555;
-}
-
 .svg {
   width: 100%;
   height: 70px;
@@ -91,18 +63,13 @@
   font-size: 0.82rem;
 }
 
-.chaoIpa {
-  font-size: 0.78rem;
-  color: #888;
-  white-space: nowrap;
-}
-
 .exampleWord {
   font-family: var(--thai-font);
   font-size: 1.2rem;
 }
 
-.exampleGloss {
-  color: #888;
-  font-size: 0.78rem;
+.ipa {
+  font-size: 0.9rem;
+  color: #555;
+  white-space: nowrap;
 }

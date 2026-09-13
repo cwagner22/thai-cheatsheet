@@ -28,26 +28,6 @@
   font-style: italic;
 }
 
-.tonePopoverTrigger {
-  display: inline-block;
-  cursor: pointer;
-}
-
-/* Floating contour-card popover, portaled to body so the table layout doesn't
-   clip it. Absolute positioning + document-relative coords (left/top set in
-   JS) so the popover scrolls with the page, staying anchored to the cell.
-   pointer-events left at the default `auto` so hover events on the card's
-   own elements (e.g. the title's IPA tooltip) still fire. */
-.tonePopover {
-  position: absolute;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 260px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
 .toneTable thead th {
   background: #555;
   color: #fff;
@@ -117,12 +97,6 @@
 .toneGlyphCombining {
   padding-left: 0.4em;
   transform: translateY(0.45em);
-}
-
-/* Tone-box label (T1–T8) used in the Northern Thai tone box table. */
-.toneBoxLabel {
-  font-weight: 700;
-  font-size: 1.1rem;
 }
 
 /* A header label followed by a combining tone mark, e.g. "Mai Tho ้". A plain
