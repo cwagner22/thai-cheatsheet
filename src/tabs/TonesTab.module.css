@@ -126,6 +126,28 @@
   }
 }
 
+.splitAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #555;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.splitAllBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
 .langToggle {
   margin-bottom: 14px;
 }

@@ -11,13 +11,7 @@ import styles from './ConsonantsTab.module.css';
 type View = 'sound' | 'class';
 
 function Tags({ c }: { c: Consonant }) {
-  return (
-    <>
-      {c.sonorant && <span className="sonorant-tag">SONORANT</span>}
-      {c.rare && <span className="rare-tag">RARE</span>}
-      {c.obsolete && <span className="obsolete-tag">OBSOLETE</span>}
-    </>
-  );
+  return c.sonorant ? <span className="sonorant-tag">SONORANT</span> : null;
 }
 
 /** Render the final-sound cell. Three cases:
@@ -64,42 +58,64 @@ function ClassTable({ klass, headerClass }: { klass: Consonant['klass']; headerC
           <th style={{ width: 50 }}>#</th>
           <th style={{ width: 55 }}>Letter</th>
           <th>Name</th>
-          <th>Meaning</th>
           <th>Initial</th>
           <th>Final</th>
           <th>Type</th>
         </tr>
       </thead>
       <tbody>
-        {rows.map(c => (
-          <tr key={c.num}>
-            <td>{c.num}</td>
-            <td className="thai-letter">{c.letter}</td>
-            <td>
-              <span className="thai-name">{c.name}</span>{' '}
-              <span className={styles.nameRom}>/{c.nameRom}/</span>
-            </td>
-            <td>{c.meaning}</td>
-            <td className="initial-sound">{c.initial}</td>
-            <td className="final-sound"><FinalSound initial={c.initial} final={c.final} /></td>
-            <td className="sound-type">
-              {c.type}{' '}<Tags c={c} />
-            </td>
-          </tr>
-        ))}
+        {rows.map(c => {
+          // See the equivalent comment on PairLetter — dimming has to sit on
+          // the letter/name themselves, not on the tooltip's own positioned
+          // ancestor, or an obsolete letter's dim washes out its tooltip too.
+          const dim = c.obsolete ? { opacity: 0.4 } : undefined;
+          const tooltip = `/${c.nameRom}/ · ${c.meaning}`;
+          return (
+            <tr key={c.num}>
+              <td>{c.num}</td>
+              <td className={`thai-letter ${styles.label}`} style={{ cursor: 'help' }} data-tooltip={tooltip}>
+                <span style={dim}>{c.letter}</span>
+              </td>
+              <td className={styles.label} style={{ cursor: 'help' }} data-tooltip={tooltip}>
+                <span className="thai-name" style={dim}>
+                  {c.name}
+                  {c.rare && <span className="rare-tag"> R</span>}
+                  {c.obsolete && <span className="obsolete-tag"> OBS</span>}
+                </span>
+              </td>
+              <td className="initial-sound">{c.initial}</td>
+              <td className="final-sound"><FinalSound initial={c.initial} final={c.final} /></td>
+              <td className="sound-type">
+                {c.type}{' '}<Tags c={c} />
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
 }
 
-function PairLetter({ c, dim }: { c: Consonant; dim?: boolean }) {
+/** Cards are too narrow for the translation and IPA to sit inline, so both
+ *  move into a hover tooltip on the letter (same mechanism as the tone
+ *  cards). Only obsolete letters (no longer written at all) fade — rare
+ *  letters are still in active use, so they stay at full opacity. */
+function PairLetter({ c }: { c: Consonant }) {
+  // Dimming has to sit on the letter/name themselves, not on the tooltip's
+  // own positioned ancestor — opacity applies to a whole subtree, so an
+  // obsolete letter's dim would otherwise wash out its own tooltip text too.
+  const dim = c.obsolete ? { opacity: 0.4 } : undefined;
   return (
-    <span className="pair-letter" style={dim ? { opacity: 0.4 } : undefined}>
-      <span className="thai-letter">{c.letter}</span>
-      <span className="thai-name">{c.nameShort}</span>
-      <span className={styles.nameRom}>/{c.nameRom}/</span>
-      <span className="pair-eng">
-        {c.meaning}{c.rare && <span className="rare-tag"> R</span>}{c.obsolete && <span className="obsolete-tag"> OBS</span>}
+    <span
+      className={`pair-letter ${styles.label}`}
+      style={{ cursor: 'help' }}
+      data-tooltip={`/${c.nameRom}/ · ${c.meaning}`}
+    >
+      <span className="thai-letter" style={dim}>{c.letter}</span>
+      <span className="thai-name" style={dim}>
+        {c.nameShort}
+        {c.rare && <span className="rare-tag"> R</span>}
+        {c.obsolete && <span className="obsolete-tag"> OBS</span>}
       </span>
     </span>
   );
@@ -127,12 +143,12 @@ function HighLowRow({ p }: { p: HighLowPair }) {
       <td className="initial-sound">{p.sound}</td>
       <td>
         <div className="pair-cell">
-          {p.high.map(c => <PairLetter key={c.letter} c={c} dim={c.obsolete} />)}
+          {p.high.map(c => <PairLetter key={c.letter} c={c} />)}
         </div>
       </td>
       <td>
         <div className="pair-cell">
-          {p.low.map(c => <PairLetter key={c.letter} c={c} dim={c.obsolete} />)}
+          {p.low.map(c => <PairLetter key={c.letter} c={c} />)}
         </div>
       </td>
       <td className="final-sound">
@@ -153,11 +169,12 @@ function ByClassView() {
 
       <div className="class-section">
         <div className="class-header mid">Mid Class — อักษรกลาง (9)</div>
+        <span className={styles.sectionSub}>Unaspirated — always Mid</span>
         <div className={styles.mnemBoxMid}>
           <strong>Mnemonic:</strong>{' '}
           <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
           <span style={{ color: '#666' }}> — <em>"A chicken pecks a dead child on top of a jar"</em></span><br />
-          <span className={styles.mnemLetters}>→ ก  จ  ฎ ฏ  ด ต  บ  ป  อ</span>
+          <span className={styles.mnemLetters}>→ ก · จ · ด/ฎ · ต/ฏ · บ · ป · อ</span>
         </div>
         <ClassTable klass="mid" headerClass="mid" />
       </div>
@@ -168,7 +185,7 @@ function ByClassView() {
           <strong>Mnemonic:</strong>{' '}
           <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
           <span style={{ color: '#666' }}> — <em>"A ghost entrusts a bag of rice to me"</em></span><br />
-          <span className={styles.mnemLetters}>→ ผ  ฝ  ถ ฐ  ข ฃ  ส ศ ษ  ห  ฉ</span>
+          <span className={styles.mnemLetters}>→ ผ · ฝ · ถ/ฐ · ข/ฃ · ส/ศ/ษ · ห · ฉ</span>
         </div>
         <ClassTable klass="high" headerClass="high" />
       </div>
@@ -215,7 +232,15 @@ function ByClassView() {
         <p style={{ marginTop: 12, fontSize: '0.85rem' }}><strong>Extra tips for the high/low pairs:</strong></p>
         <p style={{ marginTop: 4, fontSize: '0.83rem' }}>• Most sounds have <strong>one high-class letter and two+ low-class letters</strong> — when in doubt, low is the safer guess.</p>
         <p style={{ marginTop: 4, fontSize: '0.83rem' }}>• The <strong>high-class letter usually comes first</strong> in the alphabet (e.g. ข before ค, ฉ before ช, ถ before ท).</p>
-        <p style={{ marginTop: 4, fontSize: '0.83rem' }}>• The <strong>consonant names are designed so the tone reveals the class</strong> — e.g. ส เสือ (rising tone) must be high class because a low-class consonant can't produce a rising tone without a tone mark.</p>
+        <p style={{ marginTop: 4, fontSize: '0.83rem' }}>
+          • An <strong>unmarked Rising tone always means high class</strong> — e.g. ส เสือ, ฝ ฝา, ถ ถุง (6 of the 11 high-class
+          names are themselves Rising tone: ฐาน, ถุง, ฝา, ศาลา, ฤๅษี, เสือ). No other class can produce Rising without a mark.
+        </p>
+        <p style={{ marginTop: 4, fontSize: '0.83rem' }}>
+          • The same trick works for low class: most low-class names carry <strong>no tone mark</strong> (20 of 24 — ช้าง, โซ่,
+          ผู้เฒ่า, and ม้า are the marked exceptions), and for those, an unmarked dead syllable's High or Falling tone always
+          means low class (mid/high classes give Low tone there instead).
+        </p>
       </div>
 
       <div className="tone-rules">
@@ -230,9 +255,14 @@ function ByClassView() {
 function BySoundView() {
   return (
     <>
+      <div className="legend" style={{ marginBottom: 14 }}>
+        <div className="legend-item"><span className="rare-tag">R</span> rare letter</div>
+        <div className="legend-item"><span className="obsolete-tag">OBS</span> obsolete, no longer written</div>
+      </div>
+
       <div className="class-section" style={{ marginBottom: 8 }}>
         <div className="class-header mid">Mid Class — Unpaired (9)</div>
-        <span className={styles.sectionSub}>Unaspirated stops — only one class, no pairs to worry about</span>
+        <span className={styles.sectionSub}>Unaspirated — always Mid</span>
       </div>
       <table className="pair-table" style={{ marginBottom: 18 }}>
         <thead>
@@ -270,11 +300,13 @@ function BySoundView() {
         </div>
       </div>
       <p className={styles.pairSub}>
-        Same sound, different class — which changes the tone. Usually one{' '}
-        <strong style={{ color: '#16a34a' }}>high</strong> and one or more{' '}
-        <strong style={{ color: '#dc2626' }}>low</strong>. Exception: /s/ has three high (ศ ษ ส) vs one low (ซ).
+        Usually one <strong style={{ color: '#16a34a' }}>high</strong> and one or more{' '}
+        <strong style={{ color: '#dc2626' }}>low</strong>, so when in doubt, guess low.
       </p>
-      <table className="pair-table">
+      <p className={styles.pairSub}>
+        Exception: /s/ has three high (ศ ษ ส) vs one low (ซ).
+      </p>
+      <table className="pair-table" style={{ marginTop: 10 }}>
         <thead>
           <tr>
             <th style={{ background: '#7c3aed', width: 60 }}>Sound</th>
@@ -289,22 +321,18 @@ function BySoundView() {
       </table>
 
       <div className="tone-rules" style={{ marginTop: 18 }}>
-        <h2>Tips</h2>
-        <p><strong>When in doubt, guess low class</strong> — most sounds have more low-class letters than high-class.</p>
-        <p style={{ marginTop: 4 }}><strong>The consonant name reveals the class</strong> — e.g. สอ เสือ (rising tone) must be high class, because low-class consonants can't produce a rising tone without a tone mark.</p>
-
-        <p style={{ marginTop: 14, marginBottom: 6 }}><strong>Classical class mnemonics (ไตรยางศ์):</strong></p>
-        <div className={styles.mnemBoxMid}>
+        <h2>Classical class mnemonics (ไตรยางศ์)</h2>
+        <div className={styles.mnemBoxMid} style={{ marginTop: 10 }}>
           <strong>Mid Class (9):</strong>{' '}
           <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ไก่ จิก เด็ก ตาย บน ปาก โอ่ง</span>
           <span style={{ color: '#666' }}> — <em>"A chicken pecks a dead child on top of a jar"</em></span><br />
-          <span className={styles.mnemLetters}>→ ก  จ  ฎ ฏ  ด ต  บ  ป  อ</span>
+          <span className={styles.mnemLetters}>→ ก · จ · ด/ฎ · ต/ฏ · บ · ป · อ</span>
         </div>
         <div className={styles.mnemBoxHigh}>
           <strong>High Class (11):</strong>{' '}
           <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ผี ฝาก ถุง ข้าว สาร ให้ ฉัน</span>
           <span style={{ color: '#666' }}> — <em>"A ghost entrusts a bag of rice to me"</em></span><br />
-          <span className={styles.mnemLetters}>→ ผ  ฝ  ถ ฐ  ข ฃ  ส ศ ษ  ห  ฉ</span>
+          <span className={styles.mnemLetters}>→ ผ · ฝ · ถ/ฐ · ข/ฃ · ส/ศ/ษ · ห · ฉ</span>
         </div>
         <div className={styles.mnemBoxLow}>
           <strong>Low Class (24):</strong> <em>everything not in the Mid or High mnemonic</em> — memorized by elimination.
@@ -315,7 +343,7 @@ function BySoundView() {
 }
 
 export function ConsonantsTab() {
-  const [view, setView] = useState<View>('sound');
+  const [view, setView] = useState<View>('class');
   return (
     <div id="tab-consonants">
       <a
@@ -332,10 +360,10 @@ export function ConsonantsTab() {
       </a>
       <div className="view-toggle">
         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#555' }}>View:</span>
-        <button className={`view-btn ${view === 'sound' ? 'active' : ''}`} onClick={() => setView('sound')}>By Sound</button>
         <button className={`view-btn ${view === 'class' ? 'active' : ''}`} onClick={() => setView('class')}>By Class</button>
+        <button className={`view-btn ${view === 'sound' ? 'active' : ''}`} onClick={() => setView('sound')}>By Sound</button>
       </div>
-      {view === 'sound' ? <BySoundView /> : <ByClassView />}
+      {view === 'class' ? <ByClassView /> : <BySoundView />}
     </div>
   );
 }
