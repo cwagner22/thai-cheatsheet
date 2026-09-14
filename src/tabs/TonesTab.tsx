@@ -675,12 +675,12 @@ function PracticeSentence() {
  *  5-tone drill sentence already uses elsewhere in this tab. */
 const CHANT_LETTER: Record<ConsonantClass, string> = { mid: 'ป', high: 'ข', low: 'ค' };
 
-/** The glyph actually written for a given mark — needed here because
- *  ToneCard's own corner badge shows the *resulting* tone's own defining
- *  mark, which only matches the mark actually applied for mid/high class.
- *  Low class remaps ่/้ to a different tone than their own name, so the
- *  chant loop shows this instead, above the card, same treatment as the
- *  word-family tables' column headers. */
+/** The glyph actually written for a given mark. ToneCard's own corner badge
+ *  always shows the *resulting* tone's own defining mark — fine for
+ *  mid/high class, where that's also the mark actually applied, but wrong
+ *  for low class, which remaps ่/้ to a different tone than their own name
+ *  (mai ek produces Falling there, not Low). Low class's chant cards show
+ *  this above the card instead, alongside the unmodified badge. */
 const CHANT_MARK_GLYPH: Record<'ek' | 'tho' | 'tri' | 'chattawa', string> = {
   ek: '่', tho: '้', tri: '๊', chattawa: '๋',
 };
@@ -738,7 +738,7 @@ function ChantLoop() {
                 {mark && <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" />}
               </div>
             )}
-            <ToneCard tone={thaiTone(tone)} compact hideExample hideMarkBadge={activeClass === 'low'} />
+            <ToneCard tone={thaiTone(tone)} compact hideExample />
           </div>
         ))}
       </div>
