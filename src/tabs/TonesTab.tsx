@@ -40,38 +40,48 @@ const TONE_CUE: Record<ToneName, { cue: string; comment: string }> = {
   Rising: { cue: 'Well — asking a question / surprised', comment: '—' },
 };
 
-type MidWord = { word: string; ipa: string; gloss: string };
+/** `gloss` is left off when the spelling isn't an established word — the
+ *  cell still shows the letter + mark combination, just with no
+ *  translation under it, rather than swapping in a different real word
+ *  that happens to sound similar (that hides which exact combination was
+ *  actually being demonstrated). */
+type MidWord = { word: string; ipa: string; gloss?: string };
 
-/** One word family row: a real word for each mark this consonant's class
- *  actually takes (see CLASS_FAMILY_COLUMNS below for which marks that is,
- *  and in what order). */
+/** One word family row: the same letter+vowel base carried through every
+ *  mark this consonant's class takes (see CLASS_FAMILY_COLUMNS below for
+ *  which marks that is, and in what order) — never a different word. */
 type FamilyRow = { letter: string; none?: MidWord; ek?: MidWord; tho?: MidWord; tri?: MidWord; chattawa?: MidWord };
 
-/** Six mid-class word families, one real word per mark where a common one
- *  actually exists — unlike the Chant loop above, these are real dictionary
- *  words rather than a fixed /aː/ drill syllable, so the vowel differs
- *  family to family. ๊/๋ are largely restricted to loanwords, onomatopoeia,
- *  and slang in everyday Thai, so several families genuinely have no
- *  established word for one or both — left absent (ClassWordFamilies renders
- *  those cells as "—") rather than filled with an invented one. */
+/** Six mid-class word families — the same letter+vowel base carried through
+ *  every mark, unlike the Chant loop above's fixed /aː/ syllable, so the
+ *  vowel differs family to family. Not every combination is an established
+ *  word — ๊/๋ especially are largely restricted to loanwords, onomatopoeia,
+ *  and slang in everyday Thai — so `gloss` is left off those rather than
+ *  guessed at or swapped for a different real word. */
 const MID_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ก',
     none: { word: 'ไก', ipa: 'kaj', gloss: 'the trigger of a gun (ไกปืน)' },
     ek: { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
-    tho: { word: 'ใกล้', ipa: 'klâj', gloss: 'near, close' },
+    tho: { word: 'ไก้', ipa: 'kâj' },
+    tri: { word: 'ไก๊', ipa: 'káj' },
     chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'acting oblivious or coy (from the idiom ทำไก๋)' },
   },
   {
     letter: 'ต',
     none: { word: 'ตา', ipa: 'taː', gloss: 'eye; maternal grandfather' },
+    ek: { word: 'ต่า', ipa: 'tàː' },
     tho: { word: 'ต้า', ipa: 'tâː', gloss: '"big" — an informal loanword from Chinese 大, common in nicknames' },
+    tri: { word: 'ต๊า', ipa: 'táː' },
+    chattawa: { word: 'ต๋า', ipa: 'tǎː' },
   },
   {
     letter: 'ด',
     none: { word: 'ดี', ipa: 'diː', gloss: 'good' },
+    ek: { word: 'ดี่', ipa: 'dìː' },
     tho: { word: 'ดี้', ipa: 'dîː', gloss: "a butch woman's partner, LGBTQ slang" },
     tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled, over the moon (from กระดี๊กระด๊า)' },
+    chattawa: { word: 'ดี๋', ipa: 'dǐː' },
   },
   {
     letter: 'ป',
@@ -92,7 +102,10 @@ const MID_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'บ',
     none: { word: 'เบา', ipa: 'baw', gloss: 'light, soft' },
+    ek: { word: 'เบ่า', ipa: 'bàw' },
     tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'a socket or mold (เบ้าตา = eye socket)' },
+    tri: { word: 'เบ๊า', ipa: 'báw' },
+    chattawa: { word: 'เบ๋า', ipa: 'bǎw' },
   },
 ];
 
@@ -692,16 +705,20 @@ function ChantLoop() {
   );
 }
 
-/** One tone-colored word cell — the Thai word with its /ipa/ and gloss
- *  printed right below it, rather than behind a hover tooltip, so the
- *  translation is visible without interacting with the table at all. */
+/** One tone-colored word cell — the Thai word with its gloss printed right
+ *  below it, rather than behind a hover tooltip, so the translation is
+ *  visible without interacting with the table at all. `gloss` is absent
+ *  for a spelling that isn't an established word — the word itself still
+ *  shows, just with no translation line under it. */
 function WordCell({ word, gloss, tone }: MidWord & { tone: ToneName }) {
   return (
     <td className={styles.cueThaiWord}>
       <span style={{ color: TONE_COLOR[tone] }}>{word}</span>
-      <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888', whiteSpace: 'normal' }}>
-        {gloss}
-      </span>
+      {gloss && (
+        <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888', whiteSpace: 'normal' }}>
+          {gloss}
+        </span>
+      )}
     </td>
   );
 }
@@ -756,16 +773,16 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
               — built from the syllables above
             </span>
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 24px' }}>
-            {compounds.map(({ word, gloss }, i) => (
-              <div key={i} className={styles.cueThaiWord} style={{ fontSize: '1.05rem' }}>
-                {word}
-                <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
-                  {gloss}
-                </span>
-              </div>
-            ))}
-          </div>
+          <table className={styles.cueTable}>
+            <tbody>
+              {compounds.map(({ word, gloss }, i) => (
+                <tr key={i}>
+                  <td className={styles.cueThaiWord} style={{ width: '1%', whiteSpace: 'nowrap' }}>{word}</td>
+                  <td style={{ color: '#888', fontSize: '0.85rem' }}>{gloss}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </div>
