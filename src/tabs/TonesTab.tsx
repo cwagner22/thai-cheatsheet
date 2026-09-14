@@ -71,11 +71,11 @@ const MID_WORD_FAMILIES: FamilyRow[] = [
   },
   {
     letter: 'จ',
-    none: { word: 'จอ', ipa: 'tɕɔː', gloss: 'screen, monitor' },
-    ek: { word: 'จ่อ', ipa: 'tɕɔ̀ː', gloss: 'to aim at, hover near' },
-    tho: { word: 'จ้อ', ipa: 'tɕɔ̂ː', gloss: 'to chat, gossip' },
-    tri: { word: 'จ๊อ', ipa: 'tɕɔ́ː' },
-    chattawa: { word: 'จ๋อ', ipa: 'tɕɔ̌ː' },
+    none: { word: 'จำ', ipa: 'tɕam', gloss: 'to remember' },
+    ek: { word: 'จ่ำ', ipa: 'tɕàm' },
+    tho: { word: 'จ้ำ', ipa: 'tɕâm', gloss: 'blotch, bruise mark' },
+    tri: { word: 'จ๊ำ', ipa: 'tɕám' },
+    chattawa: { word: 'จ๋ำ', ipa: 'tɕǎm' },
   },
   {
     letter: 'ฎ',
