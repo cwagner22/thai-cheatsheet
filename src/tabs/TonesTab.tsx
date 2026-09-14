@@ -42,14 +42,18 @@ const TONE_CUE: Record<ToneName, { cue: string; comment: string }> = {
 
 type MidWord = { word: string; ipa: string; gloss: string };
 
-/** Six mid-class word families, one real word per mark (no mark · ่ · ้ · ๊ ·
- *  ๋), each landing on the mark's usual mid-class tone (Mid · Low · Falling ·
- *  High · Rising) — unlike the Chant loop above, these are real dictionary
- *  words rather than a fixed /aː/ drill syllable, so the vowel differs family
- *  to family. ๊/๋ skew toward slang, onomatopoeia, and loanwords across all
- *  six families — those two marks are mostly used for exactly that kind of
- *  word in modern Thai, not a gap in these particular examples. */
-const MID_WORD_FAMILIES: { letter: string; none: MidWord; ek: MidWord; tho: MidWord; tri: MidWord; chattawa: MidWord }[] = [
+/** One word family row: a real word for each mark this consonant's class
+ *  actually takes (see CLASS_FAMILY_COLUMNS below for which marks that is,
+ *  and in what order). */
+type FamilyRow = { letter: string; none?: MidWord; ek?: MidWord; tho?: MidWord; tri?: MidWord; chattawa?: MidWord };
+
+/** Six mid-class word families, one real word per mark — unlike the Chant
+ *  loop above, these are real dictionary words rather than a fixed /aː/
+ *  drill syllable, so the vowel differs family to family. ๊/๋ skew toward
+ *  slang, onomatopoeia, and loanwords across all six families — those two
+ *  marks are mostly used for exactly that kind of word in modern Thai, not
+ *  a gap in these particular examples. */
+const MID_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ก',
     none: { word: 'ไก', ipa: 'kaj', gloss: 'trigger (ไกปืน)' },
@@ -100,15 +104,10 @@ const MID_WORD_FAMILIES: { letter: string; none: MidWord; ek: MidWord; tho: MidW
   },
 ];
 
-/** Ten high-class word families — one real word per mark, in canonical
- *  tone order (Low · Falling · Rising) rather than mark-application order,
- *  since high class's unmarked column lands on Rising (last in the
- *  Mid·Low·Falling·High·Rising sequence) rather than first — this is also
- *  the order native children chant these in (low-to-high pitch). No ๊/๋
- *  columns: those marks never occur on high-class letters. A few entries
- *  are dialect/onomatopoeia words rather than everyday vocabulary — noted
- *  in their own gloss rather than presented as more common than they are. */
-const HIGH_WORD_FAMILIES: { letter: string; ek: MidWord; tho: MidWord; none: MidWord }[] = [
+/** Ten high-class word families — one real word per mark. A few entries are
+ *  dialect/onomatopoeia words rather than everyday vocabulary — noted in
+ *  their own gloss rather than presented as more common than they are. */
+const HIGH_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ข',
     ek: { word: 'ข่า', ipa: 'kʰàː', gloss: 'galangal (cooking herb)' },
@@ -181,6 +180,90 @@ const HIGH_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
   { word: 'ผ่าเข่า', ipa: 'pʰàː.kʰàw', gloss: 'knee surgery' },
 ];
 
+/** Eleven low-class word families — one real word per mark. Low class is
+ *  where Thai's tone marks stop matching their own names: ่ (mai ek, "the
+ *  first mark") produces Falling here, and ้ (mai tho, "the second mark")
+ *  produces High — the reverse pairing from mid/high class, where ่→Low
+ *  and ้→Falling. */
+const LOW_WORD_FAMILIES: FamilyRow[] = [
+  {
+    letter: 'ค',
+    none: { word: 'คา', ipa: 'kʰaː', gloss: 'to be lodged/stuck; trade (ค้าขาย)' },
+    ek: { word: 'ค่า', ipa: 'kʰâː', gloss: 'value, cost, price' },
+    tho: { word: 'ค้า', ipa: 'kʰáː', gloss: 'to trade, do business' },
+  },
+  {
+    letter: 'ท',
+    none: { word: 'ที', ipa: 'tʰiː', gloss: 'time, turn (อีกที)' },
+    ek: { word: 'ที่', ipa: 'tʰîː', gloss: 'place, at; order (1st, 2nd)' },
+    tho: { word: 'ที้', ipa: 'tʰíː', gloss: 'slang, sound effect, nickname' },
+  },
+  {
+    letter: 'ซ',
+    none: { word: 'ซือ', ipa: 'sɯː', gloss: 'straightforward, honest (ซื่อสัตย์)' },
+    ek: { word: 'ซื่อ', ipa: 'sɯ̂ː', gloss: 'honest, naive, direct' },
+    tho: { word: 'ซื้อ', ipa: 'sɯ́ː', gloss: 'to buy' },
+  },
+  {
+    letter: 'ร',
+    none: { word: 'รู', ipa: 'ruː', gloss: 'hole' },
+    ek: { word: 'รู่', ipa: 'rûː', gloss: 'drooping, bent (ลู่/รู่)' },
+    tho: { word: 'รู้', ipa: 'rúː', gloss: 'to know' },
+  },
+  {
+    letter: 'ม',
+    none: { word: 'แม', ipa: 'mɛː', gloss: 'sound, particle (regional)' },
+    ek: { word: 'แม่', ipa: 'mɛ̂ː', gloss: 'mother' },
+    tho: { word: 'แม้', ipa: 'mɛ́ː', gloss: 'even if, although' },
+  },
+  {
+    letter: 'ง',
+    none: { word: 'โง', ipa: 'ŋoː', gloss: 'curved up, bent upward' },
+    ek: { word: 'โง่', ipa: 'ŋôː', gloss: 'stupid, foolish' },
+    tho: { word: 'โง้', ipa: 'ŋóː', gloss: 'sharply curved, exaggerated arch' },
+  },
+  {
+    letter: 'ช',
+    none: { word: 'ชัย', ipa: 'tɕʰaj', gloss: 'victory, triumph' },
+    ek: { word: 'ใช่', ipa: 'tɕʰâj', gloss: 'yes, correct' },
+    tho: { word: 'ใช้', ipa: 'tɕʰáj', gloss: 'to use, spend' },
+  },
+  {
+    letter: 'ล',
+    none: { word: 'ลำ', ipa: 'lam', gloss: 'trunk, body; classifier for boats/planes' },
+    ek: { word: 'ล่ำ', ipa: 'lâm', gloss: 'muscular, stocky (ล่ำบึ้ก)' },
+    tho: { word: 'ล้ำ', ipa: 'lám', gloss: 'advanced, protruding (ล้ำหน้า)' },
+  },
+  {
+    letter: 'ว',
+    none: { word: 'ไว', ipa: 'waj', gloss: 'fast, quick' },
+    // ห-นำ, not plain ว+ok — the wai greeting has no everyday "ไว่" spelling
+    // of its own, so Thai reaches this Falling tone through a silent ห
+    // reassigning ว to high-class rules instead (high + ้ → Falling too).
+    ek: { word: 'ไหว้', ipa: 'wâj', gloss: 'the wai greeting/gesture of respect' },
+    tho: { word: 'ไว้', ipa: 'wáj', gloss: 'to keep, store, keep for later' },
+  },
+  {
+    letter: 'น',
+    none: { word: 'เนา', ipa: 'naw', gloss: 'to baste (sewing); temporary stay' },
+    ek: { word: 'เน่า', ipa: 'nâw', gloss: 'rotten, spoiled, foul' },
+    tho: { word: 'เน้า', ipa: 'náw', gloss: 'dialect, sound particle' },
+  },
+  {
+    letter: 'พ',
+    none: { word: 'พอ', ipa: 'pʰɔː', gloss: 'enough, sufficient' },
+    ek: { word: 'พ่อ', ipa: 'pʰɔ̂ː', gloss: 'father' },
+    tho: { word: 'พ้อ', ipa: 'pʰɔ́ː', gloss: 'to complain, reproach (ตัดพ้อ)' },
+  },
+];
+
+/** Three compound words combining two of the syllables above. */
+const LOW_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
+  { word: 'ซื้อที่', ipa: 'sɯ́ː.tʰîː', gloss: 'to buy land/a location' },
+  { word: 'รู้ไว้', ipa: 'rúː.wáj', gloss: 'know this, keep in mind' },
+  { word: 'ล้ำค่า', ipa: 'lám.kʰâː', gloss: 'priceless, highly valuable' },
+];
+
 /** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
 const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
 
@@ -222,6 +305,48 @@ const CLASS_VIDEO: Record<ConsonantClass, { href: string; label: string }> = {
   mid: { href: 'https://www.youtube.com/watch?v=LpU5Pngmq9c', label: 'ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill' },
   high: { href: 'https://www.youtube.com/watch?v=fniDdFIKMvA', label: 'ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill' },
   low: { href: 'https://www.youtube.com/watch?v=t4iClxXLuoU', label: 'ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill' },
+};
+
+/** Which marks a class's word-family table has a column for, the tone each
+ *  lands on, and the order to show them in. Columns follow the resulting
+ *  tone's place in the canonical Mid·Low·Falling·High·Rising sequence
+ *  rather than "no mark first" — for mid class those happen to coincide
+ *  (unmarked → Mid, first in the sequence), but high class's unmarked
+ *  column lands on Rising (last) and low class's on Mid (first again, by
+ *  coincidence) — this is also the low-to-high pitch order native children
+ *  chant each class in. `glyph` is omitted for the unmarked column, which
+ *  renders "No mark" instead of a MarkGlyph. */
+type FamilyMark = 'none' | 'ek' | 'tho' | 'tri' | 'chattawa';
+const CLASS_FAMILY_COLUMNS: Record<ConsonantClass, { dataKey: FamilyMark; tone: ToneName; glyph?: string }[]> = {
+  mid: [
+    { dataKey: 'none', tone: 'Mid' },
+    { dataKey: 'ek', tone: 'Low', glyph: '่' },
+    { dataKey: 'tho', tone: 'Falling', glyph: '้' },
+    { dataKey: 'tri', tone: 'High', glyph: '๊' },
+    { dataKey: 'chattawa', tone: 'Rising', glyph: '๋' },
+  ],
+  high: [
+    { dataKey: 'ek', tone: 'Low', glyph: '่' },
+    { dataKey: 'tho', tone: 'Falling', glyph: '้' },
+    { dataKey: 'none', tone: 'Rising' },
+  ],
+  low: [
+    { dataKey: 'none', tone: 'Mid' },
+    { dataKey: 'ek', tone: 'Falling', glyph: '่' },
+    { dataKey: 'tho', tone: 'High', glyph: '้' },
+  ],
+};
+
+const CLASS_FAMILIES: Record<ConsonantClass, FamilyRow[]> = {
+  mid: MID_WORD_FAMILIES,
+  high: HIGH_WORD_FAMILIES,
+  low: LOW_WORD_FAMILIES,
+};
+
+const CLASS_COMPOUND_WORDS: Record<ConsonantClass, { word: string; ipa: string; gloss: string }[]> = {
+  mid: [],
+  high: HIGH_COMPOUND_WORDS,
+  low: LOW_COMPOUND_WORDS,
 };
 
 /** Bookmark-style link to a practice video, accent-colored per class. */
@@ -594,6 +719,8 @@ function ChantLoop() {
           </div>
         ))}
       </div>
+
+      <ClassWordFamilies klass={activeClass} />
     </div>
   );
 }
@@ -614,97 +741,68 @@ function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
   );
 }
 
-/** Six real mid-class word families — one per mark — for the same 5-tone
- *  pattern the Chant loop above generates from a fixed drill syllable, but
- *  here with actual dictionary words instead. */
-function MidWordFamilies() {
+/** One class's word-family table + compound words — scoped to whichever
+ *  class tab the Chant loop currently has active, rather than three
+ *  always-visible sections stacked below it. */
+function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
+  const columns = CLASS_FAMILY_COLUMNS[klass];
+  const rows = CLASS_FAMILIES[klass];
+  const compounds = CLASS_COMPOUND_WORDS[klass];
   return (
     <div style={{ marginTop: 24 }}>
       <p style={{ marginBottom: 8 }}>
-        <strong>Mid-class word families</strong>{' '}
+        <strong>{CLASS_LABEL[klass]} word families</strong>{' '}
         <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — six real words per mark, same 5-tone pattern as the chant loop
+          — {rows.length} real words per mark
+          {columns.length < 5 && `; ${CLASS_LABEL[klass].toLowerCase()} only ever reaches ${columns.length} of the 5 tones`}
         </span>
       </p>
       <table className={styles.cueTable}>
         <thead>
           <tr>
             <th>Letter</th>
-            <th style={{ color: TONE_COLOR.Mid }}>No mark</th>
-            <th><MarkGlyph mark="่" color={TONE_COLOR.Low} fontSize="1.3rem" /></th>
-            <th><MarkGlyph mark="้" color={TONE_COLOR.Falling} fontSize="1.3rem" /></th>
-            <th><MarkGlyph mark="๊" color={TONE_COLOR.High} fontSize="1.3rem" /></th>
-            <th><MarkGlyph mark="๋" color={TONE_COLOR.Rising} fontSize="1.3rem" /></th>
+            {columns.map(col => (
+              <th key={col.dataKey} style={col.glyph ? undefined : { color: TONE_COLOR[col.tone] }}>
+                {col.glyph ? <MarkGlyph mark={col.glyph} color={TONE_COLOR[col.tone]} fontSize="1.3rem" /> : 'No mark'}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {MID_WORD_FAMILIES.map(({ letter, none, ek, tho, tri, chattawa }, i) => (
+          {rows.map((row, i) => (
             <tr key={i}>
-              <td className={styles.cueThaiWord}>{letter}</td>
-              <WordCell {...none} tone="Mid" />
-              <WordCell {...ek} tone="Low" />
-              <WordCell {...tho} tone="Falling" />
-              <WordCell {...tri} tone="High" />
-              <WordCell {...chattawa} tone="Rising" />
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/** Ten real high-class word families — one per mark — plus five compound
- *  words built from the same vocabulary. Unlike Mid, high class only ever
- *  reaches 3 of the 5 tones, so this table has 3 columns instead of 5. */
-function HighWordFamilies() {
-  return (
-    <div style={{ marginTop: 24 }}>
-      <p style={{ marginBottom: 8 }}>
-        <strong>High-class word families</strong>{' '}
-        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — ten real words per mark; high class only ever reaches 3 of the 5 tones
-        </span>
-      </p>
-      <table className={styles.cueTable}>
-        <thead>
-          <tr>
-            <th>Letter</th>
-            <th><MarkGlyph mark="่" color={TONE_COLOR.Low} fontSize="1.3rem" /></th>
-            <th><MarkGlyph mark="้" color={TONE_COLOR.Falling} fontSize="1.3rem" /></th>
-            <th style={{ color: TONE_COLOR.Rising }}>No mark</th>
-          </tr>
-        </thead>
-        <tbody>
-          {HIGH_WORD_FAMILIES.map(({ letter, ek, tho, none }, i) => (
-            <tr key={i}>
-              <td className={styles.cueThaiWord}>{letter}</td>
-              <WordCell {...ek} tone="Low" />
-              <WordCell {...tho} tone="Falling" />
-              <WordCell {...none} tone="Rising" />
+              <td className={styles.cueThaiWord}>{row.letter}</td>
+              {columns.map(col => {
+                const w = row[col.dataKey];
+                return w ? <WordCell key={col.dataKey} {...w} tone={col.tone} /> : <td key={col.dataKey} />;
+              })}
             </tr>
           ))}
         </tbody>
       </table>
 
-      <p style={{ marginTop: 14, marginBottom: 6, fontSize: '0.85rem' }}>
-        <strong>Compound words</strong>{' '}
-        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — built from the syllables above
-        </span>
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: '0.9rem' }}>
-        {HIGH_COMPOUND_WORDS.map(({ word, ipa, gloss }, i) => (
-          <span
-            key={i}
-            className={`${styles.cueThaiWord} ${styles.label}`}
-            style={{ fontSize: '1.05rem', cursor: 'help' }}
-            data-tooltip={`/${ipa}/ · ${gloss}`}
-          >
-            {word}
-          </span>
-        ))}
-      </div>
+      {compounds.length > 0 && (
+        <>
+          <p style={{ marginTop: 14, marginBottom: 6, fontSize: '0.85rem' }}>
+            <strong>Compound words</strong>{' '}
+            <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+              — built from the syllables above
+            </span>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: '0.9rem' }}>
+            {compounds.map(({ word, ipa, gloss }, i) => (
+              <span
+                key={i}
+                className={`${styles.cueThaiWord} ${styles.label}`}
+                style={{ fontSize: '1.05rem', cursor: 'help' }}
+                data-tooltip={`/${ipa}/ · ${gloss}`}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1136,10 +1234,6 @@ export function TonesTab() {
       {lang === 'thai' && <PracticeSentence />}
 
       {lang === 'thai' && <ChantLoop />}
-
-      {lang === 'thai' && <MidWordFamilies />}
-
-      {lang === 'thai' && <HighWordFamilies />}
     </div>
   );
 }
