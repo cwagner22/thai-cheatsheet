@@ -803,9 +803,12 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
           </p>
           <table className={styles.cueTable}>
             <tbody>
-              {compounds.map(({ word, gloss }, i) => (
+              {compounds.map(({ word, ipa, gloss }, i) => (
                 <tr key={i}>
                   <td className={styles.cueThaiWord} style={{ width: '1%', whiteSpace: 'nowrap' }}>{word}</td>
+                  <td style={{ width: '1%', whiteSpace: 'nowrap', color: '#888', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
+                    /{ipa}/
+                  </td>
                   <td style={{ color: '#888', fontSize: '0.85rem' }}>{gloss}</td>
                 </tr>
               ))}
