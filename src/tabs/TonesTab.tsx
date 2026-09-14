@@ -100,6 +100,87 @@ const MID_WORD_FAMILIES: { letter: string; none: MidWord; ek: MidWord; tho: MidW
   },
 ];
 
+/** Ten high-class word families — one real word per mark, in canonical
+ *  tone order (Low · Falling · Rising) rather than mark-application order,
+ *  since high class's unmarked column lands on Rising (last in the
+ *  Mid·Low·Falling·High·Rising sequence) rather than first — this is also
+ *  the order native children chant these in (low-to-high pitch). No ๊/๋
+ *  columns: those marks never occur on high-class letters. A few entries
+ *  are dialect/onomatopoeia words rather than everyday vocabulary — noted
+ *  in their own gloss rather than presented as more common than they are. */
+const HIGH_WORD_FAMILIES: { letter: string; ek: MidWord; tho: MidWord; none: MidWord }[] = [
+  {
+    letter: 'ข',
+    ek: { word: 'ข่า', ipa: 'kʰàː', gloss: 'galangal (cooking herb)' },
+    tho: { word: 'ข้า', ipa: 'kʰâː', gloss: 'I/me (archaic), servant' },
+    none: { word: 'ขา', ipa: 'kʰǎː', gloss: 'leg' },
+  },
+  {
+    letter: 'ผ',
+    ek: { word: 'ผ่า', ipa: 'pʰàː', gloss: 'to split, operate (surgery)' },
+    tho: { word: 'ผ้า', ipa: 'pʰâː', gloss: 'cloth, fabric' },
+    none: { word: 'ผา', ipa: 'pʰǎː', gloss: 'cliff, rock formation' },
+  },
+  {
+    letter: 'ส',
+    ek: { word: 'สู่', ipa: 'sùː', gloss: 'towards, to' },
+    tho: { word: 'สู้', ipa: 'sûː', gloss: 'to fight (สู้ๆ)' },
+    none: { word: 'สู', ipa: 'sǔː', gloss: 'you (archaic/regional), breeze' },
+  },
+  {
+    letter: 'ฉ',
+    ek: { word: 'ฉี่', ipa: 'tɕʰìː', gloss: 'pee, urine' },
+    tho: { word: 'ฉี้', ipa: 'tɕʰîː', gloss: 'exclamation, slang' },
+    none: { word: 'ฉี', ipa: 'tɕʰǐː', gloss: 'sound effect (dialect)' },
+  },
+  {
+    letter: 'ห',
+    ek: { word: 'หู่', ipa: 'hùː', gloss: 'low hum (dialect)' },
+    tho: { word: 'หู้', ipa: 'hûː', gloss: 'tofu (เต้าหู้)' },
+    none: { word: 'หู', ipa: 'hǔː', gloss: 'ear' },
+  },
+  {
+    letter: 'ถ',
+    ek: { word: 'ถ่ำ', ipa: 'tʰàm', gloss: 'dialect sound word' },
+    tho: { word: 'ถ้ำ', ipa: 'tʰâm', gloss: 'cave' },
+    none: { word: 'ถำ', ipa: 'tʰǎm', gloss: 'rare, dialect word' },
+  },
+  {
+    letter: 'ห',
+    ek: { word: 'ไหร่', ipa: 'hàj', gloss: 'dialect particle (เท่าไหร่)' },
+    tho: { word: 'ให้', ipa: 'hâj', gloss: 'to give, for' },
+    none: { word: 'ไห', ipa: 'hǎj', gloss: 'clay jar, vessel' },
+  },
+  {
+    letter: 'ข',
+    ek: { word: 'ไข่', ipa: 'kʰàj', gloss: 'egg' },
+    tho: { word: 'ไข้', ipa: 'kʰâj', gloss: 'fever, sick' },
+    none: { word: 'ไข', ipa: 'kʰǎj', gloss: 'fat/marrow; to unlock' },
+  },
+  {
+    letter: 'ข',
+    ek: { word: 'เข่า', ipa: 'kʰàw', gloss: 'knee' },
+    tho: { word: 'เข้า', ipa: 'kʰâw', gloss: 'to enter, in' },
+    none: { word: 'เขา', ipa: 'kʰǎw', gloss: 'he/she/they, mountain, horn' },
+  },
+  {
+    letter: 'ฝ',
+    ek: { word: 'เฝ่า', ipa: 'fàw', gloss: 'sound, dialect variant' },
+    tho: { word: 'เฝ้า', ipa: 'fâw', gloss: 'to watch over, guard' },
+    none: { word: 'ฝา', ipa: 'fǎw', gloss: 'lid, cover' },
+  },
+];
+
+/** Five compound words combining two of the syllables above — real
+ *  connected speech built from this drill's own vocabulary. */
+const HIGH_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
+  { word: 'ผู้ให้', ipa: 'pʰûː.hâj', gloss: 'giver, donor' },
+  { word: 'เฝ้าไข้', ipa: 'fâw.kʰâj', gloss: 'to nurse a sick person' },
+  { word: 'เข้าถ้ำ', ipa: 'kʰâw.tʰâm', gloss: 'to enter a cave' },
+  { word: 'สู้เขา', ipa: 'sûː.kʰǎw', gloss: 'fight them! / hang in there!' },
+  { word: 'ผ่าเข่า', ipa: 'pʰàː.kʰàw', gloss: 'knee surgery' },
+];
+
 /** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
 const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
 
@@ -441,7 +522,7 @@ function PracticeSentence() {
                 <td className={styles.cueTone} style={{ color: TONE_COLOR[tone] }}>{tone}</td>
                 <td>{cue}</td>
                 <td style={{ color: '#666' }}>{comment}</td>
-                <td className={styles.cueThaiWord} title={`/${ipa}/`}>
+                <td className={styles.cueThaiWord} style={{ cursor: 'help' }} title={`/${ipa}/`}>
                   {word}{' '}
                   <span style={{ fontSize: '0.75rem', color: '#888', fontFamily: 'Inter, sans-serif' }}>
                     · {gloss}
@@ -548,7 +629,7 @@ function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
   return (
     <td
       className={`${styles.cueThaiWord} ${styles.label}`}
-      style={{ color: TONE_COLOR[tone] }}
+      style={{ color: TONE_COLOR[tone], cursor: 'help' }}
       data-tooltip={`/${ipa}/ · ${gloss}`}
     >
       {word}
@@ -592,6 +673,61 @@ function MidWordFamilies() {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/** Ten real high-class word families — one per mark — plus five compound
+ *  words built from the same vocabulary. Unlike Mid, high class only ever
+ *  reaches 3 of the 5 tones, so this table has 3 columns instead of 5. */
+function HighWordFamilies() {
+  return (
+    <div style={{ marginTop: 24 }}>
+      <p style={{ marginBottom: 8 }}>
+        <strong>High-class word families</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+          — ten real words per mark; high class only ever reaches 3 of the 5 tones
+        </span>
+      </p>
+      <table className={styles.cueTable}>
+        <thead>
+          <tr>
+            <th>Letter</th>
+            <th><MarkGlyph mark="่" color={TONE_COLOR.Low} fontSize="1.3rem" /></th>
+            <th><MarkGlyph mark="้" color={TONE_COLOR.Falling} fontSize="1.3rem" /></th>
+            <th style={{ color: TONE_COLOR.Rising }}>No mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {HIGH_WORD_FAMILIES.map(({ letter, ek, tho, none }, i) => (
+            <tr key={i}>
+              <td className={styles.cueThaiWord}>{letter}</td>
+              <WordCell {...ek} tone="Low" />
+              <WordCell {...tho} tone="Falling" />
+              <WordCell {...none} tone="Rising" />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p style={{ marginTop: 14, marginBottom: 6, fontSize: '0.85rem' }}>
+        <strong>Compound words</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+          — built from the syllables above
+        </span>
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: '0.9rem' }}>
+        {HIGH_COMPOUND_WORDS.map(({ word, ipa, gloss }, i) => (
+          <span
+            key={i}
+            className={`${styles.cueThaiWord} ${styles.label}`}
+            style={{ fontSize: '1.05rem', cursor: 'help' }}
+            data-tooltip={`/${ipa}/ · ${gloss}`}
+          >
+            {word}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1025,6 +1161,8 @@ export function TonesTab() {
       {lang === 'thai' && <ChantLoop />}
 
       {lang === 'thai' && <MidWordFamilies />}
+
+      {lang === 'thai' && <HighWordFamilies />}
     </div>
   );
 }
