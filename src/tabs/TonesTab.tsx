@@ -52,126 +52,154 @@ type MidWord = { word: string; ipa: string; gloss?: string };
  *  which marks that is, and in what order) — never a different word. */
 type FamilyRow = { letter: string; none?: MidWord; ek?: MidWord; tho?: MidWord; tri?: MidWord; chattawa?: MidWord };
 
-/** Six mid-class word families — the same letter+vowel base carried through
- *  every mark, unlike the Chant loop above's fixed /aː/ syllable, so the
- *  vowel differs family to family. Not every combination is an established
- *  word — ๊/๋ especially are largely restricted to loanwords, onomatopoeia,
- *  and slang in everyday Thai — so `gloss` is left off those rather than
- *  guessed at or swapped for a different real word. */
+/** One row per mid-class letter (ก จ ฎ ฏ ด ต บ ป อ — all 9, same order as
+ *  the Consonants tab), same letter+vowel base carried through every mark,
+ *  unlike the Chant loop above's fixed /aː/ syllable, so the vowel differs
+ *  row to row. Not every combination is an established word — ๊/๋
+ *  especially are largely restricted to loanwords, onomatopoeia, and slang
+ *  in everyday Thai, and ฎ/ฏ barely occur as a syllable's initial at all
+ *  outside a couple of Pali/Sanskrit loanwords — so `gloss` is left off
+ *  those rather than guessed at or swapped for a different real word. */
 const MID_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ก',
-    none: { word: 'ไก', ipa: 'kaj', gloss: 'the trigger of a gun (ไกปืน)' },
+    none: { word: 'ไก', ipa: 'kaj', gloss: 'gun trigger' },
     ek: { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
     tho: { word: 'ไก้', ipa: 'kâj' },
     tri: { word: 'ไก๊', ipa: 'káj' },
-    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'acting oblivious or coy (from the idiom ทำไก๋)' },
+    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'acts coy (ทำไก๋)' },
   },
   {
-    letter: 'ต',
-    none: { word: 'ตา', ipa: 'taː', gloss: 'eye; maternal grandfather' },
-    ek: { word: 'ต่า', ipa: 'tàː' },
-    tho: { word: 'ต้า', ipa: 'tâː', gloss: '"big" — an informal loanword from Chinese 大, common in nicknames' },
-    tri: { word: 'ต๊า', ipa: 'táː' },
-    chattawa: { word: 'ต๋า', ipa: 'tǎː' },
+    letter: 'จ',
+    none: { word: 'จอ', ipa: 'tɕɔː', gloss: 'screen, monitor' },
+    ek: { word: 'จ่อ', ipa: 'tɕɔ̀ː', gloss: 'to aim at, hover near' },
+    tho: { word: 'จ้อ', ipa: 'tɕɔ̂ː', gloss: 'to chat, gossip' },
+    tri: { word: 'จ๊อ', ipa: 'tɕɔ́ː' },
+    chattawa: { word: 'จ๋อ', ipa: 'tɕɔ̌ː' },
+  },
+  {
+    letter: 'ฎ',
+    none: { word: 'ฎี', ipa: 'diː', gloss: 'petition (ฎีกา)' },
+    ek: { word: 'ฎี่', ipa: 'dìː' },
+    tho: { word: 'ฎี้', ipa: 'dîː' },
+    tri: { word: 'ฎี๊', ipa: 'díː' },
+    chattawa: { word: 'ฎี๋', ipa: 'dǐː' },
+  },
+  {
+    letter: 'ฏ',
+    none: { word: 'ฏา', ipa: 'taː' },
+    ek: { word: 'ฏ่า', ipa: 'tàː' },
+    tho: { word: 'ฏ้า', ipa: 'tâː' },
+    tri: { word: 'ฏ๊า', ipa: 'táː' },
+    chattawa: { word: 'ฏ๋า', ipa: 'tǎː' },
   },
   {
     letter: 'ด',
     none: { word: 'ดี', ipa: 'diː', gloss: 'good' },
     ek: { word: 'ดี่', ipa: 'dìː' },
-    tho: { word: 'ดี้', ipa: 'dîː', gloss: "a butch woman's partner, LGBTQ slang" },
-    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled, over the moon (from กระดี๊กระด๊า)' },
+    tho: { word: 'ดี้', ipa: 'dîː', gloss: "butch's partner (slang)" },
+    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled' },
     chattawa: { word: 'ดี๋', ipa: 'dǐː' },
   },
   {
-    letter: 'ป',
-    none: { word: 'ปู', ipa: 'puː', gloss: 'crab; to lay flat (e.g. a carpet)' },
-    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'paternal grandfather' },
-    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck thoroughly (from ปู้ยี่ปู้ยำ)' },
-    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'a whistle or horn sound (ปู๊ปู๊)' },
-    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'vulgar slang for female genitals' },
-  },
-  {
-    letter: 'ป',
-    none: { word: 'ปา', ipa: 'paː', gloss: 'to throw' },
-    ek: { word: 'ป่า', ipa: 'pàː', gloss: 'forest' },
-    tho: { word: 'ป้า', ipa: 'pâː', gloss: 'aunt (older than one’s parent)' },
-    tri: { word: 'ป๊า', ipa: 'páː', gloss: 'dad — informal, from English/Chinese' },
-    chattawa: { word: 'ป๋า', ipa: 'pǎː', gloss: 'dad — slang' },
+    letter: 'ต',
+    none: { word: 'ตา', ipa: 'taː', gloss: 'eye; grandpa' },
+    ek: { word: 'ต่า', ipa: 'tàː' },
+    tho: { word: 'ต้า', ipa: 'tâː', gloss: 'big (Chinese loanword)' },
+    tri: { word: 'ต๊า', ipa: 'táː' },
+    chattawa: { word: 'ต๋า', ipa: 'tǎː' },
   },
   {
     letter: 'บ',
     none: { word: 'เบา', ipa: 'baw', gloss: 'light, soft' },
     ek: { word: 'เบ่า', ipa: 'bàw' },
-    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'a socket or mold (เบ้าตา = eye socket)' },
+    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'socket, mold' },
     tri: { word: 'เบ๊า', ipa: 'báw' },
     chattawa: { word: 'เบ๋า', ipa: 'bǎw' },
   },
+  {
+    letter: 'ป',
+    none: { word: 'ปู', ipa: 'puː', gloss: 'crab; to lay flat' },
+    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'grandpa' },
+    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck' },
+    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'horn sound' },
+    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'vulgar slang, female genitals' },
+  },
+  {
+    letter: 'อ',
+    none: { word: 'อา', ipa: 'ʔaː', gloss: "aunt/uncle (dad's sibling)" },
+    ek: { word: 'อ่า', ipa: 'ʔàː' },
+    tho: { word: 'อ้า', ipa: 'ʔâː', gloss: 'to open wide' },
+    tri: { word: 'อ๊า', ipa: 'ʔáː' },
+    chattawa: { word: 'อ๋า', ipa: 'ʔǎː' },
+  },
 ];
 
-/** Ten high-class word families — one real word per mark. A few entries are
- *  dialect/onomatopoeia words rather than everyday vocabulary — noted in
- *  their own gloss rather than presented as more common than they are. */
+/** Ten high-class word families, same letter+vowel base carried through
+ *  every mark. A few cells are dialect/onomatopoeia words rather than
+ *  everyday vocabulary — noted in their own gloss — and a couple have no
+ *  established word at all, left without a gloss rather than swapped for
+ *  a different real word that breaks the row's own base spelling. */
 const HIGH_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ข',
-    ek: { word: 'ข่า', ipa: 'kʰàː', gloss: 'galangal (cooking herb)' },
-    tho: { word: 'ข้า', ipa: 'kʰâː', gloss: 'I/me (archaic), servant' },
     none: { word: 'ขา', ipa: 'kʰǎː', gloss: 'leg' },
+    ek: { word: 'ข่า', ipa: 'kʰàː', gloss: 'galangal (herb)' },
+    tho: { word: 'ข้า', ipa: 'kʰâː', gloss: 'I, servant (archaic)' },
   },
   {
     letter: 'ผ',
-    ek: { word: 'ผ่า', ipa: 'pʰàː', gloss: 'to split, operate (surgery)' },
-    tho: { word: 'ผ้า', ipa: 'pʰâː', gloss: 'cloth, fabric' },
-    none: { word: 'ผา', ipa: 'pʰǎː', gloss: 'cliff, rock formation' },
+    none: { word: 'ผา', ipa: 'pʰǎː', gloss: 'cliff' },
+    ek: { word: 'ผ่า', ipa: 'pʰàː', gloss: 'to split; surgery' },
+    tho: { word: 'ผ้า', ipa: 'pʰâː', gloss: 'cloth' },
   },
   {
     letter: 'ส',
-    ek: { word: 'สู่', ipa: 'sùː', gloss: 'towards, to' },
-    tho: { word: 'สู้', ipa: 'sûː', gloss: 'to fight (สู้ๆ)' },
-    none: { word: 'สู', ipa: 'sǔː', gloss: 'you (archaic/regional), breeze' },
+    none: { word: 'สู', ipa: 'sǔː', gloss: 'you (archaic); breeze' },
+    ek: { word: 'สู่', ipa: 'sùː', gloss: 'towards' },
+    tho: { word: 'สู้', ipa: 'sûː', gloss: 'to fight' },
   },
   {
     letter: 'ฉ',
-    ek: { word: 'ฉี่', ipa: 'tɕʰìː', gloss: 'pee, urine' },
-    tho: { word: 'ฉี้', ipa: 'tɕʰîː', gloss: 'exclamation, slang' },
-    none: { word: 'ฉี', ipa: 'tɕʰǐː', gloss: 'sound effect (dialect)' },
+    none: { word: 'ฉี', ipa: 'tɕʰǐː', gloss: 'sound (dialect)' },
+    ek: { word: 'ฉี่', ipa: 'tɕʰìː', gloss: 'pee' },
+    tho: { word: 'ฉี้', ipa: 'tɕʰîː', gloss: 'exclamation (slang)' },
   },
   {
     letter: 'ห',
+    none: { word: 'หู', ipa: 'hǔː', gloss: 'ear' },
     ek: { word: 'หู่', ipa: 'hùː', gloss: 'low hum (dialect)' },
     tho: { word: 'หู้', ipa: 'hûː', gloss: 'tofu (เต้าหู้)' },
-    none: { word: 'หู', ipa: 'hǔː', gloss: 'ear' },
   },
   {
     letter: 'ถ',
-    ek: { word: 'ถ่ำ', ipa: 'tʰàm', gloss: 'dialect sound word' },
+    none: { word: 'ถำ', ipa: 'tʰǎm' },
+    ek: { word: 'ถ่ำ', ipa: 'tʰàm', gloss: 'sound (dialect)' },
     tho: { word: 'ถ้ำ', ipa: 'tʰâm', gloss: 'cave' },
-    none: { word: 'ถำ', ipa: 'tʰǎm', gloss: 'rare, dialect word' },
   },
   {
     letter: 'ห',
-    ek: { word: 'ไหร่', ipa: 'hàj', gloss: 'dialect particle (เท่าไหร่)' },
-    tho: { word: 'ให้', ipa: 'hâj', gloss: 'to give, for' },
-    none: { word: 'ไห', ipa: 'hǎj', gloss: 'clay jar, vessel' },
+    none: { word: 'ไห', ipa: 'hǎj', gloss: 'clay jar' },
+    ek: { word: 'ไห่', ipa: 'hàj' },
+    tho: { word: 'ไห้', ipa: 'hâj', gloss: 'cries (ร้องไห้)' },
   },
   {
     letter: 'ข',
+    none: { word: 'ไข', ipa: 'kʰǎj', gloss: 'fat; to unlock' },
     ek: { word: 'ไข่', ipa: 'kʰàj', gloss: 'egg' },
     tho: { word: 'ไข้', ipa: 'kʰâj', gloss: 'fever, sick' },
-    none: { word: 'ไข', ipa: 'kʰǎj', gloss: 'fat/marrow; to unlock' },
   },
   {
     letter: 'ข',
+    none: { word: 'เขา', ipa: 'kʰǎw', gloss: 'he/she; mountain' },
     ek: { word: 'เข่า', ipa: 'kʰàw', gloss: 'knee' },
-    tho: { word: 'เข้า', ipa: 'kʰâw', gloss: 'to enter, in' },
-    none: { word: 'เขา', ipa: 'kʰǎw', gloss: 'he/she/they, mountain, horn' },
+    tho: { word: 'เข้า', ipa: 'kʰâw', gloss: 'to enter' },
   },
   {
     letter: 'ฝ',
-    ek: { word: 'เฝ่า', ipa: 'fàw', gloss: 'sound, dialect variant' },
-    tho: { word: 'เฝ้า', ipa: 'fâw', gloss: 'to watch over, guard' },
-    none: { word: 'ฝา', ipa: 'fǎw', gloss: 'lid, cover' },
+    none: { word: 'ฝา', ipa: 'faː', gloss: 'lid, cover' },
+    ek: { word: 'ฝ่า', ipa: 'fàː', gloss: 'palm (of the hand)' },
+    tho: { word: 'ฝ้า', ipa: 'fâː', gloss: 'melasma, skin blotch' },
   },
 ];
 
@@ -347,12 +375,12 @@ const CLASS_FAMILIES: Record<ConsonantClass, FamilyRow[]> = {
 
 /** Six mid-class compound words, both syllables mid-class initials. */
 const MID_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
-  { word: 'จ่าดำ', ipa: 'tɕàː.dam', gloss: 'a name, "Sergeant Dam" (จ่า = petty officer, ดำ = black)' },
-  { word: 'จำได้', ipa: 'tɕam.dâj', gloss: 'to remember, recall' },
-  { word: 'ไก่ป่า', ipa: 'kàj.pàː', gloss: 'jungle fowl, wild chicken' },
-  { word: 'ปู่ตา', ipa: 'pùː.taː', gloss: "grandfathers; a village's guardian spirits (ศาลปู่ตา)" },
-  { word: 'ปาเป้า', ipa: 'paː.pâw', gloss: 'to play darts; the dart game' },
-  { word: 'เก่าแก่', ipa: 'kàw.kɛ̀ː', gloss: 'old, long-standing, time-honored' },
+  { word: 'จ่าดำ', ipa: 'tɕàː.dam', gloss: 'a name, "Sgt. Dam"' },
+  { word: 'จำได้', ipa: 'tɕam.dâj', gloss: 'to remember' },
+  { word: 'ไก่ป่า', ipa: 'kàj.pàː', gloss: 'wild chicken' },
+  { word: 'ปู่ตา', ipa: 'pùː.taː', gloss: 'grandfathers; village guardian spirits' },
+  { word: 'ปาเป้า', ipa: 'paː.pâw', gloss: 'to play darts' },
+  { word: 'เก่าแก่', ipa: 'kàw.kɛ̀ː', gloss: 'old, time-honored' },
 ];
 
 const CLASS_COMPOUND_WORDS: Record<ConsonantClass, { word: string; ipa: string; gloss: string }[]> = {
