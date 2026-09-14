@@ -47,60 +47,52 @@ type MidWord = { word: string; ipa: string; gloss: string };
  *  and in what order). */
 type FamilyRow = { letter: string; none?: MidWord; ek?: MidWord; tho?: MidWord; tri?: MidWord; chattawa?: MidWord };
 
-/** Six mid-class word families, one real word per mark — unlike the Chant
- *  loop above, these are real dictionary words rather than a fixed /aː/
- *  drill syllable, so the vowel differs family to family. ๊/๋ skew toward
- *  slang, onomatopoeia, and loanwords across all six families — those two
- *  marks are mostly used for exactly that kind of word in modern Thai, not
- *  a gap in these particular examples. */
+/** Six mid-class word families, one real word per mark where a common one
+ *  actually exists — unlike the Chant loop above, these are real dictionary
+ *  words rather than a fixed /aː/ drill syllable, so the vowel differs
+ *  family to family. ๊/๋ are largely restricted to loanwords, onomatopoeia,
+ *  and slang in everyday Thai, so several families genuinely have no
+ *  established word for one or both — left absent (ClassWordFamilies renders
+ *  those cells as "—") rather than filled with an invented one. */
 const MID_WORD_FAMILIES: FamilyRow[] = [
   {
     letter: 'ก',
-    none: { word: 'ไก', ipa: 'kaj', gloss: 'trigger (ไกปืน)' },
+    none: { word: 'ไก', ipa: 'kaj', gloss: 'the trigger of a gun (ไกปืน)' },
     ek: { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
     tho: { word: 'ใกล้', ipa: 'klâj', gloss: 'near, close' },
-    tri: { word: 'ไก๊', ipa: 'káj', gloss: 'slang, sound effect' },
-    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'clever, feigns ignorance (ทำไก๋)' },
+    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'acting oblivious or coy (from the idiom ทำไก๋)' },
   },
   {
     letter: 'ต',
-    none: { word: 'ตา', ipa: 'taː', gloss: 'eye, grandfather' },
-    ek: { word: 'ต่า', ipa: 'tàː', gloss: 'a drop (regional)' },
-    tho: { word: 'ต้า', ipa: 'tâː', gloss: '"big" (from Chinese 大)' },
-    tri: { word: 'ต๊า', ipa: 'táː', gloss: 'exclamation particle' },
-    chattawa: { word: 'ต๋า', ipa: 'tǎː', gloss: 'affectionate particle' },
+    none: { word: 'ตา', ipa: 'taː', gloss: 'eye; maternal grandfather' },
+    tho: { word: 'ต้า', ipa: 'tâː', gloss: '"big" — an informal loanword from Chinese 大, common in nicknames' },
   },
   {
     letter: 'ด',
     none: { word: 'ดี', ipa: 'diː', gloss: 'good' },
-    ek: { word: 'ดี่', ipa: 'dìː', gloss: 'reed-pipe sound' },
-    tho: { word: 'ดี้', ipa: 'dîː', gloss: 'partner (slang)' },
-    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled (กระดี๊กระด๊า)' },
-    chattawa: { word: 'ดี๋', ipa: 'dǐː', gloss: 'very close (ดี๊ดี๋)' },
+    tho: { word: 'ดี้', ipa: 'dîː', gloss: "a butch woman's partner, LGBTQ slang" },
+    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled, over the moon (from กระดี๊กระด๊า)' },
   },
   {
     letter: 'ป',
-    none: { word: 'ปู', ipa: 'puː', gloss: 'crab, to pave' },
-    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'grandfather' },
-    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck (ปู้ยี่ปู้ยำ)' },
-    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'whistle sound (ปู๊ปู๊)' },
-    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'slang, vulgar' },
+    none: { word: 'ปู', ipa: 'puː', gloss: 'crab; to lay flat (e.g. a carpet)' },
+    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'paternal grandfather' },
+    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck thoroughly (from ปู้ยี่ปู้ยำ)' },
+    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'a whistle or horn sound (ปู๊ปู๊)' },
+    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'vulgar slang for female genitals' },
   },
   {
-    letter: 'ต',
-    none: { word: 'โต', ipa: 'toː', gloss: 'big, grown' },
-    ek: { word: 'โต่', ipa: 'tòː', gloss: 'dull sound' },
-    tho: { word: 'โต้', ipa: 'tôː', gloss: 'to counter (โต้ตอบ)' },
-    tri: { word: 'โต๊', ipa: 'tóː', gloss: 'table (from Chinese 檯)' },
-    chattawa: { word: 'โต๋', ipa: 'tǒː', gloss: 'nickname, card-game term' },
+    letter: 'ป',
+    none: { word: 'ปา', ipa: 'paː', gloss: 'to throw' },
+    ek: { word: 'ป่า', ipa: 'pàː', gloss: 'forest' },
+    tho: { word: 'ป้า', ipa: 'pâː', gloss: 'aunt (older than one’s parent)' },
+    tri: { word: 'ป๊า', ipa: 'páː', gloss: 'dad — informal, from English/Chinese' },
+    chattawa: { word: 'ป๋า', ipa: 'pǎː', gloss: 'dad — slang' },
   },
   {
     letter: 'บ',
     none: { word: 'เบา', ipa: 'baw', gloss: 'light, soft' },
-    ek: { word: 'เบ่า', ipa: 'bàw', gloss: 'young man (regional)' },
-    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'socket, mold (เบ้าตา)' },
-    tri: { word: 'เบ๊า', ipa: 'báw', gloss: 'barking sound' },
-    chattawa: { word: 'เบ๋า', ipa: 'bǎw', gloss: 'bag (slang for กระเป๋า)' },
+    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'a socket or mold (เบ้าตา = eye socket)' },
   },
 ];
 
@@ -340,11 +332,14 @@ const CLASS_FAMILIES: Record<ConsonantClass, FamilyRow[]> = {
   low: LOW_WORD_FAMILIES,
 };
 
-/** Mid class never got its own "Word Practice Section" from a video source
- *  the way High and Low did, so this is the one real compound gettable
- *  purely from MID_WORD_FAMILIES's own vocabulary. */
+/** Six mid-class compound words, both syllables mid-class initials. */
 const MID_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
-  { word: 'ตาดี', ipa: 'taː.diː', gloss: 'sharp-eyed, good eyesight' },
+  { word: 'จ่าดำ', ipa: 'tɕàː.dam', gloss: 'a name, "Sergeant Dam" (จ่า = petty officer, ดำ = black)' },
+  { word: 'จำได้', ipa: 'tɕam.dâj', gloss: 'to remember, recall' },
+  { word: 'ไก่ป่า', ipa: 'kàj.pàː', gloss: 'jungle fowl, wild chicken' },
+  { word: 'ปู่ตา', ipa: 'pùː.taː', gloss: "grandfathers; a village's guardian spirits (ศาลปู่ตา)" },
+  { word: 'ปาเป้า', ipa: 'paː.pâw', gloss: 'to play darts; the dart game' },
+  { word: 'เก่าแก่', ipa: 'kàw.kɛ̀ː', gloss: 'old, long-standing, time-honored' },
 ];
 
 const CLASS_COMPOUND_WORDS: Record<ConsonantClass, { word: string; ipa: string; gloss: string }[]> = {
@@ -776,7 +771,9 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
               <td className={styles.cueThaiWord}>{row.letter}</td>
               {columns.map(col => {
                 const w = row[col.dataKey];
-                return w ? <WordCell key={col.dataKey} {...w} tone={col.tone} /> : <td key={col.dataKey} />;
+                return w
+                  ? <WordCell key={col.dataKey} {...w} tone={col.tone} />
+                  : <td key={col.dataKey} style={{ color: '#ccc' }} title="No common word for this combination">—</td>;
               })}
             </tr>
           ))}
