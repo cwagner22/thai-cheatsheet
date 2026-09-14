@@ -631,9 +631,9 @@ function PracticeSentence() {
         {PRACTICE_SENTENCE.map(({ word, ipa, gloss, tone }, i) => (
           <span
             key={i}
-            className={styles.practiceWord}
+            className={`${styles.practiceWord} ${styles.label}`}
             style={{ color: TONE_COLOR[tone] }}
-            title={`/${ipa}/ · ${gloss} · ${tone} tone`}
+            data-tooltip={`/${ipa}/ · ${gloss} · ${tone} tone`}
           >
             {word}
           </span>
@@ -655,7 +655,7 @@ function PracticeSentence() {
                 <td className={styles.cueTone} style={{ color: TONE_COLOR[tone] }}>{tone}</td>
                 <td>{cue}</td>
                 <td style={{ color: '#666' }}>{comment}</td>
-                <td className={styles.cueThaiWord} style={{ cursor: 'help' }} title={`/${ipa}/`}>
+                <td className={`${styles.cueThaiWord} ${styles.label}`} style={{ cursor: 'help' }} data-tooltip={`/${ipa}/`}>
                   {word}{' '}
                   <span style={{ fontSize: '0.75rem', color: '#888', fontFamily: 'Inter, sans-serif' }}>
                     · {gloss}
@@ -749,13 +749,14 @@ function ChantLoop() {
 }
 
 /** One tone-colored word cell — the Thai word with its gloss printed right
- *  below it, rather than behind a hover tooltip, so the translation is
+ *  below it, rather than only behind a hover tooltip, so the translation is
  *  visible without interacting with the table at all. `gloss` is absent
  *  for a spelling that isn't an established word — the word itself still
- *  shows, just with no translation line under it. */
-function WordCell({ word, gloss, tone }: MidWord & { tone: ToneName }) {
+ *  shows, just with no translation line under it. The IPA stays tooltip-
+ *  only either way, so the cell itself doesn't get any longer. */
+function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
   return (
-    <td className={styles.cueThaiWord}>
+    <td className={`${styles.cueThaiWord} ${styles.label}`} style={{ cursor: 'help' }} data-tooltip={`/${ipa}/`}>
       <span style={{ color: TONE_COLOR[tone] }}>{word}</span>
       {gloss && (
         <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888', whiteSpace: 'normal' }}>
