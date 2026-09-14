@@ -243,6 +243,10 @@
   font-weight: 700;
   line-height: 1.5;
   margin: 10px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5em 0.7em;
 }
 
 .practiceWord {

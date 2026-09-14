@@ -411,6 +411,23 @@ function ChantLoop() {
           — pick a consonant, chant it through every legal tone mark
         </span>
       </p>
+      <div style={{ marginBottom: 14 }}>
+        <ClassVideoLink
+          href="https://www.youtube.com/watch?v=LpU5Pngmq9c"
+          label="ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill"
+          color={CLASS_COLOR.mid}
+        />
+        <ClassVideoLink
+          href="https://www.youtube.com/watch?v=fniDdFIKMvA"
+          label="ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill"
+          color={CLASS_COLOR.high}
+        />
+        <ClassVideoLink
+          href="https://www.youtube.com/watch?v=t4iClxXLuoU"
+          label="ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill"
+          color={CLASS_COLOR.low}
+        />
+      </div>
       <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#555', marginBottom: 10, cursor: 'pointer' }}>
         <input type="checkbox" checked={groupByClass} onChange={e => setGroupByClass(e.target.checked)} />
         Group by class
@@ -557,25 +574,6 @@ export function TonesTab() {
           <strong>Dead</strong> = ends abruptly — ends in a stop (/k/, /t/, /p/) or a short vowel
           with no final.
         </p>
-
-        <p style={{ marginBottom: 6 }}><strong>Practice videos, one per class:</strong></p>
-        <div style={{ marginBottom: 18 }}>
-          <ClassVideoLink
-            href="https://www.youtube.com/watch?v=LpU5Pngmq9c"
-            label="ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill"
-            color={CLASS_COLOR.mid}
-          />
-          <ClassVideoLink
-            href="https://www.youtube.com/watch?v=fniDdFIKMvA"
-            label="ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill"
-            color={CLASS_COLOR.high}
-          />
-          <ClassVideoLink
-            href="https://www.youtube.com/watch?v=t4iClxXLuoU"
-            label="ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill"
-            color={CLASS_COLOR.low}
-          />
-        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ margin: 0 }}><strong>Unified tone table</strong></p>
