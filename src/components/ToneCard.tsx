@@ -17,10 +17,12 @@ function splitCaption(nameEn: string): { short: string; full?: string } {
  *  correct for one of those combinations. Callers embedding the same tone in
  *  a specific class/environment cell should pass a word that actually fits
  *  that cell, rather than defaulting to whichever combination the entry's
- *  own example happened to be written for. */
+ *  own example happened to be written for. `hideExample` drops the word
+ *  entirely instead, for callers with no single word that fits every
+ *  instance (a chant loop that varies by whichever consonant is selected). */
 export function ToneCard({
-  tone, example, exampleGloss, highlighted, compact,
-}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean }) {
+  tone, example, exampleGloss, highlighted, compact, hideExample,
+}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; hideExample?: boolean }) {
   const word = example ?? tone.example;
   const gloss = exampleGloss ?? tone.exampleGloss;
   const caption = tone.nameEn ? splitCaption(tone.nameEn) : null;
@@ -84,13 +86,15 @@ export function ToneCard({
         <span className={styles.axisLabel} style={{ top: '91%' }}>1</span>
       </div>
       <div className={styles.example}>
-        <span
-          className={`${styles.exampleWord} ${styles.label}`}
-          style={{ cursor: gloss ? 'help' : undefined }}
-          data-tooltip={gloss}
-        >
-          {word}
-        </span>
+        {!hideExample && (
+          <span
+            className={`${styles.exampleWord} ${styles.label}`}
+            style={{ cursor: gloss ? 'help' : undefined }}
+            data-tooltip={gloss}
+          >
+            {word}
+          </span>
+        )}
         {/* Absolutely positioned against the card itself, not this row —
            a flex-end position would still move with however long the
            example word runs, which for a single-bar glyph like Mid tone's ˧

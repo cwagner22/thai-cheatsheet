@@ -217,6 +217,13 @@ const CLASS_LABEL: Record<ConsonantClass, string> = {
   low: 'Low class',
 };
 
+/** One practice video per class, for the Chant loop's class tabs. */
+const CLASS_VIDEO: Record<ConsonantClass, { href: string; label: string }> = {
+  mid: { href: 'https://www.youtube.com/watch?v=LpU5Pngmq9c', label: 'ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill' },
+  high: { href: 'https://www.youtube.com/watch?v=fniDdFIKMvA', label: 'ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill' },
+  low: { href: 'https://www.youtube.com/watch?v=t4iClxXLuoU', label: 'ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill' },
+};
+
 /** Bookmark-style link to a practice video, accent-colored per class. */
 function ClassVideoLink({ href, label, color }: { href: string; label: string; color: string }) {
   return (
@@ -244,23 +251,6 @@ const LEGAL_MARKS: Record<ConsonantClass, (ToneMark | null)[]> = {
   mid: [null, 'ek', 'tho', 'tri', 'chattawa'],
   high: [null, 'ek', 'tho'],
   low: [null, 'ek', 'tho'],
-};
-
-/** The glyph actually written for a given mark — distinct from TONE_MARK
- *  above, which is keyed by the *resulting* tone name and only happens to
- *  match the applied glyph for mid-class syllables (mid is the class the
- *  tone mark names were originally defined against). On high/low class the
- *  same mark produces a different tone than its own name, so the glyph has
- *  to come from the mark itself, not be derived from the outcome. */
-const MARK_GLYPH: Record<'ek' | 'tho' | 'tri' | 'chattawa', string> = {
-  ek: '่', tho: '้', tri: '๊', chattawa: '๋',
-};
-
-/** Combining tone diacritic per CLAUDE.md's IPA convention, placed on a
- *  syllable's vowel to spell its pronunciation (e.g. the Falling diacritic
- *  turns "aː" into "âː"). */
-const TONE_DIACRITIC: Record<ToneName, string> = {
-  Mid: '', Low: '̀', Falling: '̂', High: '́', Rising: '̌',
 };
 
 /** One step of the tone-mark chant loop: the mark applied and the tone it
@@ -505,9 +495,8 @@ function PracticeSentence() {
           </span>
         ))}
       </p>
-      <p style={{ fontSize: '0.85rem', color: '#666', margin: '0 0 4px' }}>
-        <em>"Doesn't grandpa know?"</em> — one word per tone, in canonical order
-        (Mid · Low · Falling · High · Rising).
+      <p style={{ fontSize: '0.85rem', color: '#666', margin: '14px 0 4px' }}>
+        <em>"Doesn't grandpa know?"</em>
       </p>
 
       <table className={styles.cueTable}>
@@ -538,11 +527,20 @@ function PracticeSentence() {
 }
 
 function ChantLoop() {
+  const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
+  const classLetters = useMemo(() => byClass(activeClass).filter(c => !c.obsolete), [activeClass]);
   const [letter, setLetter] = useState('ป');
-  const [groupByClass, setGroupByClass] = useState(true);
   const consonant = CONSONANTS.find(c => c.letter === letter)!;
   const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
-  const bareInitial = consonant.initial.replace(/\//g, '');
+
+  // Switching class tabs also jumps the selected letter to that class's
+  // first one, so the chant row below always matches the visible tab
+  // instead of quietly holding onto a letter from the class just left.
+  const selectClass = (klass: ConsonantClass) => {
+    setActiveClass(klass);
+    const first = byClass(klass).find(c => !c.obsolete);
+    if (first) setLetter(first.letter);
+  };
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -552,70 +550,49 @@ function ChantLoop() {
           — pick a consonant, chant it through every legal tone mark
         </span>
       </p>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {(['mid', 'high', 'low'] as const).map(klass => {
+          const active = klass === activeClass;
+          return (
+            <button
+              key={klass}
+              type="button"
+              onClick={() => selectClass(klass)}
+              style={{
+                fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 700, padding: '7px 16px',
+                borderRadius: 6, cursor: 'pointer', border: `2px solid ${CLASS_COLOR[klass]}`,
+                background: active ? CLASS_COLOR[klass] : '#fff',
+                color: active ? '#fff' : CLASS_COLOR[klass],
+              }}
+            >
+              {CLASS_LABEL[klass]}
+            </button>
+          );
+        })}
+      </div>
       <div style={{ marginBottom: 14 }}>
         <ClassVideoLink
-          href="https://www.youtube.com/watch?v=LpU5Pngmq9c"
-          label="ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill"
-          color={CLASS_COLOR.mid}
-        />
-        <ClassVideoLink
-          href="https://www.youtube.com/watch?v=fniDdFIKMvA"
-          label="ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill"
-          color={CLASS_COLOR.high}
-        />
-        <ClassVideoLink
-          href="https://www.youtube.com/watch?v=t4iClxXLuoU"
-          label="ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill"
-          color={CLASS_COLOR.low}
+          href={CLASS_VIDEO[activeClass].href}
+          label={CLASS_VIDEO[activeClass].label}
+          color={CLASS_COLOR[activeClass]}
         />
       </div>
-      <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#555', marginBottom: 10, cursor: 'pointer' }}>
-        <input type="checkbox" checked={groupByClass} onChange={e => setGroupByClass(e.target.checked)} />
-        Group by class
-      </label>
-      {groupByClass ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
-          {(['mid', 'high', 'low'] as const).map(klass => (
-            <div key={klass} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '0.7rem', fontWeight: 700, color: '#fff', background: CLASS_COLOR[klass],
-                borderRadius: 6, padding: '3px 9px', flex: '0 0 auto',
-              }}>
-                {CLASS_LABEL[klass]}
-              </span>
-              {byClass(klass).filter(c => !c.obsolete).map(c => (
-                <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
-              ))}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-          {CONSONANTS.filter(c => !c.obsolete).map(c => (
-            <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
-          ))}
-        </div>
-      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+        {classLetters.map(c => (
+          <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+        ))}
+      </div>
       <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
         {consonant.klass === 'mid'
           ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
           : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
       </p>
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
-        {sequence.map(({ mark, tone }) => {
-          const glyph = mark ? MARK_GLYPH[mark] : '';
-          const ipa = bareInitial + 'a' + TONE_DIACRITIC[tone] + 'ː';
-          return (
-            <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
-              <ToneCard
-                tone={thaiTone(tone)}
-                example={`${letter}า${glyph}`}
-                exampleGloss={`/${ipa}/ — drill syllable`}
-                compact
-              />
-            </div>
-          );
-        })}
+        {sequence.map(({ mark, tone }) => (
+          <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
+            <ToneCard tone={thaiTone(tone)} compact hideExample />
+          </div>
+        ))}
       </div>
     </div>
   );
