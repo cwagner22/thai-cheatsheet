@@ -187,3 +187,105 @@
   font-size: 0.82rem;
   color: #555;
 }
+
+/* Same bookmark-link treatment as ConsonantsTab's video links. */
+.videoBookmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 3px solid #b45309;
+  border-radius: 8px;
+  color: #222;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.videoBookmark:hover {
+  background: #fffbeb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.videoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #b45309;
+  color: #fff;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.videoArrow {
+  margin-left: auto;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.practiceBox {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.practiceSentence {
+  font-family: var(--thai-font);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 10px 0 4px;
+}
+
+.practiceWord {
+  cursor: help;
+  padding-bottom: 2px;
+  border-bottom: 3px solid currentColor;
+}
+
+.cueTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 14px;
+}
+
+.cueTable th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  border-bottom: 2px solid #eee;
+}
+
+.cueTable td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.cueTable tr:last-child td {
+  border-bottom: none;
+}
+
+.cueTone {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cueThaiWord {
+  font-family: var(--thai-font);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  cursor: help;
+}

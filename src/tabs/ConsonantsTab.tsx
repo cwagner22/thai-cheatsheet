@@ -212,28 +212,6 @@ function GroupBySoundToggle({ checked, onChange }: { checked: boolean; onChange:
   );
 }
 
-/** Same bookmark-link treatment as the alphabet-song video at the top of
- *  this tab, but accent-colored per class instead of the fixed red — this
- *  one links to a tone-drill video for that specific class rather than the
- *  whole alphabet. */
-function ClassVideoLink({ href, label, color }: { href: string; label: string; color: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener"
-      className={styles.videoBookmark}
-      style={{ borderLeftColor: color }}
-    >
-      <span className={styles.videoIcon} style={{ background: color }} aria-hidden>▶</span>
-      <span>
-        <strong>Video:</strong> {label}
-      </span>
-      <span className={styles.videoArrow} aria-hidden>↗</span>
-    </a>
-  );
-}
-
 function ByClassView() {
   const [groupBySound, setGroupBySound] = useState(false);
   return (
@@ -247,11 +225,6 @@ function ByClassView() {
       <div className="class-section">
         <div className="class-header mid">Mid Class — อักษรกลาง (9)</div>
         <GroupBySoundToggle checked={groupBySound} onChange={setGroupBySound} />
-        <ClassVideoLink
-          href="https://www.youtube.com/watch?v=LpU5Pngmq9c"
-          label="ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill"
-          color="#2563eb"
-        />
         {/* class-header is display:inline-block — its own margin-bottom
            doesn't collapse with a following block's margin-top the way two
            plain blocks would, it sums with it instead. marginTop:0 here
@@ -280,11 +253,6 @@ function ByClassView() {
       <div className="class-section">
         <div className="class-header high">High Class — อักษรสูง (11)</div>
         <GroupBySoundToggle checked={groupBySound} onChange={setGroupBySound} />
-        <ClassVideoLink
-          href="https://www.youtube.com/watch?v=fniDdFIKMvA"
-          label="ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill"
-          color="#16a34a"
-        />
         <div className={styles.mnemBoxHigh}>
           <strong>Mnemonic:</strong>{' '}
           <MnemonicSentence words={[
@@ -316,11 +284,6 @@ function ByClassView() {
       <div className="class-section">
         <div className="class-header low">Low Class — อักษรต่ำ (24)</div>
         <GroupBySoundToggle checked={groupBySound} onChange={setGroupBySound} />
-        <ClassVideoLink
-          href="https://www.youtube.com/watch?v=t4iClxXLuoU"
-          label="ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill"
-          color="#dc2626"
-        />
         <div className={styles.mnemBoxLow}>
           <strong>Mnemonic:</strong> <em>everything not in the Mid or High mnemonic</em>{' '}— no sentence to memorize; it's the largest class by elimination.
         </div>

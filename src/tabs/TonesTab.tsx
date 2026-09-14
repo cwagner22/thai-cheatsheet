@@ -18,6 +18,28 @@ type ToneName = 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising';
 /** Look up a THAI_TONES entry by its English name — for the Standard Thai table below. */
 const thaiTone = (name: ToneName) => THAI_TONES.find(t => t.nameEn === name)!;
 
+/** "คุณปู่ไม่รู้หรือ" ("Doesn't grandpa know?") — one word per tone, in
+ *  canonical order (Mid · Low · Falling · High · Rising), for the practice
+ *  sentence below. */
+const PRACTICE_SENTENCE: { word: string; ipa: string; gloss: string; tone: ToneName }[] = [
+  { word: 'คุณ', ipa: 'kʰun', gloss: 'you / title', tone: 'Mid' },
+  { word: 'ปู่', ipa: 'pùː', gloss: 'grandpa', tone: 'Low' },
+  { word: 'ไม่', ipa: 'mâj', gloss: 'not', tone: 'Falling' },
+  { word: 'รู้', ipa: 'rúː', gloss: 'know', tone: 'High' },
+  { word: 'หรือ', ipa: 'rɯ̌ː', gloss: 'or?', tone: 'Rising' },
+];
+
+/** A vocal mnemonic per tone — an emotional reading that naturally produces
+ *  the right pitch contour, rather than a rule to calculate it from. `—`
+ *  marks a cell with nothing more specific to add than the sentence itself. */
+const TONE_CUE: Record<ToneName, { cue: string; comment: string }> = {
+  Mid: { cue: '—', comment: 'Slight, natural — with a pinch at the end.' },
+  Low: { cue: 'Huuh — praying', comment: '—' },
+  Falling: { cue: 'Heyy — shocked', comment: 'Falls more than you might expect.' },
+  High: { cue: 'Whaat — annoyed', comment: 'Opposite pitch from Falling — practice the two back-to-back, out of comfort.' },
+  Rising: { cue: 'Well — asking a question / surprised', comment: '—' },
+};
+
 /** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
 const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
 
@@ -53,6 +75,25 @@ const CLASS_LABEL: Record<ConsonantClass, string> = {
   high: 'High class',
   low: 'Low class',
 };
+
+/** Bookmark-style link to a practice video, accent-colored per class. */
+function ClassVideoLink({ href, label, color }: { href: string; label: string; color: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      className={styles.videoBookmark}
+      style={{ borderLeftColor: color }}
+    >
+      <span className={styles.videoIcon} style={{ background: color }} aria-hidden>▶</span>
+      <span>
+        <strong>Video:</strong> {label}
+      </span>
+      <span className={styles.videoArrow} aria-hidden>↗</span>
+    </a>
+  );
+}
 
 /** Which tone marks are orthographically legal on each consonant class — ๊
  *  and ๋ are only ever written over mid-class letters (see the note below
@@ -298,6 +339,63 @@ function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; o
  *  the like) for any chosen consonant, in place of the two hand-picked words
  *  in the drill box above. Fixed on the open syllable /aː/ so only the mark
  *  varies from card to card. */
+/** The "5 tones in 1 sentence" practice drill: a real sentence where each
+ *  word happens to carry a different tone in canonical order, paired with a
+ *  vocal mnemonic per tone (TONE_CUE) instead of the class/mark rule. */
+function PracticeSentence() {
+  return (
+    <div className={styles.practiceBox}>
+      <p style={{ margin: '0 0 10px' }}><strong>Practice sentence</strong></p>
+      <ClassVideoLink
+        href="https://www.youtube.com/watch?v=-qUQirAAN6Q"
+        label="5 Thai Tones in 1 Sentence — Let's Learn Thai with Kanitsa"
+        color="#b45309"
+      />
+
+      <p className={styles.practiceSentence}>
+        {PRACTICE_SENTENCE.map(({ word, ipa, gloss, tone }, i) => (
+          <span
+            key={i}
+            className={styles.practiceWord}
+            style={{ color: TONE_COLOR[tone] }}
+            title={`/${ipa}/ · ${gloss} · ${tone} tone`}
+          >
+            {word}
+          </span>
+        ))}
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#666', margin: '0 0 4px' }}>
+        <em>"Doesn't grandpa know?"</em> — one word per tone, in canonical order
+        (Mid · Low · Falling · High · Rising).
+      </p>
+
+      <table className={styles.cueTable}>
+        <thead>
+          <tr><th>Tone</th><th>Vocal cue</th><th>Comment</th><th>Thai word</th></tr>
+        </thead>
+        <tbody>
+          {PRACTICE_SENTENCE.map(({ word, ipa, gloss, tone }) => {
+            const { cue, comment } = TONE_CUE[tone];
+            return (
+              <tr key={tone}>
+                <td className={styles.cueTone} style={{ color: TONE_COLOR[tone] }}>{tone}</td>
+                <td>{cue}</td>
+                <td style={{ color: '#666' }}>{comment}</td>
+                <td className={styles.cueThaiWord} title={`/${ipa}/`}>
+                  {word}{' '}
+                  <span style={{ fontSize: '0.75rem', color: '#888', fontFamily: 'Inter, sans-serif' }}>
+                    · {gloss}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function ChantLoop() {
   const [letter, setLetter] = useState('ป');
   const [groupByClass, setGroupByClass] = useState(true);
@@ -459,6 +557,25 @@ export function TonesTab() {
           <strong>Dead</strong> = ends abruptly — ends in a stop (/k/, /t/, /p/) or a short vowel
           with no final.
         </p>
+
+        <p style={{ marginBottom: 6 }}><strong>Practice videos, one per class:</strong></p>
+        <div style={{ marginBottom: 18 }}>
+          <ClassVideoLink
+            href="https://www.youtube.com/watch?v=LpU5Pngmq9c"
+            label="ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill"
+            color={CLASS_COLOR.mid}
+          />
+          <ClassVideoLink
+            href="https://www.youtube.com/watch?v=fniDdFIKMvA"
+            label="ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill"
+            color={CLASS_COLOR.high}
+          />
+          <ClassVideoLink
+            href="https://www.youtube.com/watch?v=t4iClxXLuoU"
+            label="ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill"
+            color={CLASS_COLOR.low}
+          />
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ margin: 0 }}><strong>Unified tone table</strong></p>
@@ -788,6 +905,8 @@ export function TonesTab() {
         {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
       </div>
       )}
+
+      {lang === 'thai' && <PracticeSentence />}
 
       {lang === 'thai' && <ChantLoop />}
     </div>
