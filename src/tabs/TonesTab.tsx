@@ -40,6 +40,66 @@ const TONE_CUE: Record<ToneName, { cue: string; comment: string }> = {
   Rising: { cue: 'Well — asking a question / surprised', comment: '—' },
 };
 
+type MidWord = { word: string; ipa: string; gloss: string };
+
+/** Six mid-class word families, one real word per mark (no mark · ่ · ้ · ๊ ·
+ *  ๋), each landing on the mark's usual mid-class tone (Mid · Low · Falling ·
+ *  High · Rising) — unlike the Chant loop above, these are real dictionary
+ *  words rather than a fixed /aː/ drill syllable, so the vowel differs family
+ *  to family. ๊/๋ skew toward slang, onomatopoeia, and loanwords across all
+ *  six families — those two marks are mostly used for exactly that kind of
+ *  word in modern Thai, not a gap in these particular examples. */
+const MID_WORD_FAMILIES: { letter: string; none: MidWord; ek: MidWord; tho: MidWord; tri: MidWord; chattawa: MidWord }[] = [
+  {
+    letter: 'ก',
+    none: { word: 'ไก', ipa: 'kaj', gloss: 'trigger (ไกปืน)' },
+    ek: { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
+    tho: { word: 'ใกล้', ipa: 'klâj', gloss: 'near, close' },
+    tri: { word: 'ไก๊', ipa: 'káj', gloss: 'slang, sound effect' },
+    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'clever, feigns ignorance (ทำไก๋)' },
+  },
+  {
+    letter: 'ต',
+    none: { word: 'ตา', ipa: 'taː', gloss: 'eye, grandfather' },
+    ek: { word: 'ต่า', ipa: 'tàː', gloss: 'a drop (regional)' },
+    tho: { word: 'ต้า', ipa: 'tâː', gloss: '"big" (from Chinese 大)' },
+    tri: { word: 'ต๊า', ipa: 'táː', gloss: 'exclamation particle' },
+    chattawa: { word: 'ต๋า', ipa: 'tǎː', gloss: 'affectionate particle' },
+  },
+  {
+    letter: 'ด',
+    none: { word: 'ดี', ipa: 'diː', gloss: 'good' },
+    ek: { word: 'ดี่', ipa: 'dìː', gloss: 'reed-pipe sound' },
+    tho: { word: 'ดี้', ipa: 'dîː', gloss: 'partner (slang)' },
+    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled (กระดี๊กระด๊า)' },
+    chattawa: { word: 'ดี๋', ipa: 'dǐː', gloss: 'very close (ดี๊ดี๋)' },
+  },
+  {
+    letter: 'ป',
+    none: { word: 'ปู', ipa: 'puː', gloss: 'crab, to pave' },
+    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'grandfather' },
+    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck (ปู้ยี่ปู้ยำ)' },
+    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'whistle sound (ปู๊ปู๊)' },
+    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'slang, vulgar' },
+  },
+  {
+    letter: 'ต',
+    none: { word: 'โต', ipa: 'toː', gloss: 'big, grown' },
+    ek: { word: 'โต่', ipa: 'tòː', gloss: 'dull sound' },
+    tho: { word: 'โต้', ipa: 'tôː', gloss: 'to counter (โต้ตอบ)' },
+    tri: { word: 'โต๊', ipa: 'tóː', gloss: 'table (from Chinese 檯)' },
+    chattawa: { word: 'โต๋', ipa: 'tǒː', gloss: 'nickname, card-game term' },
+  },
+  {
+    letter: 'บ',
+    none: { word: 'เบา', ipa: 'baw', gloss: 'light, soft' },
+    ek: { word: 'เบ่า', ipa: 'bàw', gloss: 'young man (regional)' },
+    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'socket, mold (เบ้าตา)' },
+    tri: { word: 'เบ๊า', ipa: 'báw', gloss: 'barking sound' },
+    chattawa: { word: 'เบ๋า', ipa: 'bǎw', gloss: 'bag (slang for กระเป๋า)' },
+  },
+];
+
 /** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
 const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
 
@@ -480,6 +540,62 @@ function ChantLoop() {
   );
 }
 
+/** One tone-colored word cell — bare Thai word, `/ipa/ · gloss` on hover.
+ *  Same hover-tooltip convention as ConsonantWord and the practice
+ *  sentence's Thai-word column, rather than a spelled-out column, so a
+ *  6×5 grid of words stays readable instead of tripling its own width. */
+function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
+  return (
+    <td
+      className={`${styles.cueThaiWord} ${styles.label}`}
+      style={{ color: TONE_COLOR[tone] }}
+      data-tooltip={`/${ipa}/ · ${gloss}`}
+    >
+      {word}
+    </td>
+  );
+}
+
+/** Six real mid-class word families — one per mark — for the same 5-tone
+ *  pattern the Chant loop above generates from a fixed drill syllable, but
+ *  here with actual dictionary words instead. */
+function MidWordFamilies() {
+  return (
+    <div style={{ marginTop: 24 }}>
+      <p style={{ marginBottom: 8 }}>
+        <strong>Mid-class word families</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+          — six real words per mark, same 5-tone pattern as the chant loop
+        </span>
+      </p>
+      <table className={styles.cueTable}>
+        <thead>
+          <tr>
+            <th>Letter</th>
+            <th style={{ color: TONE_COLOR.Mid }}>No mark</th>
+            <th><MarkGlyph mark="่" color={TONE_COLOR.Low} fontSize="1.3rem" /></th>
+            <th><MarkGlyph mark="้" color={TONE_COLOR.Falling} fontSize="1.3rem" /></th>
+            <th><MarkGlyph mark="๊" color={TONE_COLOR.High} fontSize="1.3rem" /></th>
+            <th><MarkGlyph mark="๋" color={TONE_COLOR.Rising} fontSize="1.3rem" /></th>
+          </tr>
+        </thead>
+        <tbody>
+          {MID_WORD_FAMILIES.map(({ letter, none, ek, tho, tri, chattawa }, i) => (
+            <tr key={i}>
+              <td className={styles.cueThaiWord}>{letter}</td>
+              <WordCell {...none} tone="Mid" />
+              <WordCell {...ek} tone="Low" />
+              <WordCell {...tho} tone="Falling" />
+              <WordCell {...tri} tone="High" />
+              <WordCell {...chattawa} tone="Rising" />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
   const [input, setInput] = useState('');
@@ -907,6 +1023,8 @@ export function TonesTab() {
       {lang === 'thai' && <PracticeSentence />}
 
       {lang === 'thai' && <ChantLoop />}
+
+      {lang === 'thai' && <MidWordFamilies />}
     </div>
   );
 }
