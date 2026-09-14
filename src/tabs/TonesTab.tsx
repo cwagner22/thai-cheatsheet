@@ -1,6 +1,6 @@
 import { useState, useMemo, type ReactNode } from 'react';
 import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
-import { CONSONANTS, byClass, type ConsonantClass, type Consonant } from '../data/consonants';
+import { CONSONANTS, type ConsonantClass } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
 import { standardCellMatch, northernCellMatch, type CellMatch, type NorthernCellMatch } from '../lib/toneLookup';
@@ -569,27 +569,6 @@ function TryIt({
 }
 
 
-/** One consonant button in the chant loop's picker — same active/inactive
- *  styling whether it's rendered in the flat list or a per-class group. */
-function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
-  const color = CLASS_COLOR[c.klass];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
-        padding: '6px 10px 7px', borderRadius: 8, cursor: 'pointer', fontWeight: 500,
-        border: `1.5px solid ${active ? color : '#ddd'}`,
-        background: active ? `${color}1a` : '#fff',
-        color: active ? color : '#333',
-      }}
-    >
-      {c.letter}
-    </button>
-  );
-}
-
 /** Generates the classic Darun Suksa tone-mark chant (ปา ป่า ป้า ป๊า ป๋า and
  *  the like) for any chosen consonant, in place of the two hand-picked words
  *  in the drill box above. Fixed on the open syllable /aː/ so only the mark
@@ -650,28 +629,22 @@ function PracticeSentence() {
   );
 }
 
+/** Fixed example letter per class for the chant row — mid picks up on
+ *  the app's own classic ปา drill, high/low on the letters the classic
+ *  5-tone drill sentence already uses elsewhere in this tab. */
+const CHANT_LETTER: Record<ConsonantClass, string> = { mid: 'ป', high: 'ข', low: 'ค' };
+
 function ChantLoop() {
   const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
-  const classLetters = useMemo(() => byClass(activeClass).filter(c => !c.obsolete), [activeClass]);
-  const [letter, setLetter] = useState('ป');
-  const consonant = CONSONANTS.find(c => c.letter === letter)!;
+  const consonant = CONSONANTS.find(c => c.letter === CHANT_LETTER[activeClass])!;
   const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
-
-  // Switching class tabs also jumps the selected letter to that class's
-  // first one, so the chant row below always matches the visible tab
-  // instead of quietly holding onto a letter from the class just left.
-  const selectClass = (klass: ConsonantClass) => {
-    setActiveClass(klass);
-    const first = byClass(klass).find(c => !c.obsolete);
-    if (first) setLetter(first.letter);
-  };
 
   return (
     <div style={{ marginTop: 24 }}>
       <p style={{ marginBottom: 8 }}>
         <strong>Chant loop</strong>{' '}
         <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — pick a consonant, chant it through every legal tone mark
+          — chant a consonant through every legal tone mark
         </span>
       </p>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
@@ -681,7 +654,7 @@ function ChantLoop() {
             <button
               key={klass}
               type="button"
-              onClick={() => selectClass(klass)}
+              onClick={() => setActiveClass(klass)}
               style={{
                 fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 700, padding: '7px 16px',
                 borderRadius: 6, cursor: 'pointer', border: `2px solid ${CLASS_COLOR[klass]}`,
@@ -700,11 +673,6 @@ function ChantLoop() {
           label={CLASS_VIDEO[activeClass].label}
           color={CLASS_COLOR[activeClass]}
         />
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-        {classLetters.map(c => (
-          <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
-        ))}
       </div>
       <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
         {consonant.klass === 'mid'
