@@ -44,8 +44,8 @@ export const THAI_TONES: ToneEntry[] = [
   {
     name: 'โท', nameEn: 'Falling', nameIpa: '/tʰoː/',
     mark: '้', markName: 'ไม้โท', markIpa: '/máj.tʰoː/', color: '#7c3aed',
-    desc: 'Falling', chao: '552', ipa: '˥˩',
-    path: 'M 14,10 L 85,10 L 155,55',
+    desc: 'Falling', chao: '551', ipa: '˥˩',
+    path: 'M 14,10 L 85,10 L 155,70',
     example: 'พี่', exampleGloss: 'pʰîː · older sibling',
   },
   {
@@ -58,7 +58,7 @@ export const THAI_TONES: ToneEntry[] = [
   {
     name: 'จัตวา', nameEn: 'Rising', nameIpa: '/tɕàt.tà.waː/',
     mark: '๋', markName: 'ไม้จัตวา', markIpa: '/máj.tɕàt.tà.waː/', color: '#db2777',
-    desc: 'Rising', chao: '214', ipa: '˩˩˦',
+    desc: 'Rising', chao: '214', ipa: '˨˩˦',
     path: 'M 14,55 L 85,70 L 155,25',
     example: 'หา', exampleGloss: 'hǎː · search',
   },

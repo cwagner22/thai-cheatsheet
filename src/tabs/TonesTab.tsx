@@ -1,7 +1,8 @@
 import { useState, useMemo, type ReactNode } from 'react';
 import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
+import { CONSONANTS, byClass, type ConsonantClass, type Consonant } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
-import { analyzeSyllable } from '../lib/analyzeSyllable';
+import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
 import { standardCellMatch, northernCellMatch, type CellMatch, type NorthernCellMatch } from '../lib/toneLookup';
 import styles from './TonesTab.module.css';
 
@@ -38,6 +39,59 @@ const TONE_MARK: Record<ToneName, string> = {
   High: '๊',
   Rising: '๋',
 };
+
+/** Class header colors — matches .cellMid/.cellHigh/.cellLow in the CSS
+ *  module and the class-header colors used elsewhere in the app. */
+const CLASS_COLOR: Record<ConsonantClass, string> = {
+  mid: '#2563eb',
+  high: '#16a34a',
+  low: '#dc2626',
+};
+
+const CLASS_LABEL: Record<ConsonantClass, string> = {
+  mid: 'Mid class',
+  high: 'High class',
+  low: 'Low class',
+};
+
+/** Which tone marks are orthographically legal on each consonant class — ๊
+ *  and ๋ are only ever written over mid-class letters (see the note below
+ *  the unified tone table below). Drives the chant loop's per-class step
+ *  count: 5 for mid, 3 for high/low. */
+const LEGAL_MARKS: Record<ConsonantClass, (ToneMark | null)[]> = {
+  mid: [null, 'ek', 'tho', 'tri', 'chattawa'],
+  high: [null, 'ek', 'tho'],
+  low: [null, 'ek', 'tho'],
+};
+
+/** The glyph actually written for a given mark — distinct from TONE_MARK
+ *  above, which is keyed by the *resulting* tone name and only happens to
+ *  match the applied glyph for mid-class syllables (mid is the class the
+ *  tone mark names were originally defined against). On high/low class the
+ *  same mark produces a different tone than its own name, so the glyph has
+ *  to come from the mark itself, not be derived from the outcome. */
+const MARK_GLYPH: Record<'ek' | 'tho' | 'tri' | 'chattawa', string> = {
+  ek: '่', tho: '้', tri: '๊', chattawa: '๋',
+};
+
+/** Combining tone diacritic per CLAUDE.md's IPA convention, placed on a
+ *  syllable's vowel to spell its pronunciation (e.g. the Falling diacritic
+ *  turns "aː" into "âː"). */
+const TONE_DIACRITIC: Record<ToneName, string> = {
+  Mid: '', Low: '̀', Falling: '̂', High: '́', Rising: '̌',
+};
+
+/** One step of the tone-mark chant loop: the mark applied and the tone it
+ *  produces on an open long-vowel syllable. isLive stays true throughout —
+ *  the chant cycles marks, not live/dead register, which the unified table
+ *  above already covers on its own axis. Reuses standardCellMatch so the
+ *  outcome can never drift from that table. */
+function chantSequence(klass: ConsonantClass): { mark: ToneMark | null; tone: ToneName }[] {
+  return LEGAL_MARKS[klass].map(mark => ({
+    mark,
+    tone: standardCellMatch({ initial: '', klass, mark, isLive: true, vowelLength: 'long', hasFinal: false }).tone,
+  }));
+}
 
 /** Render the tone mark in tone color. Used in the unified tone table.
  *  Mid (empty mark) renders nothing — the cell stays blank.
@@ -218,6 +272,98 @@ function TryIt({
   );
 }
 
+
+/** One consonant button in the chant loop's picker — same active/inactive
+ *  styling whether it's rendered in the flat list or a per-class group. */
+function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
+  const color = CLASS_COLOR[c.klass];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
+        padding: '6px 10px 7px', borderRadius: 8, cursor: 'pointer', fontWeight: 500,
+        border: `1.5px solid ${active ? color : '#ddd'}`,
+        background: active ? `${color}1a` : '#fff',
+        color: active ? color : '#333',
+      }}
+    >
+      {c.letter}
+    </button>
+  );
+}
+
+/** Generates the classic Darun Suksa tone-mark chant (ปา ป่า ป้า ป๊า ป๋า and
+ *  the like) for any chosen consonant, in place of the two hand-picked words
+ *  in the drill box above. Fixed on the open syllable /aː/ so only the mark
+ *  varies from card to card. */
+function ChantLoop() {
+  const [letter, setLetter] = useState('ป');
+  const [groupByClass, setGroupByClass] = useState(true);
+  const consonant = CONSONANTS.find(c => c.letter === letter)!;
+  const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
+  const bareInitial = consonant.initial.replace(/\//g, '');
+
+  return (
+    <div style={{ marginTop: 24 }}>
+      <p style={{ marginBottom: 8 }}>
+        <strong>Chant loop</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+          — pick a consonant, chant it through every legal tone mark
+        </span>
+      </p>
+      <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#555', marginBottom: 10, cursor: 'pointer' }}>
+        <input type="checkbox" checked={groupByClass} onChange={e => setGroupByClass(e.target.checked)} />
+        Group by class
+      </label>
+      {groupByClass ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+          {(['mid', 'high', 'low'] as const).map(klass => (
+            <div key={klass} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '0.7rem', fontWeight: 700, color: '#fff', background: CLASS_COLOR[klass],
+                borderRadius: 6, padding: '3px 9px', flex: '0 0 auto',
+              }}>
+                {CLASS_LABEL[klass]}
+              </span>
+              {byClass(klass).filter(c => !c.obsolete).map(c => (
+                <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+          {CONSONANTS.filter(c => !c.obsolete).map(c => (
+            <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
+        {consonant.klass === 'mid'
+          ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
+          : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
+      </p>
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+        {sequence.map(({ mark, tone }) => {
+          const glyph = mark ? MARK_GLYPH[mark] : '';
+          const ipa = bareInitial + 'a' + TONE_DIACRITIC[tone] + 'ː';
+          return (
+            <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
+              <ToneCard
+                tone={thaiTone(tone)}
+                example={`${letter}า${glyph}`}
+                exampleGloss={`/${ipa}/ — drill syllable`}
+                compact
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function TonesTab() {
   const [lang, setLang] = useState<Lang>('thai');
@@ -624,7 +770,7 @@ export function TonesTab() {
         </p>
         <div className={styles.grid}>
           {(lang === 'thai' ? THAI_TONES : NORTHERN_TONES).map((t, i) => (
-            <ToneCard key={i} tone={t} compact={lang === 'northern'} />
+            <ToneCard key={i} tone={t} compact={lang === 'northern'} showMark />
           ))}
         </div>
       </div>
@@ -642,6 +788,8 @@ export function TonesTab() {
         {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
       </div>
       )}
+
+      {lang === 'thai' && <ChantLoop />}
     </div>
   );
 }

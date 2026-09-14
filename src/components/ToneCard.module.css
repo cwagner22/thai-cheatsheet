@@ -11,11 +11,11 @@
   text-align: left;
 }
 
-/* Fixed to the card's own corner, not the title row's end — so it always
- * reads as a corner tag regardless of how long the title next to it runs,
- * and the title row reserves the matching space (below) so its own content
- * never runs underneath it. The chip background keeps a single thin bar
- * (Mid tone's ˧) visible instead of nearly invisible.
+/* Fixed to the card's own corner, not the example row's end — so it always
+ * reads as a corner tag regardless of how long the example word next to it
+ * runs, and the example row reserves the matching space (below) so its own
+ * content never runs underneath it. The chip background keeps a single thin
+ * bar (Mid tone's ˧) visible instead of nearly invisible.
  * Selector is `span.cornerIpa`, not `.cornerIpa` — this element also carries
  * `.label` for its tooltip, which sets `position: relative` of its own;
  * with equal-specificity classes the one later in this file wins regardless
@@ -24,7 +24,7 @@
  * type-selector outranks a bare class and settles it for good. */
 span.cornerIpa {
   position: absolute;
-  top: 8px;
+  bottom: 7px;
   right: 10px;
   min-width: 1.6em;
   padding: 1px 5px;
@@ -47,20 +47,17 @@ span.cornerIpa {
   justify-content: space-between;
   align-items: center;
   min-height: 2rem;
+  margin-bottom: 6px;
 }
 
 .header strong {
   font-size: 1rem;
 }
 
-/* Vertically stacks the title row above the English caption. Right padding
- * reserves the corner badge's own footprint so a long title (Thai name +
- * IPA transliteration together) wraps before it, rather than running
- * underneath it. */
+/* Vertically stacks the title row above the English caption. */
 .titleBlock {
   display: flex;
   flex-direction: column;
-  padding-right: 34px;
 }
 
 /* Holds the Thai title and the IPA transliteration on the same line, IPA
@@ -97,13 +94,23 @@ span.cornerIpa {
   line-height: 1.6;
 }
 
+/* The tone mark itself (่ ้ ๊ ๋) is a small diacritic stacked above the name's
+ * last letter — at the card's normal type size it reads as barely more than
+ * a stray pixel. It has to stay in the same text run as the name (see the
+ * comment above where this class is used) so it can't be sized on its own;
+ * bumping the whole run's size is the only way to make it legible without
+ * breaking that attachment. */
+.thaiTitleMarked {
+  font-size: 1.35rem;
+}
+
 .engCaption {
   font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: #999;
-  margin-top: 2px;
+  margin-top: -1px;
 }
 
 /* Pure-CSS tooltip — fires instantly on hover, no native delay. */
@@ -158,9 +165,12 @@ span.cornerIpa {
   pointer-events: none;
 }
 
+/* Right padding reserves the corner badge's own footprint so a long example
+ * word wraps before it, rather than running underneath it. */
 .example {
   font-size: 0.82rem;
   line-height: 1.2;
+  padding-right: 34px;
 }
 
 .exampleWord {
@@ -177,6 +187,10 @@ span.cornerIpa {
   padding: 4px 8px 6px;
 }
 
+.compact .header {
+  margin-bottom: 3px;
+}
+
 .compact .thaiTitle {
   font-size: 0.92rem;
 }
@@ -185,12 +199,8 @@ span.cornerIpa {
   font-size: 0.62rem;
 }
 
-.compact .titleBlock {
-  padding-right: 26px;
-}
-
 .compact .cornerIpa {
-  top: 4px;
+  bottom: 4px;
   right: 6px;
   font-size: 0.6rem;
   padding: 0 4px;
@@ -214,6 +224,7 @@ span.cornerIpa {
 
 .compact .example {
   font-size: 0.72rem;
+  padding-right: 26px;
 }
 
 .compact .exampleWord {

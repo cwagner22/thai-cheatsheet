@@ -19,25 +19,13 @@ function splitCaption(nameEn: string): { short: string; full?: string } {
  *  that cell, rather than defaulting to whichever combination the entry's
  *  own example happened to be written for. */
 export function ToneCard({
-  tone, example, exampleGloss, highlighted, compact,
-}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean }) {
+  tone, example, exampleGloss, highlighted, compact, showMark,
+}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; showMark?: boolean }) {
   const word = example ?? tone.example;
   const gloss = exampleGloss ?? tone.exampleGloss;
   const caption = tone.nameEn ? splitCaption(tone.nameEn) : null;
   return (
     <div className={`${styles.card} ${compact ? styles.compact : ''} ${highlighted ? styles.cardMatch : ''}`}>
-      {/* Absolutely positioned against the card itself, not the title row —
-         a flex-end position still moves with however long the title runs,
-         which for a single-bar glyph like Mid tone's ˧ read as a stray
-         fragment rather than a fixed corner tag. The badge background keeps
-         a single thin bar visible instead of nearly invisible. */}
-      <span
-        className={`${styles.cornerIpa} ${styles.label}`}
-        style={{ cursor: 'help' }}
-        data-tooltip={`Chao tone letter · pitch ${tone.chao} (1=low, 5=high)`}
-      >
-        {tone.ipa}
-      </span>
       <div className={styles.header}>
         <div className={styles.titleBlock}>
           <div className={styles.titleRow}>
@@ -46,9 +34,14 @@ export function ToneCard({
                character to combine onto, same as in ordinary Thai prose, so
                it shapes and positions correctly without the dotted-circle/
                orphaned-mark handling standalone mark glyphs need elsewhere
-               in this app (there, no base character precedes the mark). */}
-            <span className={styles.thaiTitle} style={{ color: tone.color }}>
-              {tone.name}{tone.mark}
+               in this app (there, no base character precedes the mark).
+               Gated on showMark: this card's tone.mark is the diacritic
+               that names the tone in the abstract, not necessarily one
+               written on the example word beside it — a dead-syllable cell
+               can carry this tone with no mark written at all, so showing
+               it there would claim the word is marked when it isn't. */}
+            <span className={`${styles.thaiTitle} ${showMark ? styles.thaiTitleMarked : ''}`} style={{ color: tone.color }}>
+              {tone.name}{showMark && tone.mark}
             </span>
             {tone.nameIpa && (
               <span className={styles.titleIpa} style={{ color: tone.color }}>
@@ -90,6 +83,19 @@ export function ToneCard({
           data-tooltip={gloss}
         >
           {word}
+        </span>
+        {/* Absolutely positioned against the card itself, not this row —
+           a flex-end position would still move with however long the
+           example word runs, which for a single-bar glyph like Mid tone's ˧
+           read as a stray fragment rather than a fixed corner tag. The badge
+           background keeps a single thin bar visible instead of nearly
+           invisible. */}
+        <span
+          className={`${styles.cornerIpa} ${styles.label}`}
+          style={{ cursor: 'help' }}
+          data-tooltip={`Chao tone letter · pitch ${tone.chao} (1=low, 5=high)`}
+        >
+          {tone.ipa}
         </span>
       </div>
     </div>
