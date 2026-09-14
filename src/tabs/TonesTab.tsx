@@ -675,6 +675,16 @@ function PracticeSentence() {
  *  5-tone drill sentence already uses elsewhere in this tab. */
 const CHANT_LETTER: Record<ConsonantClass, string> = { mid: 'ป', high: 'ข', low: 'ค' };
 
+/** The glyph actually written for a given mark — needed here because
+ *  ToneCard's own corner badge shows the *resulting* tone's own defining
+ *  mark, which only matches the mark actually applied for mid/high class.
+ *  Low class remaps ่/้ to a different tone than their own name, so the
+ *  chant loop shows this instead, above the card, same treatment as the
+ *  word-family tables' column headers. */
+const CHANT_MARK_GLYPH: Record<'ek' | 'tho' | 'tri' | 'chattawa', string> = {
+  ek: '่', tho: '้', tri: '๊', chattawa: '๋',
+};
+
 function ChantLoop() {
   const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
   const consonant = CONSONANTS.find(c => c.letter === CHANT_LETTER[activeClass])!;
@@ -723,7 +733,12 @@ function ChantLoop() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         {sequence.map(({ mark, tone }) => (
           <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
-            <ToneCard tone={thaiTone(tone)} compact hideExample />
+            {activeClass === 'low' && (
+              <div style={{ height: '1.4rem', marginBottom: 2 }}>
+                {mark && <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" />}
+              </div>
+            )}
+            <ToneCard tone={thaiTone(tone)} compact hideExample hideMarkBadge={activeClass === 'low'} />
           </div>
         ))}
       </div>

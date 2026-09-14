@@ -19,10 +19,16 @@ function splitCaption(nameEn: string): { short: string; full?: string } {
  *  that cell, rather than defaulting to whichever combination the entry's
  *  own example happened to be written for. `hideExample` drops the word
  *  entirely instead, for callers with no single word that fits every
- *  instance (a chant loop that varies by whichever consonant is selected). */
+ *  instance (a chant loop that varies by whichever consonant is selected).
+ *  `hideMarkBadge` drops the corner mark badge — this tone's own defining
+ *  mark only matches the mark actually applied in a given context for
+ *  mid/high class; low class's marks map to a different tone than their
+ *  own name (่ produces Falling there, not Low), so the badge would show
+ *  the wrong glyph relative to what's on the page. Callers driven by a
+ *  known, specific mark should show that mark themselves instead. */
 export function ToneCard({
-  tone, example, exampleGloss, highlighted, compact, hideExample,
-}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; hideExample?: boolean }) {
+  tone, example, exampleGloss, highlighted, compact, hideExample, hideMarkBadge,
+}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; hideExample?: boolean; hideMarkBadge?: boolean }) {
   const word = example ?? tone.example;
   const gloss = exampleGloss ?? tone.exampleGloss;
   const caption = tone.nameEn ? splitCaption(tone.nameEn) : null;
@@ -59,7 +65,7 @@ export function ToneCard({
            names the tone's own identity, not a claim that the adjacent
            example word is written with this mark (some cells show this
            tone arising from an unmarked dead/live syllable instead). */}
-        {tone.mark && (
+        {tone.mark && !hideMarkBadge && (
           <span
             className={`${styles.markBadge} ${styles.label}`}
             style={{ color: tone.color }}
