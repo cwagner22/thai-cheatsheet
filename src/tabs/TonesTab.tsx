@@ -308,14 +308,11 @@ const CLASS_VIDEO: Record<ConsonantClass, { href: string; label: string }> = {
 };
 
 /** Which marks a class's word-family table has a column for, the tone each
- *  lands on, and the order to show them in. Columns follow the resulting
- *  tone's place in the canonical Mid·Low·Falling·High·Rising sequence
- *  rather than "no mark first" — for mid class those happen to coincide
- *  (unmarked → Mid, first in the sequence), but high class's unmarked
- *  column lands on Rising (last) and low class's on Mid (first again, by
- *  coincidence) — this is also the low-to-high pitch order native children
- *  chant each class in. `glyph` is omitted for the unmarked column, which
- *  renders "No mark" instead of a MarkGlyph. */
+ *  lands on, and the order to show them in. Always unmarked first, then ่
+ *  ้ ๊ ๋ — same mark-application order as the unified tone table above,
+ *  regardless of which tone each mark happens to land on for this class.
+ *  `glyph` is omitted for the unmarked column, which renders "No mark"
+ *  instead of a MarkGlyph. */
 type FamilyMark = 'none' | 'ek' | 'tho' | 'tri' | 'chattawa';
 const CLASS_FAMILY_COLUMNS: Record<ConsonantClass, { dataKey: FamilyMark; tone: ToneName; glyph?: string }[]> = {
   mid: [
@@ -326,9 +323,9 @@ const CLASS_FAMILY_COLUMNS: Record<ConsonantClass, { dataKey: FamilyMark; tone: 
     { dataKey: 'chattawa', tone: 'Rising', glyph: '๋' },
   ],
   high: [
+    { dataKey: 'none', tone: 'Rising' },
     { dataKey: 'ek', tone: 'Low', glyph: '่' },
     { dataKey: 'tho', tone: 'Falling', glyph: '้' },
-    { dataKey: 'none', tone: 'Rising' },
   ],
   low: [
     { dataKey: 'none', tone: 'Mid' },
@@ -735,12 +732,12 @@ function ChantLoop() {
 /** One tone-colored word cell — the Thai word with its /ipa/ and gloss
  *  printed right below it, rather than behind a hover tooltip, so the
  *  translation is visible without interacting with the table at all. */
-function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
+function WordCell({ word, gloss, tone }: MidWord & { tone: ToneName }) {
   return (
     <td className={styles.cueThaiWord}>
       <span style={{ color: TONE_COLOR[tone] }}>{word}</span>
       <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888', whiteSpace: 'normal' }}>
-        /{ipa}/ · {gloss}
+        {gloss}
       </span>
     </td>
   );
@@ -795,11 +792,11 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
             </span>
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 24px' }}>
-            {compounds.map(({ word, ipa, gloss }, i) => (
+            {compounds.map(({ word, gloss }, i) => (
               <div key={i} className={styles.cueThaiWord} style={{ fontSize: '1.05rem' }}>
                 {word}
                 <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
-                  /{ipa}/ · {gloss}
+                  {gloss}
                 </span>
               </div>
             ))}
