@@ -343,8 +343,15 @@ const CLASS_FAMILIES: Record<ConsonantClass, FamilyRow[]> = {
   low: LOW_WORD_FAMILIES,
 };
 
+/** Mid class never got its own "Word Practice Section" from a video source
+ *  the way High and Low did, so this is the one real compound gettable
+ *  purely from MID_WORD_FAMILIES's own vocabulary. */
+const MID_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
+  { word: 'ตาดี', ipa: 'taː.diː', gloss: 'sharp-eyed, good eyesight' },
+];
+
 const CLASS_COMPOUND_WORDS: Record<ConsonantClass, { word: string; ipa: string; gloss: string }[]> = {
-  mid: [],
+  mid: MID_COMPOUND_WORDS,
   high: HIGH_COMPOUND_WORDS,
   low: LOW_COMPOUND_WORDS,
 };
@@ -712,7 +719,7 @@ function ChantLoop() {
           ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
           : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
       </p>
-      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         {sequence.map(({ mark, tone }) => (
           <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
             <ToneCard tone={thaiTone(tone)} compact hideExample />
@@ -725,18 +732,16 @@ function ChantLoop() {
   );
 }
 
-/** One tone-colored word cell — bare Thai word, `/ipa/ · gloss` on hover.
- *  Same hover-tooltip convention as ConsonantWord and the practice
- *  sentence's Thai-word column, rather than a spelled-out column, so a
- *  6×5 grid of words stays readable instead of tripling its own width. */
+/** One tone-colored word cell — the Thai word with its /ipa/ and gloss
+ *  printed right below it, rather than behind a hover tooltip, so the
+ *  translation is visible without interacting with the table at all. */
 function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
   return (
-    <td
-      className={`${styles.cueThaiWord} ${styles.label}`}
-      style={{ color: TONE_COLOR[tone], cursor: 'help' }}
-      data-tooltip={`/${ipa}/ · ${gloss}`}
-    >
-      {word}
+    <td className={styles.cueThaiWord}>
+      <span style={{ color: TONE_COLOR[tone] }}>{word}</span>
+      <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888', whiteSpace: 'normal' }}>
+        /{ipa}/ · {gloss}
+      </span>
     </td>
   );
 }
@@ -789,16 +794,14 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
               — built from the syllables above
             </span>
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', fontSize: '0.9rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 24px' }}>
             {compounds.map(({ word, ipa, gloss }, i) => (
-              <span
-                key={i}
-                className={`${styles.cueThaiWord} ${styles.label}`}
-                style={{ fontSize: '1.05rem', cursor: 'help' }}
-                data-tooltip={`/${ipa}/ · ${gloss}`}
-              >
+              <div key={i} className={styles.cueThaiWord} style={{ fontSize: '1.05rem' }}>
                 {word}
-              </span>
+                <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
+                  /{ipa}/ · {gloss}
+                </span>
+              </div>
             ))}
           </div>
         </>
