@@ -885,7 +885,7 @@ export function TonesTab() {
         </p>
         <div className={styles.grid}>
           {(lang === 'thai' ? THAI_TONES : NORTHERN_TONES).map((t, i) => (
-            <ToneCard key={i} tone={t} compact={lang === 'northern'} showMark />
+            <ToneCard key={i} tone={t} compact={lang === 'northern'} />
           ))}
         </div>
       </div>

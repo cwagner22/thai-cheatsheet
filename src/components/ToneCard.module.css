@@ -54,6 +54,28 @@ span.cornerIpa {
   font-size: 1rem;
 }
 
+/* Standalone tone-mark badge in the header's top-right corner — this
+ * tone's own defining mark, independent from the name text next to it.
+ * Combining marks (่ ้ ๊ ๋) have zero advance width and paint to the left
+ * of their anchor, expecting a preceding base character; alone in their
+ * own element here, padding-left shifts the anchor right by roughly half
+ * a glyph so the visible ink clears the title text instead of overlapping
+ * it, and translateY compensates for the mark's own vertical anchor
+ * sitting near the line's top rather than its middle — same technique as
+ * .toneGlyphCombining in TonesTab.module.css, sized for a card corner
+ * instead of a full-page reference glyph. */
+.markBadge {
+  font-family: var(--thai-font);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  flex: none;
+  align-self: flex-start;
+  cursor: help;
+  padding-left: 0.4em;
+  transform: translateY(0.5em);
+}
+
 /* Vertically stacks the title row above the English caption. */
 .titleBlock {
   display: flex;
@@ -82,26 +104,16 @@ span.cornerIpa {
  * it (see .engCaption) rather than the headline, so it stops reading as the
  * same word as a consonant class (both "Mid class" and "Mid tone" otherwise
  * share the one word the eye lands on first). */
-/* line-height is well over the type size — some names stack a tone mark on
- * top of a vowel that already sits above the consonant (ตรี๊: ี then ๊, both
- * above ร), and that combined ink extends above the font's own ascent. The
- * extra leading gives it room before it visually crowds the card's top
- * edge, since the top padding alone isn't enough for these taller stacks. */
+/* line-height is well over the type size — Thai vowel signs stack above the
+ * consonant (e.g. ี in ตรี), and that ink extends above the font's own
+ * ascent. The extra leading gives it room before it visually crowds the
+ * card's top edge, since the top padding alone isn't enough for the taller
+ * stacks. */
 .thaiTitle {
   font-family: var(--thai-font);
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.6;
-}
-
-/* The tone mark itself (่ ้ ๊ ๋) is a small diacritic stacked above the name's
- * last letter — at the card's normal type size it reads as barely more than
- * a stray pixel. It has to stay in the same text run as the name (see the
- * comment above where this class is used) so it can't be sized on its own;
- * bumping the whole run's size is the only way to make it legible without
- * breaking that attachment. */
-.thaiTitleMarked {
-  font-size: 1.35rem;
 }
 
 .engCaption {
@@ -204,6 +216,10 @@ span.cornerIpa {
   right: 6px;
   font-size: 0.6rem;
   padding: 0 4px;
+}
+
+.compact .markBadge {
+  font-size: 1.15rem;
 }
 
 .compact .engCaption {

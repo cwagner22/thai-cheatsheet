@@ -19,8 +19,8 @@ function splitCaption(nameEn: string): { short: string; full?: string } {
  *  that cell, rather than defaulting to whichever combination the entry's
  *  own example happened to be written for. */
 export function ToneCard({
-  tone, example, exampleGloss, highlighted, compact, showMark,
-}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; showMark?: boolean }) {
+  tone, example, exampleGloss, highlighted, compact,
+}: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean }) {
   const word = example ?? tone.example;
   const gloss = exampleGloss ?? tone.exampleGloss;
   const caption = tone.nameEn ? splitCaption(tone.nameEn) : null;
@@ -29,19 +29,8 @@ export function ToneCard({
       <div className={styles.header}>
         <div className={styles.titleBlock}>
           <div className={styles.titleRow}>
-            {/* {tone.name}{tone.mark} sit in the same text run with nothing
-               between them — the mark then has the name's own last
-               character to combine onto, same as in ordinary Thai prose, so
-               it shapes and positions correctly without the dotted-circle/
-               orphaned-mark handling standalone mark glyphs need elsewhere
-               in this app (there, no base character precedes the mark).
-               Gated on showMark: this card's tone.mark is the diacritic
-               that names the tone in the abstract, not necessarily one
-               written on the example word beside it — a dead-syllable cell
-               can carry this tone with no mark written at all, so showing
-               it there would claim the word is marked when it isn't. */}
-            <span className={`${styles.thaiTitle} ${showMark ? styles.thaiTitleMarked : ''}`} style={{ color: tone.color }}>
-              {tone.name}{showMark && tone.mark}
+            <span className={styles.thaiTitle} style={{ color: tone.color }}>
+              {tone.name}
             </span>
             {tone.nameIpa && (
               <span className={styles.titleIpa} style={{ color: tone.color }}>
@@ -59,6 +48,24 @@ export function ToneCard({
             </div>
           )}
         </div>
+        {/* This tone's own defining mark (่ ้ ๊ ๋), as an independent glyph
+           rather than stacked onto the name's last letter, where a small
+           combining diacritic reads as barely more than a stray pixel.
+           Absent for Mid (no mark ever produces it) and for Northern Thai
+           entries, which don't carry a `mark` field at all — its tones
+           aren't written with these marks. Not gated on context: this badge
+           names the tone's own identity, not a claim that the adjacent
+           example word is written with this mark (some cells show this
+           tone arising from an unmarked dead/live syllable instead). */}
+        {tone.mark && (
+          <span
+            className={`${styles.markBadge} ${styles.label}`}
+            style={{ color: tone.color }}
+            data-tooltip={`${tone.markName}${tone.markIpa ? ` · ${tone.markIpa}` : ''}`}
+          >
+            {tone.mark}
+          </span>
+        )}
       </div>
       <div className={styles.chart}>
         <svg viewBox="0 0 160 80" preserveAspectRatio="none" className={styles.svg}>
