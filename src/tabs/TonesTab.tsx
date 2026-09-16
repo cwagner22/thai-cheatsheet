@@ -1,6 +1,6 @@
 import { useState, useMemo, type ReactNode } from 'react';
 import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
-import { CONSONANTS, type ConsonantClass } from '../data/consonants';
+import { CONSONANTS, byClass, type ConsonantClass, type Consonant } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
 import { standardCellMatch, northernCellMatch, type CellMatch, type NorthernCellMatch } from '../lib/toneLookup';
@@ -748,6 +748,178 @@ function ChantLoop() {
   );
 }
 
+/** Combining tone diacritic per CLAUDE.md's IPA convention, placed on a
+ *  syllable's vowel to spell its pronunciation. */
+const TONE_DIACRITIC: Record<ToneName, string> = {
+  Mid: '', Low: '̀', Falling: '̂', High: '́', Rising: '̌',
+};
+
+/** Each basic vowel's form, split into three parts around the consonant
+ *  slot so a tone mark can be inserted in the one correct spot: `pre`
+ *  (a leading vowel like เ/แ/โ, written before the consonant), `attach`
+ *  (a combining vowel sign — ี/ื/ู and the like — glued directly to the
+ *  consonant, zero advance width, stacking above/below it), and `trail`
+ *  (a baseline character like า/อ that follows on the line). The mark
+ *  goes after `attach` but before `trail`: real Thai encodes กี่ as
+ *  ก+ี+่ (vowel sign, then mark, nothing trailing) and ป้า as ป+้+า
+ *  (mark, then the baseline า) — the two don't take the mark in the same
+ *  relative position, so a single "append after the consonant" or
+ *  "append at the end" rule gets one of them wrong. ipa core/example/
+ *  gloss mirror the Basic Vowels section in src/data/vowels.ts. */
+const VOWEL_ROWS: { pre: string; attach: string; trail: string; core: string; example: string; gloss: string }[] = [
+  { pre: '', attach: '', trail: 'า', core: 'aː', example: 'กา', gloss: 'crow' },
+  { pre: '', attach: 'ี', trail: '', core: 'iː', example: 'กี่', gloss: 'how many' },
+  { pre: '', attach: 'ื', trail: 'อ', core: 'ɯː', example: 'มือ', gloss: 'hand' },
+  { pre: '', attach: 'ู', trail: '', core: 'uː', example: 'กู', gloss: 'I (rude)' },
+  { pre: 'เ', attach: '', trail: '', core: 'eː', example: 'เก', gloss: 'old' },
+  { pre: 'แ', attach: '', trail: '', core: 'ɛː', example: 'แก', gloss: 'you' },
+  { pre: 'โ', attach: '', trail: '', core: 'oː', example: 'โต', gloss: 'grow' },
+  { pre: '', attach: '', trail: 'อ', core: 'ɔː', example: 'กอ', gloss: 'hug' },
+  { pre: 'เ', attach: '', trail: 'อ', core: 'ɤː', example: 'เธอ', gloss: 'she' },
+];
+
+/** One consonant button in the matrix's picker. */
+function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
+  const color = CLASS_COLOR[c.klass];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
+        padding: '6px 10px 7px', borderRadius: 8, cursor: 'pointer', fontWeight: 500,
+        border: `1.5px solid ${active ? color : '#ddd'}`,
+        background: active ? `${color}1a` : '#fff',
+        color: active ? color : '#333',
+      }}
+    >
+      {c.letter}
+    </button>
+  );
+}
+
+/** One consonant, shown two ways: the tone chant on a fixed vowel up top
+ *  (same idea as the Chant loop above) and that same consonant's full
+ *  vowel range against those marks below. Ties the vowel and tone systems
+ *  to one shared letter instead of teaching them with no common example. */
+function VowelToneMatrix() {
+  const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
+  const classLetters = useMemo(() => byClass(activeClass).filter(c => !c.obsolete), [activeClass]);
+  const [letter, setLetter] = useState('ป');
+  const consonant = CONSONANTS.find(c => c.letter === letter)!;
+  const bareInitial = consonant.initial.replace(/\//g, '');
+  const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
+
+  // Switching class tabs also jumps the selected letter to that class's
+  // first one, so the picker and the grids below always agree.
+  const selectClass = (klass: ConsonantClass) => {
+    setActiveClass(klass);
+    const first = byClass(klass).find(c => !c.obsolete);
+    if (first) setLetter(first.letter);
+  };
+
+  return (
+    <div style={{ marginTop: 24 }}>
+      <p style={{ marginBottom: 8 }}>
+        <strong>Vowel &times; tone matrix</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
+          — one consonant: every legal tone mark up top, every vowel against those marks below
+        </span>
+      </p>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {(['mid', 'high', 'low'] as const).map(klass => {
+          const active = klass === activeClass;
+          return (
+            <button
+              key={klass}
+              type="button"
+              onClick={() => selectClass(klass)}
+              style={{
+                fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 700, padding: '7px 16px',
+                borderRadius: 6, cursor: 'pointer', border: `2px solid ${CLASS_COLOR[klass]}`,
+                background: active ? CLASS_COLOR[klass] : '#fff',
+                color: active ? '#fff' : CLASS_COLOR[klass],
+              }}
+            >
+              {CLASS_LABEL[klass]}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <ClassVideoLink
+          href={CLASS_VIDEO[activeClass].href}
+          label={CLASS_VIDEO[activeClass].label}
+          color={CLASS_COLOR[activeClass]}
+        />
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+        {classLetters.map(c => (
+          <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+        ))}
+      </div>
+      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
+        {consonant.klass === 'mid'
+          ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
+          : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
+      </p>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 22 }}>
+        {sequence.map(({ mark, tone }) => (
+          <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
+            {activeClass === 'low' && (
+              <div style={{ height: '1.4rem', marginBottom: 2 }}>
+                {mark && <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" />}
+              </div>
+            )}
+            <ToneCard tone={thaiTone(tone)} compact hideExample />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table className={styles.cueTable}>
+          <thead>
+            <tr>
+              <th></th>
+              {sequence.map(({ mark, tone }) => (
+                <th key={mark ?? 'none'} style={mark ? undefined : { color: TONE_COLOR[tone] }}>
+                  {mark ? <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.3rem" /> : 'No mark'}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {VOWEL_ROWS.map((v, i) => (
+              <tr key={i}>
+                <td className={styles.cueThaiWord}>
+                  {v.pre}{letter}{v.attach}{v.trail}
+                </td>
+                {sequence.map(({ mark, tone }) => {
+                  const color = TONE_COLOR[tone];
+                  const glyph = mark ? CHANT_MARK_GLYPH[mark] : '';
+                  const syll = v.pre + letter + v.attach + glyph + v.trail;
+                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
+                  return (
+                    <td key={mark ?? 'none'} className={styles.cueThaiWord}>
+                      <span style={{ color }}>{syll}</span>
+                      <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
+                        /{ipa}/{!mark && ` · ${v.example} · ${v.gloss}`}
+                      </span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ClassWordFamilies klass={activeClass} />
+    </div>
+  );
+}
+
 /** One tone-colored word cell — the Thai word with its gloss printed right
  *  below it, rather than only behind a hover tooltip, so the translation is
  *  visible without interacting with the table at all. `gloss` is absent
@@ -1263,6 +1435,8 @@ export function TonesTab() {
       {lang === 'thai' && <PracticeSentence />}
 
       {lang === 'thai' && <ChantLoop />}
+
+      {lang === 'thai' && <VowelToneMatrix />}
     </div>
   );
 }
