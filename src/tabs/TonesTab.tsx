@@ -914,8 +914,6 @@ function VowelToneMatrix() {
           </tbody>
         </table>
       </div>
-
-      <ClassWordFamilies klass={activeClass} />
     </div>
   );
 }
