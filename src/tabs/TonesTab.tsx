@@ -912,6 +912,16 @@ function VowelToneMatrix() {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              {sequence.map(({ mark, tone }) => (
+                <td key={mark ?? 'none'} style={{ paddingTop: 14 }}>
+                  <ToneCard tone={thaiTone(tone)} compact hideExample />
+                </td>
+              ))}
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
