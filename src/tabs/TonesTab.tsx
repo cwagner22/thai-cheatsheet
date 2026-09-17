@@ -1042,19 +1042,39 @@ const KNOWN_GLOSSES: Record<string, string> = {
 /** One consonant button in the matrix's picker. */
 function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
   const color = CLASS_COLOR[c.klass];
+  // How restricted this letter is, if at all. The corner tag is positioned
+  // out of the flow so the Thai glyph stays centered on the same baseline
+  // as every unflagged letter beside it; the button just reserves a little
+  // extra room on that side so the tag never overlaps the glyph.
+  const flag = c.obsolete ? 'obs' : c.rare ? 'r' : null;
   return (
     <button
       type="button"
       onClick={onClick}
+      title={c.obsolete ? 'obsolete letter' : c.rare ? 'rare letter' : undefined}
       style={{
+        position: 'relative',
         fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
-        padding: '6px 10px 7px', borderRadius: 8, cursor: 'pointer', fontWeight: 500,
+        padding: flag ? '6px 18px 7px 10px' : '6px 10px 7px', borderRadius: 8,
+        cursor: 'pointer', fontWeight: 500,
         border: `1.5px solid ${active ? color : '#ddd'}`,
         background: active ? `${color}1a` : '#fff',
         color: active ? color : '#333',
       }}
     >
       {c.letter}
+      {flag && (
+        <span
+          style={{
+            position: 'absolute', right: 4, bottom: 2,
+            fontFamily: "'Inter', sans-serif", fontSize: '0.5rem', fontWeight: 700,
+            lineHeight: 1, letterSpacing: '0.02em',
+            color: active ? color : '#9ca3af',
+          }}
+        >
+          {flag}
+        </span>
+      )}
     </button>
   );
 }
