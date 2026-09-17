@@ -2,7 +2,44 @@
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 6px 12px 12px;
+  padding: 10px 12px 7px;
+  position: relative;
+  /* Cards render inside table cells that center their contents (the unified
+   * tone table, the tone-box table) — without this, that inherited
+   * text-align overrides the left alignment every block element below
+   * assumes, most visibly on .engCaption's single line of text. */
+  text-align: left;
+}
+
+/* Fixed to the card's own corner, not the example row's end — so it always
+ * reads as a corner tag regardless of how long the example word next to it
+ * runs, and the example row reserves the matching space (below) so its own
+ * content never runs underneath it. The chip background keeps a single thin
+ * bar (Mid tone's ˧) visible instead of nearly invisible.
+ * Selector is `span.cornerIpa`, not `.cornerIpa` — this element also carries
+ * `.label` for its tooltip, which sets `position: relative` of its own;
+ * with equal-specificity classes the one later in this file wins regardless
+ * of class order in the markup, so plain `.cornerIpa` silently lost this
+ * fight and fell back to static flow (top-left, not the corner). The extra
+ * type-selector outranks a bare class and settles it for good. */
+span.cornerIpa {
+  position: absolute;
+  bottom: 7px;
+  right: 10px;
+  min-width: 1.6em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Marks this card as the one the "Try it" box's selected word resolved to. */
+.cardMatch {
+  outline: 3px solid #f59e0b;
+  outline-offset: -1px;
 }
 
 .header {
@@ -10,37 +47,82 @@
   justify-content: space-between;
   align-items: center;
   min-height: 2rem;
+  margin-bottom: 6px;
 }
 
 .header strong {
   font-size: 1rem;
 }
 
-.nameEn {
-  font-weight: 500;
-}
-
-.mark {
+/* Standalone tone-mark badge in the header's top-right corner — this
+ * tone's own defining mark, independent from the name text next to it.
+ * Combining marks (่ ้ ๊ ๋) have zero advance width and paint to the left
+ * of their anchor, expecting a preceding base character; alone in their
+ * own element here, padding-left shifts the anchor right by roughly half
+ * a glyph so the visible ink clears the title text instead of overlapping
+ * it, and translateY compensates for the mark's own vertical anchor
+ * sitting near the line's top rather than its middle — same technique as
+ * .toneGlyphCombining in TonesTab.module.css, sized for a card corner
+ * instead of a full-page reference glyph. */
+.markBadge {
   font-family: var(--thai-font);
-  font-size: 2.4rem;
-  line-height: 1;
+  font-size: 1.5rem;
   font-weight: 700;
-  display: inline-block;
-}
-
-/* Thai combining marks have zero advance — the glyph paints right of x=0.
-   For the right-aligned card slot we want the visible mark flush with the
-   right edge: padding-LEFT pushes the box (and thus the mark anchor) right
-   from the natural flex-end position. translateY centers vertically. */
-.markCombining {
+  line-height: 1;
+  flex: none;
+  align-self: flex-start;
+  cursor: help;
   padding-left: 0.4em;
-  transform: translateY(0.45em);
+  transform: translateY(0.5em);
 }
 
-/* Position the mark's tooltip on the right edge of the header, not the left. */
-.mark.label[data-tooltip]::after {
-  left: auto;
-  right: 0;
+/* Vertically stacks the title row above the English caption. */
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Holds the Thai title and the IPA transliteration on the same line, IPA
+ * right after the title rather than flush against the row's far edge —
+ * .titleBlock stretches this row to the header's full width, so
+ * space-between would strand the IPA a card-width away from the title it's
+ * transliterating. Wraps onto its own line if space is tight. */
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.titleIpa {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* The Thai name is the card's real title — nameEn is a demoted caption below
+ * it (see .engCaption) rather than the headline, so it stops reading as the
+ * same word as a consonant class (both "Mid class" and "Mid tone" otherwise
+ * share the one word the eye lands on first). */
+/* line-height is well over the type size — Thai vowel signs stack above the
+ * consonant (e.g. ี in ตรี), and that ink extends above the font's own
+ * ascent. The extra leading gives it room before it visually crowds the
+ * card's top edge, since the top padding alone isn't enough for the taller
+ * stacks. */
+.thaiTitle {
+  font-family: var(--thai-font);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.engCaption {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #999;
+  margin-top: -1px;
 }
 
 /* Pure-CSS tooltip — fires instantly on hover, no native delay. */
@@ -71,30 +153,36 @@
   opacity: 1;
 }
 
-.ipa {
-  font-size: 0.9rem;
-  color: #555;
+.chart {
+  position: relative;
+  margin-bottom: 10px;
 }
 
 .svg {
   width: 100%;
   height: 70px;
   display: block;
-  margin-bottom: 10px;
 }
 
+/* Positioned over .chart rather than drawn in the SVG's own coordinate
+ * space — see the comment in ToneCard.tsx on why. */
+.axisLabel {
+  position: absolute;
+  left: 2px;
+  font-size: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  color: #bbb;
+  line-height: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Right padding reserves the corner badge's own footprint so a long example
+ * word wraps before it, rather than running underneath it. */
 .example {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
   font-size: 0.82rem;
-}
-
-.chaoIpa {
-  font-size: 0.78rem;
-  color: #888;
-  white-space: nowrap;
+  line-height: 1.2;
+  padding-right: 34px;
 }
 
 .exampleWord {
@@ -102,7 +190,59 @@
   font-size: 1.2rem;
 }
 
-.exampleGloss {
-  color: #888;
-  font-size: 0.78rem;
+/* Northern Thai's tone-box packs several cards per table cell (a class row
+ * can hold up to two stacked outcomes) — full size there crowds the table
+ * and forces the long descriptive names to wrap. Everything scales down
+ * together rather than just shrinking type, so it still reads as the same
+ * card, just smaller. */
+.compact {
+  padding: 4px 8px 6px;
+}
+
+.compact .header {
+  margin-bottom: 3px;
+}
+
+.compact .thaiTitle {
+  font-size: 0.92rem;
+}
+
+.compact .titleIpa {
+  font-size: 0.62rem;
+}
+
+.compact .cornerIpa {
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  padding: 0 4px;
+}
+
+.compact .markBadge {
+  font-size: 1.15rem;
+}
+
+.compact .engCaption {
+  font-size: 0.54rem;
+}
+
+.compact .chart {
+  margin-bottom: 6px;
+}
+
+.compact .svg {
+  height: 52px;
+}
+
+.compact .axisLabel {
+  font-size: 0.44rem;
+}
+
+.compact .example {
+  font-size: 0.72rem;
+  padding-right: 26px;
+}
+
+.compact .exampleWord {
+  font-size: 1rem;
 }

@@ -1,3 +1,34 @@
+/* Pure-CSS tooltip — fires instantly on hover, no native delay. Same
+ * pattern as ToneCard.module.css / ConsonantsTab.module.css, duplicated
+ * here because CSS Modules scope class names per file — `.label` in one
+ * module's stylesheet doesn't reach a className built from another. */
+.label {
+  position: relative;
+}
+
+.label[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 10;
+}
+
+.label[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
 .stepBox {
   background: #f8f9fa;
   border-radius: 8px;
@@ -26,26 +57,6 @@
   font-size: 0.78rem;
   color: #888;
   font-style: italic;
-}
-
-.tonePopoverTrigger {
-  display: inline-block;
-  cursor: pointer;
-}
-
-/* Floating contour-card popover, portaled to body so the table layout doesn't
-   clip it. Absolute positioning + document-relative coords (left/top set in
-   JS) so the popover scrolls with the page, staying anchored to the cell.
-   pointer-events left at the default `auto` so hover events on the card's
-   own elements (e.g. the title's IPA tooltip) still fire. */
-.tonePopover {
-  position: absolute;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 260px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .toneTable thead th {
@@ -119,6 +130,16 @@
   transform: translateY(0.45em);
 }
 
+/* A header label followed by a combining tone mark, e.g. "Mai Tho ้". A plain
+ * text-node space between them isn't reliable here (collapses to 0 width
+ * against the adjacent inline-block glyph in some layouts) — flex `gap`
+ * can't collapse the same way, so it's used instead of a literal space. */
+.headerMarkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
 .toneTable tbody td {
   height: 3.7rem;
 }
@@ -134,6 +155,28 @@
   .toneTable tbody td {
     padding: 6px 3px;
   }
+}
+
+.splitAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #555;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.splitAllBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .langToggle {
@@ -174,4 +217,138 @@
   margin-bottom: 20px;
   font-size: 0.82rem;
   color: #555;
+}
+
+/* Same bookmark-link treatment as ConsonantsTab's video links. */
+.videoBookmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 3px solid #b45309;
+  border-radius: 8px;
+  color: #222;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.videoBookmark:hover {
+  background: #fffbeb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.videoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #b45309;
+  color: #fff;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.videoArrow {
+  margin-left: auto;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.practiceBox {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.practiceSentence {
+  font-family: var(--thai-font);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 10px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5em 0.7em;
+}
+
+.practiceWord {
+  cursor: help;
+  padding-bottom: 2px;
+  border-bottom: 3px solid currentColor;
+}
+
+.cueTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 14px;
+}
+
+.cueTable th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  border-bottom: 2px solid #eee;
+}
+
+.cueTable td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.cueTable tr:last-child td {
+  border-bottom: none;
+}
+
+.cueTone {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cueThaiWord {
+  font-family: var(--thai-font);
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+/* Vowel x tone matrix. `table-layout: fixed` makes the browser split the
+ * width left over by the first column equally between the tone columns,
+ * instead of sizing each one to its widest gloss — which pushed the table
+ * past its container and forced a horizontal scrollbar. Column content has
+ * to be allowed to wrap for this to hold, hence .cellGloss below. */
+.matrixTable {
+  table-layout: fixed;
+}
+
+.matrixTable th:first-child,
+.matrixTable td:first-child {
+  width: 5.5rem;
+}
+
+/* The translation printed under a Thai word. Its cell carries .cueThaiWord,
+ * whose `white-space: nowrap` keeps the Thai syllable itself on one line;
+ * the gloss must opt back out of that or a long translation widens the
+ * whole column. */
+.cellGloss {
+  display: block;
+  margin-top: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #888;
+  white-space: normal;
+  overflow-wrap: break-word;
 }

@@ -1,3 +1,49 @@
+/* Merges the old Initial/Final/Type columns into one — three separate
+ * columns is what made the table's header/body widths fragile at narrow
+ * viewports (each column negotiates its own width independently; a small
+ * change to any one of them could throw the rest out of sync with the
+ * header row above). One column has nothing left to fall out of sync. */
+.soundCell {
+  text-align: left;
+}
+
+.soundRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.soundArrow {
+  color: #bbb;
+  font-weight: 400;
+}
+
+.soundType {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* .sonorant-tag is a plain global class (global.css), sized in rem against
+ * the page root — at the type line's own small size that reads bigger and
+ * heavier than the plain text beside it, cramping the row and forcing an
+ * extra wrap. Shrinking it here (not in the shared class, which also
+ * appears at LetterName's larger, unrelated size) keeps it proportionate. */
+.soundType :global(.sonorant-tag) {
+  font-size: 0.58rem;
+  padding: 0 4px;
+  margin-left: 0;
+}
+
 .mnemBoxMid {
   background: #eff6ff;
   border-left: 3px solid #2563eb;
@@ -25,11 +71,6 @@
   color: #333;
 }
 
-.mnemLetters {
-  color: #666;
-  font-size: 0.8rem;
-}
-
 .sectionSub {
   font-size: 0.78rem;
   color: #555;
@@ -42,23 +83,39 @@
   margin: -4px 0 8px 0;
 }
 
-.nameRom {
-  font-size: 0.72rem;
-  color: #666;
-  font-family: 'SF Mono', Menlo, monospace;
+/* Pure-CSS tooltip — fires instantly on hover, no native delay. */
+.label {
+  position: relative;
 }
 
-/* "Same as initial" indicator (¨ trema, used as ditto mark) in the Final
-   column. Dimmed and bumped size — the diaeresis paints near the top of
-   its line box, so translateY pushes it down to sit centered in the cell. */
+.label[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 10;
+}
+
+.label[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* "Same as initial" indicator in the Final column — same text, same font,
+   same weight as every other cell in the column, just dimmed. Plain text
+   in the normal flow, so it can't help lining up with its neighbors. */
 .finalSame {
   color: #aaa;
-  font-size: 1.5rem;
-  font-weight: 700;
-  cursor: help;
-  display: inline-block;
-  line-height: 1;
-  transform: translateY(0.35em);
 }
 
 /* "No final form" indicator (—) when the consonant can't end a syllable. */

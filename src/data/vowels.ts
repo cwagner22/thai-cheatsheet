@@ -127,11 +127,11 @@ export const VOWEL_SECTIONS: VowelSection[] = [
         long: { form: 'เ◌ีย', ipa: '/iaː/', example: 'เสีย', exampleGloss: 'broken' },
       },
       {
-        short: { form: 'เ◌ือะ', ipa: '/ɯa/', example: 'เลือะ', exampleGloss: 'rare', rare: true },
+        short: { form: 'เ◌ือะ', ipa: '/ɯa/', rare: true, note: 'no established words' },
         long: { form: 'เ◌ือ', ipa: '/ɯaː/', example: 'เสือ', exampleGloss: 'tiger' },
       },
       {
-        short: { form: '◌ัวะ', ipa: '/ua/', example: 'ผัวะ', exampleGloss: 'rare', rare: true },
+        short: { form: '◌ัวะ', ipa: '/ua/', example: 'ผัวะ', exampleGloss: 'whack! (slap or snap)', rare: true },
         long: {
           form: '◌ัว',
           ipa: '/uaː/',
@@ -222,7 +222,7 @@ export const VOWEL_SECTIONS: VowelSection[] = [
         long: { form: '◌วาย', ipa: '/uaːj/', rare: true },
       },
       {
-        short: { form: 'อุย', ipa: '/uj/', example: 'ทุย', exampleGloss: 'rare', rare: true },
+        short: { form: 'อุย', ipa: '/uj/', example: 'ทุย', exampleGloss: 'stubby-horned (buffalo)', rare: true },
       },
     ],
   },
