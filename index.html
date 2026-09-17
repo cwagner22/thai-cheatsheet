@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google's translate_tts endpoint 404s any request carrying a
+         Referer header from outside google.com; there's no way to opt an
+         individual <audio> load out of it, only the whole document. -->
+    <meta name="referrer" content="no-referrer" />
     <title>Thai Cheat Sheet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

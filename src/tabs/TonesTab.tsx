@@ -4,6 +4,8 @@ import { CONSONANTS, byClass, type ConsonantClass, type Consonant } from '../dat
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
 import { standardCellMatch, northernCellMatch, type CellMatch, type NorthernCellMatch } from '../lib/toneLookup';
+import { speakThai } from '../lib/speak';
+import { PlayButton } from '../components/PlayButton';
 import styles from './TonesTab.module.css';
 
 type Lang = 'thai' | 'northern';
@@ -620,7 +622,10 @@ function TryIt({
 function PracticeSentence() {
   return (
     <div className={styles.practiceBox}>
-      <p style={{ margin: '0 0 10px' }}><strong>Practice sentence</strong></p>
+      <p style={{ margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <strong>Practice sentence</strong>
+        <PlayButton words={PRACTICE_SENTENCE.map(w => w.word)} title="Play the whole sentence" />
+      </p>
       <ClassVideoLink
         href="https://www.youtube.com/watch?v=-qUQirAAN6Q"
         label="5 Thai Tones in 1 Sentence — Let's Learn Thai with Kanitsa"
@@ -632,8 +637,9 @@ function PracticeSentence() {
           <span
             key={i}
             className={`${styles.practiceWord} ${styles.label}`}
-            style={{ color: TONE_COLOR[tone] }}
+            style={{ color: TONE_COLOR[tone], cursor: 'pointer' }}
             data-tooltip={`/${ipa}/ · ${gloss} · ${tone} tone`}
+            onClick={() => speakThai(word)}
           >
             {word}
           </span>
@@ -655,7 +661,12 @@ function PracticeSentence() {
                 <td className={styles.cueTone} style={{ color: TONE_COLOR[tone] }}>{tone}</td>
                 <td>{cue}</td>
                 <td style={{ color: '#666' }}>{comment}</td>
-                <td className={`${styles.cueThaiWord} ${styles.label}`} style={{ cursor: 'help' }} data-tooltip={`/${ipa}/`}>
+                <td
+                  className={`${styles.cueThaiWord} ${styles.label}`}
+                  style={{ cursor: 'pointer' }}
+                  data-tooltip={`/${ipa}/`}
+                  onClick={() => speakThai(word)}
+                >
                   {word}{' '}
                   <span style={{ fontSize: '0.75rem', color: '#888', fontFamily: 'Inter, sans-serif' }}>
                     · {gloss}
@@ -774,9 +785,259 @@ const VOWEL_ROWS: { pre: string; attach: string; trail: string; core: string; ex
   { pre: 'เ', attach: '', trail: '', core: 'eː', example: 'เก', gloss: 'old' },
   { pre: 'แ', attach: '', trail: '', core: 'ɛː', example: 'แก', gloss: 'you' },
   { pre: 'โ', attach: '', trail: '', core: 'oː', example: 'โต', gloss: 'grow' },
-  { pre: '', attach: '', trail: 'อ', core: 'ɔː', example: 'กอ', gloss: 'hug' },
+  { pre: '', attach: '', trail: 'อ', core: 'ɔː', example: 'กอ', gloss: 'clump (of plants)' },
   { pre: 'เ', attach: '', trail: 'อ', core: 'ɤː', example: 'เธอ', gloss: 'she' },
 ];
+
+/** Real words verified by letter+vowel+mark, keyed by the exact constructed
+ *  syllable — a supplement to each row's single vowels.ts example (which is
+ *  usually built on a different consonant, so it only ever matches that one
+ *  letter). Audited across all 41 non-obsolete consonants; a class/letter
+ *  with no comment-and-entries below (e.g. ฎ, ฏ, ฐ, ศ, ษ, ญ, ฑ, ฒ, ณ, ฬ)
+ *  genuinely has zero real bare open-syllable words for these 9 vowel
+ *  shapes, not an unaudited gap. Some entries are vulgar or slang — labeled
+ *  inline — kept because this app doesn't otherwise censor real vocabulary. */
+const KNOWN_GLOSSES: Record<string, string> = {
+  // --- mid class ---
+  // ก
+  'กา': 'crow (bird)', 'กี่': 'how many; weaving loom',
+  'กู': 'I, me (rude/informal)', 'กู่': 'to shout, call out (also: ancient stone tower/shrine)', 'กู้': 'to rescue; to borrow (money)',
+  'เก': 'nerdy, dorky (slang)', 'เก๊': 'fake, counterfeit', 'เก๋': 'stylish, chic',
+  'แก': 'you (informal, to a peer)', 'แก่': 'old', 'แก้': 'to fix, solve, correct',
+  'โก้': 'stylish, classy', 'โก๋': 'dandy, stylish young man (retro slang)',
+  'กอ': 'clump, cluster (of plants)', 'ก่อ': 'to build, start (a fire/trouble)',
+  'เก้อ': 'awkward, embarrassed',
+  // จ
+  'จ่า': 'sergeant (military/police rank)', 'จ้า': 'yeah! (cheerful informal reply); brightly', 'จ๋า': 'affectionate calling particle (e.g. แม่จ๋า)',
+  'จี่': 'to grill, toast over fire', 'จี้': 'to poke, jab; pendant (necklace)',
+  'จู่': 'suddenly (จู่ๆ); to raid, attack suddenly (จู่โจม)', 'จู๋': 'pee-pee, willy (child slang for penis)',
+  'เจ': 'vegetarian/vegan (Chinese Buddhist diet)', 'เจ๊': 'big sister (Chinese-Thai term for an older woman)',
+  'จอ': 'screen (TV, monitor)', 'จ่อ': 'to point at, aim toward; about to (happen)', 'จ้อ': 'to chat non-stop, gab (informal)', 'จ๋อ': 'monkey (informal)',
+  'เจอ': 'to meet, find, encounter',
+  // ฎ, ฏ — no real bare-syllable words for either letter
+  // ด
+  'ด่า': 'to scold, curse, insult',
+  'ดี': 'good', 'ดี๊': 'elated, overjoyed (ดีใจดี๊ด๊า)',
+  'ดื้อ': 'stubborn, disobedient',
+  'ดู': 'to look, watch',
+  'แด่': 'to, for (formal/poetic dedication)',
+  'เด้อ': 'okay?, alright then (Isan-influenced sentence particle)', 'เด๋อ': 'goofy, dazed, klutzy (informal)',
+  // ต
+  'ตา': 'eye; maternal grandfather',
+  'ตี': 'to hit, beat', 'ตี๋': 'handsome young guy (Thai-Chinese looks, slang)',
+  'ตื้อ': 'thick-headed, foggy (หัวตื้อ)', 'ตื๊อ': 'to pester, nag persistently (informal)',
+  'ตู่': 'to falsely claim, encroach on', 'ตู้': 'cabinet, cupboard',
+  'แต่': 'but',
+  'โต': 'big, grown-up', 'โต้': 'to argue, debate, counter',
+  'ตอ': 'tree stump', 'ต่อ': 'to connect, continue; wasp/hornet; per', 'ต้อ': 'cataract (eye condition)',
+  'เต๋อ': 'goofy, dorky (informal, endearing)',
+  // บ
+  'บ่า': 'shoulder', 'บ้า': 'crazy, mad', 'บ๋า': 'waiter! (calling out to summon one)',
+  'บี้': 'to squash, crush flat',
+  'บื้อ': 'dumb, oafish (informal)',
+  'บู่': 'a fragrant white flower (ดอกบู่); goby fish (ปลาบู่)', 'บู๊': 'action, martial arts (film genre)',
+  'เบ้': 'to grimace, pull a distorted face', 'เบ๊': 'underling, lackey (informal)',
+  'แบ': 'to spread flat, splay open',
+  'โบ๋': 'empty, hollow, deserted',
+  'บ่อ': 'well, pit, pond',
+  'เบ้อ': 'huge, oversized (เบ้อเร่อ, informal)',
+  // ป
+  'ปา': 'to throw', 'ป่า': 'forest', 'ป้า': 'aunt', 'ป๊า': 'dad (informal)', 'ป๋า': 'dad (slang)',
+  'ปี': 'year', 'ปี่': 'Thai oboe (instrument)',
+  'ปู': 'crab', 'ปู่': 'grandfather', 'ปู้': 'to wreck (ปู้ยี่ปู้ยำ)', 'ปู๊': 'horn/whistle sound', 'ปู๋': 'vulgar slang, female genitals',
+  'เป้': 'carrier, sling (baby carrier)', 'เป๋': 'to swerve, wobble',
+  'โป๊': 'revealing, skimpy (clothing)',
+  'ปอ': 'jute (plant fiber)',
+  'เป๋อ': 'dazed, out of it',
+  // อ
+  'อา': "aunt/uncle (father's younger sibling)", 'อ้า': 'to open, gape (mouth)',
+  'อี': "vulgar/informal prefix before a woman's name or a thing (demeaning)", 'อี๋': 'ew!, yuck! (disgust interjection)',
+  'อือ': 'uh-huh, yeah (informal grunt of agreement)', 'อื้อ': 'loud, buzzing, in an uproar (อื้ออึง)',
+  'อู่': 'dock, garage (for boats/cars); cradle', 'อู้': 'to slack off, loaf around (informal)',
+  'เอ': 'hmm? (pondering interjection)',
+  'แอ๊': 'to act cute/childish (แอ๊บแบ๊ว, informal, usu. of adult women)', 'แอ๋': 'dead drunk, passed out drunk (informal)',
+  'โอ': 'oh! (exclamation)', 'โอ้': 'oh my! (exclamation)', 'โอ๋': 'to soothe, comfort, coddle (a child)',
+  'ออ': 'to flock, crowd together', 'อ้อ': 'oh, I see (realization interjection)', 'อ๋อ': 'ahh, I get it now (realization interjection)',
+  'เออ': 'yeah, uh-huh (informal)', 'เอ่อ': 'um... (hesitation filler); to well up, brim over', 'เอ๋อ': 'dopey, dim-witted, dazed (informal)',
+
+  // --- high class ---
+  // ข
+  'ขา': 'leg', 'ข่า': 'galangal (herb)', 'ข้า': 'I, servant (archaic)',
+  'ขี่': 'to ride (a vehicle/animal)', 'ขี้': 'feces; a common prefix (ขี้เกียจ = lazy)',
+  'ขื่อ': 'lintel (house-frame beam)',
+  'ขู่': 'to threaten',
+  'ขอ': 'to ask for, request', 'ข้อ': 'joint; item, clause',
+  // ฉ
+  'ฉ่า': 'sizzling sound; a spicy dry stir-fry style (ผัดฉ่า)',
+  'ฉี่': 'to pee, urine (informal/childish)',
+  'เฉ': 'to veer, swerve, tilt off to one side',
+  'แฉ': 'to expose, reveal (a secret/scandal)',
+  'ฉ้อ': 'to defraud, cheat (ฉ้อโกง)',
+  // ฐ — no real bare-syllable words
+  // ผ
+  'ผา': 'cliff',
+  'ผ่า': 'to cut open, split (ผ่าตัด = surgery)',
+  'ผ้า': 'cloth, fabric',
+  'ผี': 'ghost',
+  'ผู้': 'person (classifier/pronoun, e.g. ผู้หญิง)',
+  'แผ่': 'to spread out, extend flat',
+  'โผ': 'to swoop/dart suddenly; (informal) a list/lineup (e.g. cabinet reshuffle)',
+  // ฝ
+  'ฝา': 'lid, cover',
+  'ฝ่า': 'to brave/push through; also palm (of hand/foot, ฝ่ามือ)',
+  'ฝ้า': 'ceiling; also dark skin patches (melasma)',
+  'ฝี': 'abscess, boil',
+  'ฝ่อ': 'to shrivel, atrophy, wither (also fig. to lose heart)',
+  // ศ, ษ — no real bare-syllable words for either letter
+  // ส
+  'ส่า': 'yeast/scum sediment (ส่าเหล้า); also a skin rash',
+  'สี': 'color; to grind (สีข้าว)',
+  'สี่': 'four',
+  'สื่อ': 'media; to communicate, mediate',
+  'สู่': 'to, towards',
+  'สู้': 'to fight',
+  'แส่': "to meddle, pry into others' business",
+  'แส้': 'whip',
+  'ส่อ': 'to indicate, show signs of (ส่อเจตนา)',
+  // ห
+  'หา': 'to search for, look for',
+  'ห่า': 'cholera (archaic); a downpour (ฝนห่า); also a common vulgar curse word',
+  'ห้า': 'five',
+  'หี': 'female genitalia (vulgar slang)',
+  'หือ': 'huh? (interjection); to protest/object, e.g. "ไม่มีใครกล้าหือ"',
+  'หู': 'ear',
+  'แห': 'casting net (fishing)',
+  'แห่': 'to parade, process in a crowd (แห่นาค)',
+  'หอ': 'hall, tower (building for a specific purpose, e.g. หอสมุด)',
+  'ห่อ': 'to wrap; a wrapped bundle/package',
+  'ห้อ': 'bruised (blood pooled under skin from impact)',
+  'โห่': 'to shout/cheer (or jeer) in unison',
+  'เห่อ': '(informal) to be infatuated with something new/trendy',
+
+  // --- low class ---
+  // ค
+  'คา': 'to be stuck/lodged; trade (ค้าขาย)', 'ค่า': 'value, cost, price', 'ค้า': 'to trade',
+  'คี่': 'odd (number)',
+  'คือ': 'is, means (copula)',
+  'คู่': 'a pair, couple',
+  'แค่': 'only, just',
+  'โค': 'cattle, ox (formal)',
+  'คอ': 'neck; fan, enthusiast',
+  // ฆ
+  'ฆ่า': 'to kill',
+  // ง
+  'งา': 'sesame; (elephant) tusk', 'งู': 'snake',
+  'แง่': 'aspect, angle, point of view (มองในแง่ดี)',
+  'โง่': 'stupid, foolish',
+  'งอ': 'bent, curved, crooked', 'ง้อ': 'to make up with, appease (someone)',
+  // ช
+  'ชา': 'tea', 'ช้า': 'slow',
+  'ชี': 'ascetic, renunciant (Hindu/Brahman; root of แม่ชี "nun")', 'ชี้': 'to point (at)',
+  'ชื่อ': 'name',
+  'ชู': 'to lift, raise, hold up', 'ชู้': 'illicit lover, paramour',
+  'แช่': 'to soak, marinate, immerse',
+  'ช่อ': 'bunch, bouquet, cluster (of flowers)',
+  // ซ
+  'ซา': 'to subside, abate (storm, fever, anger)', 'ซ่า': 'fizzy; (slang) flashy, brash',
+  'ซี': '(informal/bureaucratic) civil-service pay grade, from loan "C" (ซีเก้า)', 'ซี่': 'slat, prong, spoke (of comb, rib, wheel)', 'ซี้': '(slang) to die',
+  'ซื่อ': 'honest', 'ซื้อ': 'to buy',
+  'เซ': 'to stagger, totter, sway',
+  'แซ่': 'Chinese clan name/surname',
+  'โซ': 'famished, faint from hunger', 'โซ่': 'chain',
+  'ซอ': 'Thai fiddle (musical instrument)',
+  'เซ่อ': 'foolish, gawky, dumbfounded-looking',
+  // ฌ
+  'เฌอ': '(archaic/poetic) tree',
+  // ญ, ฑ, ฒ, ณ — no real bare-syllable words for any of these four letters
+  // ท
+  'ทา': 'to apply, spread (paint, lotion)', 'ท่า': 'pier, wharf; pose, manner, stance', 'ท้า': 'to challenge, dare',
+  'ที': 'time, turn, occasion', 'ที่': 'place; relative pronoun "that/which"; ordinal marker',
+  'ทื่อ': 'blunt (of a blade edge), dull',
+  'ทู่': 'blunt, not pointed (of a tip)',
+  'เท': 'to pour', 'เท่': '(informal) cool, stylish',
+  'แท้': 'genuine, real, authentic',
+  'โท': 'second (ordinal, formal register, as in ปริญญาโท)',
+  'ทอ': 'to weave', 'ท่อ': 'pipe, tube, duct', 'ท้อ': 'discouraged, disheartened; peach (fruit)',
+  // ธ
+  'โธ่': '(interjection) oh dear!, oh no! (pity/exasperation)', 'เธอ': 'you (intimate/informal); she (literary)',
+  // น
+  'นา': 'rice field', 'น่า': 'worthy of, -able (prefix, e.g. น่ารัก)', 'น้า': "aunt/uncle (mother's younger sibling)",
+  'นี่': 'this (demonstrative pronoun)', 'นี้': 'this (attributive, follows noun)',
+  'แน่': 'sure, certain',
+  'นอ': 'horn (of an animal, e.g. rhino)',
+  'เน้อ': 'sentence-final particle, "ok/right" (Northern Thai dialect)',
+  // พ
+  'พา': 'to take (someone) along', 'พี่': 'older sibling',
+  'พู': 'lobe, segment (of ear, fruit, brain)', 'พู่': 'tassel, tuft',
+  'แพ': 'raft', 'แพ้': 'to lose (a contest); to be allergic to',
+  'โพ': 'the Bodhi tree (short for โพธิ์)',
+  'พอ': 'enough', 'พ่อ': 'father', 'พ้อ': 'to complain in a hurt, reproachful tone',
+  'เพ้อ': 'to be delirious, rave (in fever or sleep)',
+  // ฟ
+  'ฟา': 'musical note "fa" (do-re-mi... solfège)',
+  'ฟ้า': 'sky; light blue',
+  'ฟู': 'fluffy, puffed up', 'ฟู่': 'fizzing/hissing sound',
+  'แฟ': 'boyfriend/girlfriend, sweetheart (colloquial, short for แฟน)',
+  'เฟ้อ': 'inflated, excessive (as in เงินเฟ้อ, inflation)',
+  // ภ
+  'ภู': 'mountain, hill',
+  'ภู่': 'tuft, tassel (also the "bee" in แมลงภู่, carpenter bee)',
+  // ม
+  'มา': 'to come', 'ม้า': 'horse',
+  'มี': 'to have',
+  'มือ': 'hand', 'มื้อ': 'meal (classifier)',
+  'มู': 'into spirituality/mysticism (modern slang, short for มูเตลู)',
+  'แม่': 'mother', 'แม้': 'although, even if',
+  'โม่': 'to grind; a millstone', 'โม้': 'to boast, brag (colloquial)',
+  'มอ': 'small hill, mound',
+  // ย
+  'ยา': 'medicine', 'ย่า': 'paternal grandmother',
+  'ยี': 'to rub/crush between the fingers', 'ยี่': 'two- (bound prefix, e.g. ยี่สิบ, twenty)', 'ยี้': 'yuck! (interjection of disgust)',
+  'ยื้อ': 'to tug against each other; to stall/drag out (time)',
+  'ยู้': 'to push, shove',
+  'เย้': 'yay! hooray! (interjection)',
+  'แย่': 'terrible, in bad shape', 'แย้': 'a butterfly lizard (Leiolepis)',
+  'โย้': 'to lean, tilt, sag to one side',
+  'ยอ': 'to flatter, praise', 'ย่อ': 'to shrink, abbreviate',
+  // ร
+  'รา': 'mold, fungus', 'ร่า': 'cheerful, jovial (as in หัวเราะร่า)',
+  'รี': 'oval, elongated', 'รี่': 'to rush straight forward',
+  'รื้อ': 'to tear down, dismantle',
+  'รู': 'hole', 'รู้': 'to know',
+  'เร่': 'to peddle goods around; to hurry along',
+  'แร่': 'mineral, ore',
+  'โร่': 'to rush/hurry forth (colloquial)',
+  'รอ': 'to wait',
+  'เรอ': 'to burp, belch',
+  // ล
+  'ลา': 'donkey; to say goodbye', 'ล่า': 'to hunt', 'ล้า': 'tired, weary',
+  'ลี้': 'to flee, go into hiding',
+  'ลือ': 'to be rumored; renowned',
+  'ลื้อ': 'you (informal, Chinese-derived pronoun)',
+  'ลู่': 'track, lane; to droop/wilt',
+  'เล': 'the sea (informal/Southern, short for ทะเล, as in ชาวเล)',
+  'แล': 'to look, gaze; and (archaic conjunction)', 'แล่': 'to slice, fillet',
+  'โล': 'kilo(gram) (colloquial, short for กิโล)', 'โล่': 'shield', 'โล้': 'to rock/swing (as in พิธีโล้ชิงช้า)',
+  'ล่อ': 'to lure, entice; a mule', 'ล้อ': 'wheel; to tease, mock',
+  'เลอ': 'surpassing, excellent (formal/literary, as in เลอเลิศ)',
+  // ว
+  'วา': 'a Thai unit of length (~2m); to spread the arms wide',
+  'ว่า': 'to say; that (conjunction); to scold',
+  'ว้า': 'wow!/oh! (interjection of surprise or mild dismay)',
+  'วี': 'to fan (air onto something)',
+  'วอ': 'a palanquin/covered carriage (archaic)',
+  'เว่อ': 'over-the-top, exaggerated (modern slang)',
+  // ฬ — no real bare-syllable words
+  // ฮ
+  'ฮา': 'funny, hilarious', 'ฮ่า': 'ha (laughter sound, usu. reduplicated ฮ่าๆ)',
+  'เฮ้': 'hey! (interjection)',
+  'โฮ': 'to bawl, cry loudly (onomatopoeia)',
+  'เฮ้อ': 'sigh... (interjection of exasperation/relief)',
+  'ฮื่อ': 'uh-huh, yeah (informal affirmation)',
+  'ฮู้': 'to know (Northern Thai/Kham Mueang dialect equivalent of รู้)',
+  'ฮ่อ': 'Hor/Haw — Yunnanese Chinese (historical ethnonym)',
+};
+
 
 /** One consonant button in the matrix's picker. */
 function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
@@ -864,19 +1125,6 @@ function VowelToneMatrix() {
           : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
       </p>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 22 }}>
-        {sequence.map(({ mark, tone }) => (
-          <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
-            {activeClass === 'low' && (
-              <div style={{ height: '1.4rem', marginBottom: 2 }}>
-                {mark && <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" />}
-              </div>
-            )}
-            <ToneCard tone={thaiTone(tone)} compact hideExample />
-          </div>
-        ))}
-      </div>
-
       <div style={{ overflowX: 'auto' }}>
         <table className={styles.cueTable}>
           <thead>
@@ -890,38 +1138,59 @@ function VowelToneMatrix() {
             </tr>
           </thead>
           <tbody>
-            {VOWEL_ROWS.map((v, i) => (
-              <tr key={i}>
-                <td className={styles.cueThaiWord}>
-                  {v.pre}{letter}{v.attach}{v.trail}
-                </td>
-                {sequence.map(({ mark, tone }) => {
-                  const color = TONE_COLOR[tone];
-                  const glyph = mark ? CHANT_MARK_GLYPH[mark] : '';
-                  const syll = v.pre + letter + v.attach + glyph + v.trail;
-                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
-                  return (
-                    <td key={mark ?? 'none'} className={styles.cueThaiWord}>
-                      <span style={{ color }}>{syll}</span>
-                      <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
-                        /{ipa}/{!mark && ` · ${v.example} · ${v.gloss}`}
-                      </span>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
             <tr>
               <td></td>
               {sequence.map(({ mark, tone }) => (
-                <td key={mark ?? 'none'} style={{ paddingTop: 14 }}>
+                <td key={mark ?? 'none'} style={{ paddingBottom: 14 }}>
                   <ToneCard tone={thaiTone(tone)} compact hideExample />
                 </td>
               ))}
             </tr>
-          </tfoot>
+            {VOWEL_ROWS.map((v, i) => {
+              const rowSylls = sequence.map(({ mark }) => v.pre + letter + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail);
+              return (
+              <tr key={i}>
+                <td
+                  className={styles.cueThaiWord}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => speakThai(rowSylls)}
+                >
+                  {v.pre}{letter}{v.attach}{v.trail}
+                </td>
+                {sequence.map(({ mark, tone }, colIndex) => {
+                  const color = TONE_COLOR[tone];
+                  const syll = rowSylls[colIndex];
+                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
+                  // Prefer a verified real word for this exact syllable
+                  // (KNOWN_GLOSSES) over v.example, which is one fixed word
+                  // per row from vowels.ts, usually built on a different
+                  // consonant than whatever's selected here, and sometimes
+                  // itself already carries a mark (กี่ for the ◌ี row) —
+                  // matching it requires the exact same letter *and* mark,
+                  // not just "the unmarked column."
+                  const gloss = KNOWN_GLOSSES[syll] ?? (syll === v.example ? v.gloss : undefined);
+                  return (
+                    <td key={mark ?? 'none'} className={styles.cueThaiWord}>
+                      <span
+                        className={styles.label}
+                        style={{ color, cursor: 'pointer' }}
+                        data-tooltip={`/${ipa}/`}
+                        onClick={() => speakThai(syll)}
+                      >
+                        {syll}
+                      </span>
+                      {gloss && (
+                        <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: "'Inter', sans-serif", color: '#888' }}>
+                          {gloss}
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
     </div>

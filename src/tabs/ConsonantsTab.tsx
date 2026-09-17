@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { byClass, CONSONANTS } from '../data/consonants';
 import type { Consonant, SoundGroup } from '../data/consonants';
+import { speakThai } from '../lib/speak';
+import { PlayButton } from '../components/PlayButton';
 import styles from './ConsonantsTab.module.css';
 
 function Tags({ c }: { c: Consonant }) {
@@ -51,8 +53,9 @@ function LetterName({ c }: { c: Consonant }) {
   return (
     <span
       className={styles.label}
-      style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, cursor: 'help' }}
+      style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, cursor: 'pointer' }}
       data-tooltip={`/${c.nameRom}/ · ${c.meaning}`}
+      onClick={() => speakThai(c.name)}
     >
       <span className="thai-letter" style={dim}>{c.letter}</span>
       <span className="thai-name" style={dim}>
@@ -89,7 +92,12 @@ function MnemonicSentence({ words }: { words: { word: string; ipa: string; gloss
                letter — the gloss describes the word ("ghost" for ผี), so
                hovering anywhere on it should surface that, not just the one
                character singled out for the ไตรยางศ์ teaching point. */}
-            <span className={styles.label} style={{ cursor: 'help' }} data-tooltip={`/${ipa}/ · ${gloss}`}>
+            <span
+              className={styles.label}
+              style={{ cursor: 'pointer' }}
+              data-tooltip={`/${ipa}/ · ${gloss}`}
+              onClick={() => speakThai(word)}
+            >
               {idx > 0 && word.slice(0, idx)}
               <span style={{ textDecoration: 'underline', fontWeight: 700 }}>{letter}</span>
               {word.slice(idx + 1)}
@@ -213,15 +221,9 @@ function GroupBySoundToggle({ checked, onChange }: { checked: boolean; onChange:
 }
 
 function ByClassView() {
-  const [groupBySound, setGroupBySound] = useState(false);
+  const [groupBySound, setGroupBySound] = useState(true);
   return (
     <>
-      <div className="legend">
-        <div className="legend-item"><div className="legend-dot" style={{ background: '#2563eb' }} /> Mid Class (กลาง) — 9</div>
-        <div className="legend-item"><div className="legend-dot" style={{ background: '#16a34a' }} /> High Class (สูง) — 11</div>
-        <div className="legend-item"><div className="legend-dot" style={{ background: '#dc2626' }} /> Low Class (ต่ำ) — 24</div>
-      </div>
-
       <div className="class-section">
         <div className="class-header mid">Mid Class — อักษรกลาง (9)</div>
         <GroupBySoundToggle checked={groupBySound} onChange={setGroupBySound} />
@@ -236,6 +238,7 @@ function ByClassView() {
         </div>
         <div className={styles.mnemBoxMid}>
           <strong>Mnemonic:</strong>{' '}
+          <PlayButton words={['ไก่', 'จิก', 'เด็ก', 'ตาย', 'บน', 'ปาก', 'โอ่ง']} title="Play the whole sentence" />{' '}
           <MnemonicSentence words={[
             { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
             { word: 'จิก', ipa: 'tɕìk', gloss: 'peck' },
@@ -255,6 +258,7 @@ function ByClassView() {
         <GroupBySoundToggle checked={groupBySound} onChange={setGroupBySound} />
         <div className={styles.mnemBoxHigh}>
           <strong>Mnemonic:</strong>{' '}
+          <PlayButton words={['ผี', 'ฝาก', 'ถุง', 'ข้าว', 'สาร', 'ให้', 'ฉัน']} title="Play the whole sentence" />{' '}
           <MnemonicSentence words={[
             { word: 'ผี', ipa: 'pʰǐː', gloss: 'ghost' },
             { word: 'ฝาก', ipa: 'fàːk', gloss: 'Leave / Give' },
@@ -314,6 +318,7 @@ function ByClassView() {
 export function ConsonantsTab() {
   return (
     <div id="tab-consonants">
+      <ByClassView />
       <a
         className={styles.videoBookmark}
         href="https://www.youtube.com/watch?v=pxLHURprYuI"
@@ -326,7 +331,6 @@ export function ConsonantsTab() {
         </span>
         <span className={styles.videoArrow} aria-hidden>↗</span>
       </a>
-      <ByClassView />
     </div>
   );
 }
