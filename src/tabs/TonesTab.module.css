@@ -323,3 +323,32 @@
   font-size: 1.05rem;
   white-space: nowrap;
 }
+
+/* Vowel x tone matrix. `table-layout: fixed` makes the browser split the
+ * width left over by the first column equally between the tone columns,
+ * instead of sizing each one to its widest gloss — which pushed the table
+ * past its container and forced a horizontal scrollbar. Column content has
+ * to be allowed to wrap for this to hold, hence .cellGloss below. */
+.matrixTable {
+  table-layout: fixed;
+}
+
+.matrixTable th:first-child,
+.matrixTable td:first-child {
+  width: 5.5rem;
+}
+
+/* The translation printed under a Thai word. Its cell carries .cueThaiWord,
+ * whose `white-space: nowrap` keeps the Thai syllable itself on one line;
+ * the gloss must opt back out of that or a long translation widens the
+ * whole column. */
+.cellGloss {
+  display: block;
+  margin-top: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #888;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
