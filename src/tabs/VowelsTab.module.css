@@ -1,3 +1,49 @@
+/* Pure-CSS tooltip — fires instantly on hover, no native delay. Same
+ * pattern as ConsonantsTab.module.css / TonesTab.module.css, duplicated
+ * here because CSS Modules scope class names per file — `.label` in one
+ * module's stylesheet doesn't reach a className built from another.
+ * Centered on its word rather than left-aligned: a card side is barely
+ * wider than the word itself, so a left-anchored bubble hangs off toward
+ * the neighbouring column. */
+.label {
+  position: relative;
+}
+
+.label[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 10;
+}
+
+.label[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* Touch has no hover, so there a tap reveals the gloss (the word's click
+ * handler sets data-show for a beat, and plays the audio at the same time).
+ * Gated on `hover: none` so that on a mouse the bubble stays tied to the
+ * pointer being over the word, rather than a click leaving one stuck on
+ * screen after the pointer has moved away. */
+@media (hover: none) {
+  .label[data-tooltip][data-show]::after {
+    opacity: 1;
+  }
+}
+
 .sectionSub {
   font-size: 0.82rem;
   color: #555;
@@ -40,16 +86,10 @@ body.sans .closedForm {
 
 .closedExample {
   font-family: var(--thai-font);
-  font-size: 0.85rem;
-  color: #555;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
   line-height: 1.2;
-}
-
-.closedGloss {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  color: #888;
-  font-size: 0.75rem;
 }
 
 .closedNote {

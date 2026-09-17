@@ -178,7 +178,7 @@ td.initial-sound, td.final-sound { font-family: monospace; font-size: 0.9rem; te
 .vowel-card-side:first-child { border-right: 1px solid #eee; }
 .vowel-form { font-family: var(--thai-font); font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: #1a1a1a; }
 .vowel-card-side .vowel-ipa { font-size: 0.75rem; color: #777; font-family: monospace; display: block; margin-top: 2px; }
-.vowel-card-side .vowel-example { font-family: var(--thai-font); font-size: 0.8rem; color: #555; display: block; margin-top: 2px; }
+.vowel-card-side .vowel-example { font-family: var(--thai-font); font-size: 1rem; font-weight: 600; color: #1f2937; display: block; margin-top: 4px; }
 
 @media print {
   body { padding: 10px; background: #fff; }
