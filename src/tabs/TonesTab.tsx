@@ -1487,7 +1487,8 @@ export function TonesTab() {
   // into one key ('mid+high-dead') since they all land on Low tone — split
   // apart, each of the 4 needs picking out individually. Mai Ek (มาร์กเอก) always
   // counts as "long" here regardless of the syllable's actual vowel length,
-  // matching the column header "Long dead / Mai Ek", which folds both together.
+  // matching the column header "Long + stop / Mai Ek", which folds both
+  // together.
   const deadMatch = (klass: 'mid' | 'high', col: 'short' | 'long') =>
     standardMatch?.key === 'mid+high-dead' &&
     analysis?.klass === klass &&
@@ -1542,6 +1543,13 @@ export function TonesTab() {
           <strong>Dead</strong> = ends abruptly — ends in a stop (/k/, /t/, /p/) or a short vowel
           with no final.
         </p>
+        <p style={{ fontSize: '0.83rem', marginBottom: 14 }}>
+          <strong>Reading a dead syllable:</strong> it takes the tone its class would give with{' '}
+          <MarkGlyph mark="◌่" fontSize="1rem" /> — except low class with a short vowel, which takes
+          the <MarkGlyph mark="◌้" fontSize="1rem" /> tone instead. มาก reads as ม่าก (Falling), ขาด
+          as ข่าด (Low), คะ as ค้ะ (High). Dead syllables carry no tones of their own: each one
+          merged into a marked cell, which is also why Mai Ek has no column of its own above.
+        </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ margin: 0 }}><strong>Unified tone table</strong></p>
@@ -1563,9 +1571,9 @@ export function TonesTab() {
               <tr>
                 <th>Class</th>
                 <th>Live</th>
-                <th>Short dead</th>
+                <th>Short, not live</th>
                 <th>
-                  Long dead<br />
+                  Long + stop<br />
                   <span className={styles.headerMarkRow}>
                     Mai Ek <ToneGlyph name="Low" color="#fff" fontSize="1.2rem" />
                   </span>
@@ -1732,9 +1740,9 @@ export function TonesTab() {
               <tr>
                 <th>Class</th>
                 <th>Normal</th>
-                <th>Short dead</th>
+                <th>Short, not live</th>
                 <th>
-                  Long dead<br />
+                  Long + stop<br />
                   <span className={styles.headerMarkRow}>
                     Mai Ek <MarkGlyph mark="่" color="#fff" title="Mai Ek" fontSize="1.2rem" />
                   </span>

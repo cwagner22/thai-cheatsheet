@@ -62,8 +62,9 @@
 
 .toneTable {
   width: 100%;
-  /* Under this the "Short dead" / "Long dead" headers and the tone cards
-   * below them no longer fit their columns and spill into each other. */
+  /* Under this the "Short, not live" / "Long + stop" headers and the tone
+   * cards below them no longer fit their columns and spill into each
+   * other. */
   min-width: 560px;
   font-size: 0.85rem;
   border-collapse: collapse;
