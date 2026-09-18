@@ -362,7 +362,7 @@ function ToneBoxCell({
   outcomes, matched, highlightCode,
 }: { outcomes: ToneBoxOutcome[]; matched?: boolean; highlightCode?: string | null }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className={styles.boxCellStack}>
       {outcomes.map(({ code, letters, example, exampleGloss }) => (
         <div key={code}>
           {letters && (
@@ -1023,25 +1023,27 @@ function ToneColumnHeader({ tone, spellings }: {
 }) {
   return (
     <th style={{ color: TONE_COLOR[tone], textTransform: 'none', letterSpacing: 0, verticalAlign: 'top' }}>
-      <ToneCard tone={thaiTone(tone)} compact hideExample />
-      <span
-        style={{
-          display: 'block', marginTop: 7, marginBottom: 2, fontSize: '1.05rem',
-          fontWeight: 400, color: '#666',
-        }}
-      >
-        {spellings.map((sp, n) => (
-          // One spelling per line: a tone with two of them (ว + ่ and หว + ้
-          // both spell Falling) reads as two recipes, not one run-on string.
-          <span key={`${sp.base}-${sp.mark ?? 'none'}`} style={{ display: 'block', marginTop: n > 0 ? 2 : 0 }}>
-            <ThaiInline color={sp.color}>{sp.base}</ThaiInline>
-            {/* The mark takes the line's own grey: the card right above it
-                already carries the tone colour, and repeating it here only
-                competes with the class colour on the letter. */}
-            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} fontSize="1.05rem" /></>}
-          </span>
-        ))}
-      </span>
+      <div className={styles.colHeaderStack}>
+        <ToneCard tone={thaiTone(tone)} compact hideExample />
+        <span
+          style={{
+            display: 'block', marginTop: 7, marginBottom: 2, fontSize: '1.05rem',
+            fontWeight: 400, color: '#666',
+          }}
+        >
+          {spellings.map((sp, n) => (
+            // One spelling per line: a tone with two of them (ว + ่ and หว + ้
+            // both spell Falling) reads as two recipes, not one run-on string.
+            <span key={`${sp.base}-${sp.mark ?? 'none'}`} style={{ display: 'block', marginTop: n > 0 ? 2 : 0 }}>
+              <ThaiInline color={sp.color}>{sp.base}</ThaiInline>
+              {/* The mark takes the line's own grey: the card right above it
+                  already carries the tone colour, and repeating it here only
+                  competes with the class colour on the letter. */}
+              {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} fontSize="1.05rem" /></>}
+            </span>
+          ))}
+        </span>
+      </div>
     </th>
   );
 }

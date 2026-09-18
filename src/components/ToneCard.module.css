@@ -9,6 +9,24 @@
    * text-align overrides the left alignment every block element below
    * assumes, most visibly on .engCaption's single line of text. */
   text-align: left;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fill the cell rather than sit at natural height inside it. Sibling cards in
+ * one table row rarely measure the same — a caption or a title that wraps in
+ * one card and not the next changes only that card's height — and a table row
+ * is as tall as its tallest cell either way, so the shorter cards would
+ * otherwise end in a ragged line of white gaps along the bottom of the row.
+ *
+ * Only when the card is what the cell holds. A card that stretches to its
+ * cell's full height while sharing that cell with anything else is painting
+ * over its neighbour, since the cell was sized to fit both; the one place
+ * that happens (a matrix column header, card over its spellings) stacks them
+ * in a flex column of its own and stretches the card there instead. */
+.card:only-child {
+  height: 100%;
 }
 
 /* Fixed to the card's own corner, not the example row's end — so it always
@@ -188,11 +206,16 @@ span.cornerIpa {
 }
 
 /* Right padding reserves the corner badge's own footprint so a long example
- * word wraps before it, rather than running underneath it. */
+ * word wraps before it, rather than running underneath it. `margin-top: auto`
+ * takes up whatever slack the card gained by filling its cell, which keeps
+ * the word on the bottom edge and the chart above it on one line across the
+ * row — the contours are there to be compared against each other, and can't
+ * be if each one floats at its own height. */
 .example {
   font-size: 0.82rem;
   line-height: 1.2;
   padding-right: 34px;
+  margin-top: auto;
 }
 
 .exampleWord {
@@ -234,6 +257,7 @@ span.cornerIpa {
 
 .compact .engCaption {
   font-size: 0.54rem;
+  line-height: 1.25;
 }
 
 .compact .chart {
@@ -255,4 +279,86 @@ span.cornerIpa {
 
 .compact .exampleWord {
   font-size: 1rem;
+}
+
+/* Phone layout. Cards in the tone tables get roughly a quarter of the
+ * viewport each, which is under the width the header needs to keep the Thai
+ * name and its IPA on one line. Left to wrap, only the cards whose name is
+ * long (สามัญ /sǎː.man/, จัตวา /tɕàt.tà.waː/) take the second line, so
+ * sibling cards disagree on where every row below the header starts. Putting
+ * the name on its own line unconditionally costs those cards nothing and
+ * makes the rest match them, rather than reserving blank space in a header
+ * whose two forms would still both exist. */
+@media (max-width: 600px) {
+  .card {
+    padding: 8px 9px 6px;
+  }
+
+  /* The title row's children join .titleBlock's flex flow directly, so the
+   * name can claim a full line and the IPA and caption follow underneath. */
+  .titleRow {
+    display: contents;
+  }
+
+  .titleBlock {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
+  }
+
+  .thaiTitle {
+    flex: 0 0 100%;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .header {
+    min-height: 0;
+    margin-bottom: 4px;
+  }
+
+  /* Out of the header's row and into the card's corner. In the row it takes
+   * a quarter of the width a phone gives the card, and only the cards whose
+   * tone has a mark pay it — which leaves those cards a narrower title block
+   * than their neighbours, and a caption that wraps at that narrower width
+   * and not at the other. It keeps the padding-left and translateY of the
+   * base rule, which are what make a zero-advance combining mark paint inside
+   * its own box rather than to the left of it. */
+  .markBadge {
+    position: absolute;
+    top: 4px;
+    right: 7px;
+  }
+
+  /* A line of its own, like the name above it. Sharing one with the IPA is
+   * what the width allows for the short transcriptions and not the long
+   * ones, and a caption that wraps in some cards and not others moves those
+   * cards' charts down while their neighbours' stay put — the contours are
+   * there to be read against each other across the row. */
+  .engCaption {
+    flex: 0 0 100%;
+    /* And small enough that the longest of them ("Falling tone") holds that
+     * line — a full-width line is still only about a quarter of the
+     * viewport here. */
+    font-size: 0.53rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* Two lines' worth, always. At compact width some of these captions wrap
+   * ("Falling tone", "Mid-high tone") and some don't, and the compact cards
+   * are the ones that can't absorb the difference by filling their cell — the
+   * tone box stacks two per cell, so neither is what the cell holds.
+   * Reserving the taller of the two forms keeps them level instead. */
+  .compact .engCaption {
+    min-height: 2.5em;
+  }
+
+  .chart {
+    margin-bottom: 6px;
+  }
+
+  .svg {
+    height: 58px;
+  }
 }

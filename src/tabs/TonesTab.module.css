@@ -446,3 +446,75 @@
   box-shadow: inset 0 0 0 2px #f59e0b;
   border-radius: 4px;
 }
+
+/* A cell's own height has to be a definite value for the card filling it to
+ * resolve `height: 100%` against — left `auto`, the percentage has nothing to
+ * measure against and the card falls back to its natural height, which is the
+ * ragged-bottom case ToneCard's `.card` rule exists to prevent. 1px rather
+ * than a real height: a table cell never shrinks below its content, so the
+ * row is still as tall as the tallest card in it. */
+.matrixTable td,
+.matrixTable th {
+  height: 1px;
+}
+
+/* A matrix column header holds a tone card over the spellings that produce
+ * that tone. The card carries the taller half and the two halves differ per
+ * column, so without the stack the cards end at five different heights in one
+ * row. Stacking them lets the card take the height the row settled on and the
+ * spellings sit under it, aligned across the row. */
+.colHeaderStack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.colHeaderStack > div {
+  flex: 1;
+}
+
+/* A tone-box cell holds one outcome, or the two that the Mid row's split
+ * Normal cell carries — each a card, optionally under a line naming the
+ * letters it covers. The cards keep their natural height here rather than
+ * filling the cell the way the unified table's do: a row holding a two-card
+ * cell is twice as tall as the single cards beside it, and stretching those
+ * to match would open a card-sized gap inside each one. */
+.boxCellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Phone layout for both scrollable tables. Placed at the end of the file so
+ * these land after .toneTable's and .matrixTable's own min-width rules, which
+ * they override at the same specificity. */
+@media (max-width: 600px) {
+  /* Both tables keep a floor width and still scroll sideways under it, but
+   * the phone-sized cards inside them (see ToneCard.module.css) hold together
+   * in less room than the desktop ones need, so the floor comes down with
+   * them — every 100px off the floor is 100px of swiping removed from
+   * reaching the last column. */
+  .toneTable {
+    min-width: 460px;
+  }
+
+  .matrixTable {
+    min-width: 470px;
+  }
+
+  /* The pinned first column is charged against the same narrow viewport as
+   * the cards it labels, and a vowel is legible in far less than the desktop
+   * width. */
+  .matrixTable th:first-child,
+  .matrixTable td:first-child {
+    width: 2.1rem;
+  }
+
+  /* Horizontal padding on a cell in a table that is already past the viewport
+   * is width spent on nothing the reader needs. */
+  .cueTable td,
+  .cueTable th {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
