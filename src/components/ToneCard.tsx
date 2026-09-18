@@ -1,4 +1,5 @@
 import type { ToneEntry } from '../data/tones';
+import { speakThai } from '../lib/speak';
 import styles from './ToneCard.module.css';
 
 /** Northern Thai's descriptive names run long (e.g. "High rising-falling
@@ -90,8 +91,9 @@ export function ToneCard({
         {!hideExample && (
           <span
             className={`${styles.exampleWord} ${styles.label}`}
-            style={{ cursor: gloss ? 'help' : undefined }}
+            style={{ cursor: 'pointer' }}
             data-tooltip={gloss}
+            onClick={() => speakThai(word)}
           >
             {word}
           </span>

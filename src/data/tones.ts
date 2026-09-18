@@ -145,25 +145,26 @@ export interface ToneBoxRow {
 
 export const NORTHERN_TONE_BOX: ToneBoxRow[] = [
   {
-    cls: 'High',
-    cells: [
-      [{ code: 'A1–2' }],
-      [{ code: 'A1–2', example: 'ผัก', exampleGloss: 'pʰak · vegetable' }],
-      [{ code: 'B1–3' }],
-      [{ code: 'C1–3' }],
-    ],
-  },
-  {
     cls: 'Mid',
-    // Only the Normal cell renders on this row — Dead short/long and Mai Tho
-    // are covered by High's rowSpan above (same tone, same rendered cell),
-    // so there's nothing to show a Mid-specific example for here.
+    // Mid and High share the last three columns. Merged, the table draws one
+    // cell spanning both rows and takes it from the High entry below, which
+    // is where the example word sits; split, each row draws its own — so the
+    // three cells here carry no example of their own.
     cells: [
       [
         { code: 'A1–2', letters: 'ก ต ป', example: 'ตา', exampleGloss: 'taː · eye' },
         { code: 'A3–4', letters: 'ด บ อ', example: 'ดี', exampleGloss: 'diː · good' },
       ],
       [{ code: 'A1–2' }], [{ code: 'B1–3' }], [{ code: 'C1–3' }],
+    ],
+  },
+  {
+    cls: 'High',
+    cells: [
+      [{ code: 'A1–2' }],
+      [{ code: 'A1–2', example: 'ผัก', exampleGloss: 'pʰak · vegetable' }],
+      [{ code: 'B1–3' }],
+      [{ code: 'C1–3' }],
     ],
   },
   {

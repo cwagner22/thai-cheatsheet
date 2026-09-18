@@ -13,7 +13,7 @@ type Lang = 'thai' | 'northern';
 /** Merged-cell ids per table, for the "split/merge all" button — see
  *  splitCells in TonesTab. */
 const THAI_SPLIT_IDS = ['mid-high-dead', 'mid-high-maitho'] as const;
-const NORTHERN_SPLIT_IDS = ['high-mid-deadshort', 'high-mid-deadlong', 'high-mid-maitho'] as const;
+const NORTHERN_SPLIT_IDS = ['mid-high-deadshort', 'mid-high-deadlong', 'mid-high-maitho'] as const;
 
 type ToneName = 'Mid' | 'Low' | 'Falling' | 'High' | 'Rising';
 
@@ -1026,7 +1026,7 @@ function ToneColumnHeader({ tone, spellings }: {
       <ToneCard tone={thaiTone(tone)} compact hideExample />
       <span
         style={{
-          display: 'block', marginTop: 7, marginBottom: 2, fontSize: '0.82rem',
+          display: 'block', marginTop: 7, marginBottom: 2, fontSize: '1.05rem',
           fontWeight: 400, color: '#666',
         }}
       >
@@ -1038,7 +1038,7 @@ function ToneColumnHeader({ tone, spellings }: {
             {/* The mark takes the line's own grey: the card right above it
                 already carries the tone colour, and repeating it here only
                 competes with the class colour on the letter. */}
-            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} fontSize="1.2rem" /></>}
+            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} fontSize="1.05rem" /></>}
           </span>
         ))}
       </span>
@@ -1456,7 +1456,12 @@ export function TonesTab() {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   // Which merged table cells (keyed below, e.g. "mid-high-dead") are
   // currently split apart into their separate class/environment cells.
-  const [splitCells, setSplitCells] = useState<Set<string>>(new Set());
+  // Split to begin with: the classes sharing a cell land on the same tone
+  // but not on the same example word, and the example is the part a reader
+  // checks themselves against.
+  const [splitCells, setSplitCells] = useState<Set<string>>(
+    () => new Set<string>([...THAI_SPLIT_IDS, ...NORTHERN_SPLIT_IDS]),
+  );
   // Split/merge every id in the group together, so the button reflects a
   // single all-or-nothing state rather than each cell's own toggle.
   const toggleAll = (ids: readonly string[]) => setSplitCells(prev => {
@@ -1487,7 +1492,7 @@ export function TonesTab() {
   // into one key ('mid+high-dead') since they all land on Low tone — split
   // apart, each of the 4 needs picking out individually. Mai Ek (มาร์กเอก) always
   // counts as "long" here regardless of the syllable's actual vowel length,
-  // matching the column header "Long + stop / Mai Ek", which folds both
+  // matching the column header "Dead & Long / Mai Ek", which folds both
   // together.
   const deadMatch = (klass: 'mid' | 'high', col: 'short' | 'long') =>
     standardMatch?.key === 'mid+high-dead' &&
@@ -1536,21 +1541,6 @@ export function TonesTab() {
           <strong>falling tone</strong>
         </div>
 
-        <p style={{ marginBottom: 6 }}><strong>Live vs Dead:</strong></p>
-        <p style={{ fontSize: '0.83rem', marginBottom: 14 }}>
-          <strong>Live</strong> = you can hold it — ends in a sonorant (ง น ณ ม ญ ร ล ฬ ย ว)
-          or an open long vowel.<br />
-          <strong>Dead</strong> = ends abruptly — ends in a stop (/k/, /t/, /p/) or a short vowel
-          with no final.
-        </p>
-        <p style={{ fontSize: '0.83rem', marginBottom: 14 }}>
-          <strong>Reading a dead syllable:</strong> it takes the tone its class would give with{' '}
-          <MarkGlyph mark="◌่" fontSize="1rem" /> — except low class with a short vowel, which takes
-          the <MarkGlyph mark="◌้" fontSize="1rem" /> tone instead. มาก reads as ม่าก (Falling), ขาด
-          as ข่าด (Low), คะ as ค้ะ (High). Dead syllables carry no tones of their own: each one
-          merged into a marked cell, which is also why Mai Ek has no column of its own above.
-        </p>
-
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ margin: 0 }}><strong>Unified tone table</strong></p>
           <SplitAllButton
@@ -1570,10 +1560,17 @@ export function TonesTab() {
             <thead>
               <tr>
                 <th>Class</th>
-                <th>Live</th>
-                <th>Short, not live</th>
                 <th>
-                  Long + stop<br />
+                  Live
+                  <span className={styles.headerHint}>
+                    <span className={styles.openVowelTag}>OPEN LONG VOWEL</span>
+                    <br />
+                    or ends with <span className="sonorant-tag">SONORANT</span>
+                  </span>
+                </th>
+                <th>Dead &amp; Short</th>
+                <th>
+                  Dead &amp; Long<br />
                   <span className={styles.headerMarkRow}>
                     Mai Ek <ToneGlyph name="Low" color="#fff" fontSize="1.2rem" />
                   </span>
@@ -1689,8 +1686,19 @@ export function TonesTab() {
         </div>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
-          Table covers ่ and ้ only. Mid class also has ๊ (→ High) and ๋ (→ Rising), not shown
-          here. Mid tone only ever comes unmarked — no mark produces it.
+          Mid class has two more marks of its own:{' '}
+          <MarkGlyph mark="◌๊" color={TONE_COLOR.High} fontSize="1.1rem" /> → High and{' '}
+          <MarkGlyph mark="◌๋" color={TONE_COLOR.Rising} fontSize="1.1rem" /> → Rising.
+        </p>
+        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 8 }}>
+          Mid and high class are one register: the Live column is the only place they part —
+          every other cell gives them the same tone.
+        </p>
+        <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 8 }}>
+          Dead syllables add no tones of their own — every dead cell repeats one already in its
+          row. Mid and high class give Low in both dead columns. Low class is the only one where
+          the two differ: High when the vowel is short (the same cell as Mai Tho), Falling when
+          it is long.
         </p>
 
         <TryIt
@@ -1740,9 +1748,9 @@ export function TonesTab() {
               <tr>
                 <th>Class</th>
                 <th>Normal</th>
-                <th>Short, not live</th>
+                <th>Dead &amp; Short</th>
                 <th>
-                  Long + stop<br />
+                  Dead &amp; Long<br />
                   <span className={styles.headerMarkRow}>
                     Mai Ek <MarkGlyph mark="่" color="#fff" title="Mai Ek" fontSize="1.2rem" />
                   </span>
@@ -1756,47 +1764,49 @@ export function TonesTab() {
             </thead>
             <tbody>
               <tr>
-                <td className={styles.cellHigh}>High</td>
+                <td className={styles.cellMid}>Mid</td>
                 <td>
                   <ToneBoxCell
                     outcomes={NORTHERN_TONE_BOX[0].cells[0]}
-                    matched={northernMatch?.cellKey === 'high-normal'}
-                    highlightCode={northernMatch?.cellKey === 'high-normal' ? northernMatch.code : null}
+                    highlightCode={northernMatch?.cellKey === 'mid-normal' ? northernMatch.code : null}
                   />
                 </td>
                 {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
-                  const id = `high-mid-${col}`;
+                  const id = `mid-high-${col}`;
                   const cellKey = `high+mid-${col}`;
+                  // Merged, the spanning cell is drawn from the High entry —
+                  // that is the row carrying the example word for these three.
                   return splitCells.has(id) ? (
                     <SplitTd key={id}>
                       <ToneBoxCell
                         outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]}
-                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'high'}
+                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'mid'}
                       />
                     </SplitTd>
                   ) : (
                     <SplitTd key={id} rowSpan={2}>
-                      <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]} matched={northernMatch?.cellKey === cellKey} />
+                      <ToneBoxCell outcomes={NORTHERN_TONE_BOX[1].cells[i + 1]} matched={northernMatch?.cellKey === cellKey} />
                     </SplitTd>
                   );
                 })}
               </tr>
               <tr>
-                <td className={styles.cellMid}>Mid</td>
+                <td className={styles.cellHigh}>High</td>
                 <td>
                   <ToneBoxCell
                     outcomes={NORTHERN_TONE_BOX[1].cells[0]}
-                    highlightCode={northernMatch?.cellKey === 'mid-normal' ? northernMatch.code : null}
+                    matched={northernMatch?.cellKey === 'high-normal'}
+                    highlightCode={northernMatch?.cellKey === 'high-normal' ? northernMatch.code : null}
                   />
                 </td>
                 {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
-                  const id = `high-mid-${col}`;
+                  const id = `mid-high-${col}`;
                   const cellKey = `high+mid-${col}`;
                   return splitCells.has(id) && (
                     <SplitTd key={id}>
                       <ToneBoxCell
                         outcomes={NORTHERN_TONE_BOX[1].cells[i + 1]}
-                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'mid'}
+                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'high'}
                       />
                     </SplitTd>
                   );

@@ -194,6 +194,30 @@
  * text-node space between them isn't reliable here (collapses to 0 width
  * against the adjacent inline-block glyph in some layouts) — flex `gap`
  * can't collapse the same way, so it's used instead of a literal space. */
+/* Sits beside the global SONORANT chip as the other way a syllable can be
+ * live. Same metrics as that chip, different hue, so the two read as two
+ * alternatives rather than one category. */
+.openVowelTag {
+  font-size: 0.65rem;
+  background: #cffafe;
+  color: #155e75;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* The qualifying line under a column heading — what counts as that
+ * environment, said once so the heading itself stays a short label. */
+.headerHint {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.75;
+}
+
 .headerMarkRow {
   display: inline-flex;
   align-items: center;
