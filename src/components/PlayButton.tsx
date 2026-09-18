@@ -6,11 +6,17 @@ import styles from './PlayButton.module.css';
  *  making every word individually clickable. Uses an SVG triangle rather
  *  than the ▶ character, which renders with uneven built-in padding across
  *  fonts and never sits centered in a circle. */
-export function PlayButton({ words, title, size = 26 }: { words: string | string[]; title?: string; size?: number }) {
+export function PlayButton({ words, title, size = 26, onWord }: {
+  words: string | string[];
+  title?: string;
+  size?: number;
+  /** Passed straight to speakThai — see there. */
+  onWord?: (index: number | null) => void;
+}) {
   return (
     <button
       type="button"
-      onClick={() => speakThai(words)}
+      onClick={() => speakThai(words, onWord)}
       title={title ?? 'Play audio'}
       aria-label={title ?? 'Play audio'}
       className={styles.button}

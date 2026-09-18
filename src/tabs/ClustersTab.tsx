@@ -1,10 +1,62 @@
+import { useEffect, useRef, useState } from 'react';
 import {
   TRUE_CLUSTERS,
   FALSE_CLUSTERS,
   LEADING_HO,
   LEADING_OR,
 } from '../data/clusters';
+import { speakThai } from '../lib/speak';
 import styles from './ClustersTab.module.css';
+
+/** How long a tap keeps the translation on screen. */
+const REVEAL_MS = 1800;
+
+/** A Thai example: click to hear it, hover for its IPA and translation.
+ *
+ *  The IPA is printed beside the word *and* repeated in the tooltip. Every
+ *  section of this tab is about how a spelling maps to a sound, so the
+ *  transcription has to stay readable at a glance — but it sits dimmed
+ *  next to the Thai so the script leads, and the tooltip is where it can
+ *  be read at full contrast alongside the meaning.
+ *
+ *  A tap both plays the word and flashes the tooltip, because a touch
+ *  screen has no hover to show it with and audio and a label don't collide
+ *  — one gesture can carry both. `data-show` only paints on a device
+ *  without hover (see the stylesheet), so a mouse click doesn't pin a
+ *  bubble that hovering is already showing. */
+function Example({ word, ipa, gloss, className = 'thai-name' }: {
+  word: string;
+  ipa: string;
+  gloss?: string;
+  className?: string;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const hideTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(hideTimer.current), []);
+
+  const play = () => {
+    speakThai(word);
+    setRevealed(true);
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setRevealed(false), REVEAL_MS);
+  };
+
+  return (
+    <>
+      <span
+        className={`${className} ${styles.label}`}
+        style={{ cursor: 'pointer' }}
+        data-tooltip={gloss ? `/${ipa}/ · ${gloss}` : `/${ipa}/`}
+        data-show={revealed ? '' : undefined}
+        onClick={play}
+      >
+        {word}
+      </span>{' '}
+      <span className={styles.ipa}>/{ipa}/</span>
+    </>
+  );
+}
 
 function TrueClusterCell({
   entry,
@@ -17,14 +69,10 @@ function TrueClusterCell({
       <span className="thai-letter">{entry.form}</span>{' '}
       <span className={styles.ipa}>{entry.ipa}</span><br />
       <span className={styles.ex}>
-        {entry.example} <span className={styles.ipa}>/{entry.rom}/</span> ({entry.gloss})
+        <Example word={entry.example} ipa={entry.rom} gloss={entry.gloss} />
       </span>
     </td>
   );
-}
-
-function Thai({ children }: { children: React.ReactNode }) {
-  return <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.1rem' }}>{children}</span>;
 }
 
 function ThaiInline({ children }: { children: React.ReactNode }) {
@@ -97,8 +145,7 @@ export function ClustersTab() {
                 {fc.examples.map((e, i) => (
                   <span key={i}>
                     {i > 0 && ' • '}
-                    <span className="thai-name">{e.word}</span>{' '}
-                    <span className={styles.ipa}>/{e.rom}/</span> ({e.gloss})
+                    <Example word={e.word} ipa={e.rom} gloss={e.gloss} />
                   </span>
                 ))}
                 {fc.altExamples && (
@@ -109,8 +156,7 @@ export function ClustersTab() {
                       {fc.altExamples.map((e, i) => (
                         <span key={i}>
                           {i > 0 && ' • '}
-                          <span className="thai-name">{e.word}</span>{' '}
-                          <span className={styles.ipa}>/{e.rom}/</span> ({e.gloss})
+                          <Example word={e.word} ipa={e.rom} gloss={e.gloss} />
                         </span>
                       ))}
                     </span>
@@ -154,8 +200,7 @@ export function ClustersTab() {
               <td><span className="thai-letter">{row.cluster}</span></td>
               <td className="initial-sound">{row.sound}</td>
               <td>
-                <span className="thai-name">{row.example}</span>{' '}
-                <span className={styles.ipa}>/{row.rom}/</span> ({row.meaning})
+                <Example word={row.example} ipa={row.rom} gloss={row.meaning} />
               </td>
             </tr>
           ))}
@@ -184,8 +229,7 @@ export function ClustersTab() {
                 {row.examples.map((e, i) => (
                   <span key={i}>
                     {i > 0 && ' • '}
-                    <span className="thai-name">{e.word}</span>{' '}
-                    <span className={styles.ipa}>/{e.rom}/</span> ({e.meaning})
+                    <Example word={e.word} ipa={e.rom} gloss={e.meaning} />
                   </span>
                 ))}
               </td>
@@ -206,14 +250,14 @@ export function ClustersTab() {
           on these.
         </p>
         <p style={{ marginTop: 6 }}>
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>ขนม</span> → /kʰà.nǒm/ (snack) &nbsp;•&nbsp;
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>สนุก</span> → /sà.nùk/ (fun) &nbsp;•&nbsp;
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>แขนง</span> → /kʰà.nɛ̌ːŋ/ (branch)
+          <Example word="ขนม" ipa="kʰà.nǒm" gloss="snack" className={styles.exampleWord} /> &nbsp;•&nbsp;
+          <Example word="สนุก" ipa="sà.nùk" gloss="fun" className={styles.exampleWord} /> &nbsp;•&nbsp;
+          <Example word="แขนง" ipa="kʰà.nɛ̌ːŋ" gloss="branch" className={styles.exampleWord} />
         </p>
         <p style={{ marginTop: 6 }}>
           Some clusters produce <strong>/aː/</strong> (long) instead:{' '}
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>มรกต</span> → /mɔː.rá.kòt/ (emerald) &nbsp;•&nbsp;
-          <span className="thai-name" style={{ fontSize: '1.1rem' }}>ทราบ</span> → handled as false cluster above
+          <Example word="มรกต" ipa="mɔː.rá.kòt" gloss="emerald" className={styles.exampleWord} /> &nbsp;•&nbsp;
+          <span className={styles.exampleWord}>ทราบ</span> → handled as false cluster above
         </p>
       </div>
 
@@ -225,27 +269,26 @@ export function ClustersTab() {
           <strong>If 2nd consonant is a sonorant</strong> (ง น ม ย ร ล ว):<br />
           → Tone is determined by the <strong>1st consonant's class</strong><br />
           <span className={styles.ex}>
-            ปลูก /plùːk/ — low tone from mid-class ป &nbsp;•&nbsp; สนุก /sà.nùk/ — low tone from high-class ส
+            <Example word="ปลูก" ipa="plùːk" gloss="to plant" /> — low tone from mid-class ป
+            &nbsp;•&nbsp; <Example word="สนุก" ipa="sà.nùk" gloss="fun" /> — low tone from high-class ส
           </span><br /><br />
           <strong>If 2nd consonant is NOT a sonorant:</strong><br />
           → Tone is determined by the <strong>2nd consonant's class</strong><br />
           <span className={styles.ex}>
-            แสดง /sà.dɛːŋ/ — mid tone from mid-class ด &nbsp;•&nbsp; เฉพาะ /tɕʰà.pʰɔ́ʔ/ — low tone from low-class พ
+            <Example word="แสดง" ipa="sà.dɛːŋ" gloss="to show, perform" /> — mid tone from mid-class ด
+            &nbsp;•&nbsp; <Example word="เฉพาะ" ipa="tɕʰà.pʰɔ́ʔ" gloss="specific, only" /> — low tone from low-class พ
           </span>
         </div>
 
         <p style={{ marginBottom: 10 }}><strong>Orthography:</strong></p>
         <div className={styles.ruleBox}>
           <strong>Preposed vowels</strong> go before the <em>entire</em> cluster:{' '}
-          <span className="thai-name" style={{ fontSize: '1.05rem' }}>โปรด</span>{' '}
-          <span className={styles.ipa}>/pròːt/</span> (please) — not ป
+          <Example word="โปรด" ipa="pròːt" gloss="please" className={styles.exampleWord} /> — not ป
           <span style={{ color: 'red' }}>โ</span>รด<br />
           <strong>Tone marks &amp; superscript vowels</strong> sit above the <em>2nd</em> consonant:{' '}
-          <span className="thai-name" style={{ fontSize: '1.05rem' }}>กล้อง</span>{' '}
-          <span className={styles.ipa}>/klɔ̂ːŋ/</span> (camera — mark on ล not ก)<br />
+          <Example word="กล้อง" ipa="klɔ̂ːŋ" gloss="camera" className={styles.exampleWord} /> — mark on ล not ก<br />
           <strong>Subscript vowels</strong> go under the <em>2nd</em> consonant:{' '}
-          <span className="thai-name" style={{ fontSize: '1.05rem' }}>พริ้ม</span>{' '}
-          <span className={styles.ipa}>/pʰrím/</span> (lovely — อิ under ร not พ)
+          <Example word="พริ้ม" ipa="pʰrím" gloss="lovely" className={styles.exampleWord} /> — อิ under ร not พ
         </div>
       </div>
 
@@ -264,8 +307,10 @@ export function ClustersTab() {
           to preserve etymology while trimming pronunciation.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สัตว์</Thai> /sàt/ (animal) · <Thai>จันทร์</Thai> /tɕan/ (Monday) ·{' '}
-          <Thai>เสาร์</Thai> /sǎw/ (Saturday) · <Thai>ศุกร์</Thai> /sùk/ (Friday)
+          <Example word="สัตว์" ipa="sàt" gloss="animal" className={styles.exampleWord} /> ·{' '}
+          <Example word="จันทร์" ipa="tɕan" gloss="Monday" className={styles.exampleWord} /> ·{' '}
+          <Example word="เสาร์" ipa="sǎw" gloss="Saturday" className={styles.exampleWord} /> ·{' '}
+          <Example word="ศุกร์" ipa="sùk" gloss="Friday" className={styles.exampleWord} />
         </div>
         <p className={styles.quirkHint}>
           <strong>Rule of thumb:</strong> the mark cancels the letter it sits on <em>and</em> often
@@ -283,8 +328,9 @@ export function ClustersTab() {
           <em>starts</em> with a vowel sound, <strong>อ</strong> sits silently as the carrier.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>อาหาร</Thai> /ʔaː.hǎːn/ (food) · <Thai>เอา</Thai> /ʔaw/ (take) ·{' '}
-          <Thai>อิน</Thai> /ʔin/ (slang: feel it)
+          <Example word="อาหาร" ipa="ʔaː.hǎːn" gloss="food" className={styles.exampleWord} /> ·{' '}
+          <Example word="เอา" ipa="ʔaw" gloss="take" className={styles.exampleWord} /> ·{' '}
+          <Example word="อิน" ipa="ʔin" gloss="slang: feel it" className={styles.exampleWord} />
         </div>
         <p className={styles.quirkHint}>
           Carrier อ still counts as mid-class for tone rules — that's why อา, อิ, อุ, เอ default
@@ -302,8 +348,10 @@ export function ClustersTab() {
           an unwritten short <strong>/o/</strong> fills the gap.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>นก</Thai> /nók/ (bird) · <Thai>คน</Thai> /kʰon/ (person) ·{' '}
-          <Thai>ผม</Thai> /pʰǒm/ (I, masc.) · <Thai>จบ</Thai> /tɕòp/ (finish)
+          <Example word="นก" ipa="nók" gloss="bird" className={styles.exampleWord} /> ·{' '}
+          <Example word="คน" ipa="kʰon" gloss="person" className={styles.exampleWord} /> ·{' '}
+          <Example word="ผม" ipa="pʰǒm" gloss="I, masc." className={styles.exampleWord} /> ·{' '}
+          <Example word="จบ" ipa="tɕòp" gloss="finish" className={styles.exampleWord} />
         </div>
         <p className={styles.quirkHint}>
           <strong>Tell them apart from /a/ clusters:</strong> two syllables pronounced = /a/
@@ -321,8 +369,10 @@ export function ClustersTab() {
           thanthakhat required. This is a native convention, not a Sanskrit quirk.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>สมัคร</Thai> /sà.màk/ (apply) · <Thai>บัตร</Thai> /bàt/ (card) ·{' '}
-          <Thai>จักร</Thai> /tɕàk/ (wheel) · <Thai>มิตร</Thai> /mít/ (friend)
+          <Example word="สมัคร" ipa="sà.màk" gloss="apply" className={styles.exampleWord} /> ·{' '}
+          <Example word="บัตร" ipa="bàt" gloss="card" className={styles.exampleWord} /> ·{' '}
+          <Example word="จักร" ipa="tɕàk" gloss="wheel" className={styles.exampleWord} /> ·{' '}
+          <Example word="มิตร" ipa="mít" gloss="friend" className={styles.exampleWord} />
         </div>
       </div>
 
@@ -338,9 +388,9 @@ export function ClustersTab() {
           the whole word.
         </p>
         <div className={styles.quirkExamples}>
-          <Thai>ขนม</Thai> /kʰà.nǒm/ — ข (high) makes นม rise, even though ม alone is low class<br />
-          <Thai>ตลาด</Thai> /tà.làːt/ — ต (mid) makes ลาด follow mid-class rules → low tone (dead)<br />
-          <Thai>สนุก</Thai> /sà.nùk/ — ส (high) → นุก gets low tone (dead-short, high class rule)
+          <Example word="ขนม" ipa="kʰà.nǒm" gloss="snack" className={styles.exampleWord} /> — ข (high) makes นม rise, even though ม alone is low class<br />
+          <Example word="ตลาด" ipa="tà.làːt" gloss="market" className={styles.exampleWord} /> — ต (mid) makes ลาด follow mid-class rules → low tone (dead)<br />
+          <Example word="สนุก" ipa="sà.nùk" gloss="fun" className={styles.exampleWord} /> — ส (high) → นุก gets low tone (dead-short, high class rule)
         </div>
         <p className={styles.quirkHint}>
           This is the #1 reason the "consonant class + live/dead" rule can seem to break on longer words.

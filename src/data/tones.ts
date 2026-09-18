@@ -126,9 +126,10 @@ export interface ToneBoxOutcome {
 
 /** One row of the Northern Thai tone box: which NORTHERN_TONES.name results
  *  for this consonant class in each syllable environment. Column order
- *  matches the Standard Thai table above (Normal · Dead short · Dead long ·
- *  Mai Tho). Mai Ek isn't its own column — it always lands on the same tone
- *  as unmarked Dead long, for every class, so it folds into that column
+ *  matches the Standard Thai table above (Normal · Short dead · Long dead ·
+ *  Mai Tho). Mai Ek isn't its own column — it always
+ *  lands on the same tone as an unmarked dead syllable with a long vowel,
+ *  for every class, so it folds into that column
  *  (same device the Standard Thai table uses above).
  *
  *  Modern Thai's 9 mid-class letters split into (at least) two groups here:

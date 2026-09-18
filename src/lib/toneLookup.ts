@@ -51,8 +51,8 @@ export interface NorthernCellMatch {
 const KO_TO_PO = new Set(['ก', 'ต', 'ป']);
 const DO_BO_O = new Set(['ด', 'บ', 'อ']);
 
-/** Northern Thai: same idea, but the environment columns are Normal/Dead
- *  short/Dead long(+Mai Ek)/Mai Tho, and Mid class further splits by the
+/** Northern Thai: same idea, but the environment columns are Normal / Short
+ *  dead / Long dead (+Mai Ek) / Mai Tho, and Mid class further splits by the
  *  specific letter for the Normal column only. */
 export function northernCellMatch(a: SyllableAnalysis): NorthernCellMatch {
   const { klass, mark, isLive, vowelLength, initial } = a;

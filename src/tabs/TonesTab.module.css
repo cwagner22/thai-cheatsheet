@@ -7,13 +7,21 @@
 }
 
 .label[data-tooltip]::after {
-  content: attr(data-tooltip);
+  /* Empty and unpadded until hovered. The text belongs on the hover rule,
+   * not here: an absolutely positioned box still counts towards the
+   * scrollable overflow of the page even at `opacity: 0`, so a tooltip
+   * carrying its `nowrap` line of text at all times widens the document by
+   * however far the longest one reaches past the right edge — which on a
+   * phone is a page that scrolls sideways over empty space. Collapsed to
+   * 0x0 it contributes nothing, and swapping both properties on hover
+   * still leaves opacity free to fade. */
+  content: '';
+  padding: 0;
   position: absolute;
   bottom: calc(100% + 4px);
   left: 0;
   background: #1f2937;
   color: #fff;
-  padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -26,6 +34,8 @@
 }
 
 .label[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  padding: 4px 8px;
   opacity: 1;
 }
 
@@ -38,8 +48,23 @@
   line-height: 1.8;
 }
 
+/* Horizontal-scroll surface for the tables below, which have a floor width
+ * they can't be squeezed under without their cells overlapping. Scrolling
+ * one sideways beats reflowing it: the columns are a chant read left to
+ * right, so a table that wrapped or shrank its cells would stop being
+ * readable as one. The scroll box clips vertically as well as
+ * horizontally, so it only ever wraps a table whose hover tooltips open
+ * over a header row rather than over the page above it. */
+.tableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .toneTable {
   width: 100%;
+  /* Under this the "Short dead" / "Long dead" headers and the tone cards
+   * below them no longer fit their columns and spill into each other. */
+  min-width: 560px;
   font-size: 0.85rem;
   border-collapse: collapse;
   text-align: center;
@@ -49,6 +74,40 @@
   overflow: visible;
   /* Fixed layout — all data columns equal width regardless of content. */
   table-layout: fixed;
+}
+
+/* The row label has to stay put while the wrapper is scrolled sideways — a
+ * cell in either table means nothing without the class or the vowel that
+ * names its row. The pinned cells need an opaque background of their own,
+ * or the columns sliding under them show through, and the two offsets
+ * below patch what `border-collapse: collapse` then gets wrong: collapsed
+ * borders are painted by the table and scroll away with it, so the pinned
+ * column is left with no edge of its own on either side. */
+.toneTable thead th:first-child,
+.toneTable tbody td:first-child,
+.matrixTable thead th:first-child,
+.matrixTable tbody td:first-child {
+  position: sticky;
+  /* -1px, not 0, so the cell also covers the strip its vanished outer
+   * border used to occupy — at 0, a card scrolling under it shows through
+   * there as a thin coloured line. The wrapper clips the extra pixel. */
+  left: -1px;
+  z-index: 1;
+}
+
+.toneTable thead th:first-child {
+  background: #555;
+  box-shadow: inset -1px 0 0 #444;
+}
+
+.toneTable tbody td:first-child {
+  background: #fff;
+  box-shadow: inset -1px 0 0 #bbb;
+}
+
+.matrixTable thead th:first-child,
+.matrixTable tbody td:first-child {
+  background: #fff;
 }
 
 .midOnlyCell {
@@ -210,15 +269,6 @@
   margin-bottom: 18px;
 }
 
-.drillBox {
-  background: #f9fafb;
-  border-left: 3px solid #9ca3af;
-  padding: 10px 14px;
-  margin-bottom: 20px;
-  font-size: 0.82rem;
-  color: #555;
-}
-
 /* Same bookmark-link treatment as ConsonantsTab's video links. */
 .videoBookmark {
   display: flex;
@@ -260,12 +310,11 @@
   font-size: 0.9rem;
 }
 
-.practiceBox {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* The practice sentence sits inside the tone-rules card, below the tone
+ * cards it drills — a rule stands in for the card edge it no longer has. */
+.practiceBlock {
+  border-top: 1px solid #eee;
+  padding-top: 16px;
 }
 
 .practiceSentence {
@@ -331,11 +380,22 @@
  * to be allowed to wrap for this to hold, hence .cellGloss below. */
 .matrixTable {
   table-layout: fixed;
+  /* The global `table` rule clips overflow to round the table's corners.
+   * That clip is also the scrollport a `position: sticky` cell measures
+   * itself against, and it never scrolls — so this table's pinned first
+   * column silently behaves as a static one until the clip is lifted. */
+  overflow: visible;
+  /* Enough for the first column plus five tone columns wide enough to hold
+   * a tone card header; narrower and `table-layout: fixed` keeps handing
+   * every column an equal share that the cards then overflow. */
+  min-width: 560px;
 }
 
 .matrixTable th:first-child,
 .matrixTable td:first-child {
-  width: 5.5rem;
+  width: 2.75rem;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* The translation printed under a Thai word. Its cell carries .cueThaiWord,
@@ -351,4 +411,13 @@
   color: #888;
   white-space: normal;
   overflow-wrap: break-word;
+}
+
+/* The cell sounding right now, while a row plays through its play button.
+ * An inset ring rather than a border: a real border would shift the row's
+ * text by a pixel as the highlight steps from cell to cell. */
+.playingCell {
+  background: #fffbeb;
+  box-shadow: inset 0 0 0 2px #f59e0b;
+  border-radius: 4px;
 }

@@ -42,169 +42,6 @@ const TONE_CUE: Record<ToneName, { cue: string; comment: string }> = {
   Rising: { cue: 'Well — asking a question / surprised', comment: '—' },
 };
 
-/** `gloss` is left off when the spelling isn't an established word — the
- *  cell still shows the letter + mark combination, just with no
- *  translation under it, rather than swapping in a different real word
- *  that happens to sound similar (that hides which exact combination was
- *  actually being demonstrated). */
-type MidWord = { word: string; ipa: string; gloss?: string };
-
-/** One word family row: the same letter+vowel base carried through every
- *  mark this consonant's class takes (see CLASS_FAMILY_COLUMNS below for
- *  which marks that is, and in what order) — never a different word. */
-type FamilyRow = { letter: string; none?: MidWord; ek?: MidWord; tho?: MidWord; tri?: MidWord; chattawa?: MidWord };
-
-/** One row per mid-class letter (ก จ ฎ ฏ ด ต บ ป อ — all 9, same order as
- *  the Consonants tab), same letter+vowel base carried through every mark,
- *  unlike the Chant loop above's fixed /aː/ syllable, so the vowel differs
- *  row to row. Not every combination is an established word — ๊/๋
- *  especially are largely restricted to loanwords, onomatopoeia, and slang
- *  in everyday Thai, and ฎ/ฏ barely occur as a syllable's initial at all
- *  outside a couple of Pali/Sanskrit loanwords — so `gloss` is left off
- *  those rather than guessed at or swapped for a different real word. */
-const MID_WORD_FAMILIES: FamilyRow[] = [
-  {
-    letter: 'ก',
-    none: { word: 'ไก', ipa: 'kaj', gloss: 'gun trigger' },
-    ek: { word: 'ไก่', ipa: 'kàj', gloss: 'chicken' },
-    tho: { word: 'ไก้', ipa: 'kâj' },
-    tri: { word: 'ไก๊', ipa: 'káj' },
-    chattawa: { word: 'ไก๋', ipa: 'kǎj', gloss: 'acts coy (ทำไก๋)' },
-  },
-  {
-    letter: 'จ',
-    none: { word: 'จำ', ipa: 'tɕam', gloss: 'to remember' },
-    ek: { word: 'จ่ำ', ipa: 'tɕàm' },
-    tho: { word: 'จ้ำ', ipa: 'tɕâm', gloss: 'blotch, bruise mark' },
-    tri: { word: 'จ๊ำ', ipa: 'tɕám' },
-    chattawa: { word: 'จ๋ำ', ipa: 'tɕǎm' },
-  },
-  {
-    letter: 'ฎ',
-    none: { word: 'ฎี', ipa: 'diː', gloss: 'petition (ฎีกา)' },
-    ek: { word: 'ฎี่', ipa: 'dìː' },
-    tho: { word: 'ฎี้', ipa: 'dîː' },
-    tri: { word: 'ฎี๊', ipa: 'díː' },
-    chattawa: { word: 'ฎี๋', ipa: 'dǐː' },
-  },
-  {
-    letter: 'ฏ',
-    none: { word: 'ฏา', ipa: 'taː' },
-    ek: { word: 'ฏ่า', ipa: 'tàː' },
-    tho: { word: 'ฏ้า', ipa: 'tâː' },
-    tri: { word: 'ฏ๊า', ipa: 'táː' },
-    chattawa: { word: 'ฏ๋า', ipa: 'tǎː' },
-  },
-  {
-    letter: 'ด',
-    none: { word: 'ดี', ipa: 'diː', gloss: 'good' },
-    ek: { word: 'ดี่', ipa: 'dìː' },
-    tho: { word: 'ดี้', ipa: 'dîː', gloss: "butch's partner (slang)" },
-    tri: { word: 'ดี๊', ipa: 'díː', gloss: 'thrilled' },
-    chattawa: { word: 'ดี๋', ipa: 'dǐː' },
-  },
-  {
-    letter: 'ต',
-    none: { word: 'ตา', ipa: 'taː', gloss: 'eye; grandpa' },
-    ek: { word: 'ต่า', ipa: 'tàː' },
-    tho: { word: 'ต้า', ipa: 'tâː', gloss: 'big (Chinese loanword)' },
-    tri: { word: 'ต๊า', ipa: 'táː' },
-    chattawa: { word: 'ต๋า', ipa: 'tǎː' },
-  },
-  {
-    letter: 'บ',
-    none: { word: 'เบา', ipa: 'baw', gloss: 'light, soft' },
-    ek: { word: 'เบ่า', ipa: 'bàw' },
-    tho: { word: 'เบ้า', ipa: 'bâw', gloss: 'socket, mold' },
-    tri: { word: 'เบ๊า', ipa: 'báw' },
-    chattawa: { word: 'เบ๋า', ipa: 'bǎw' },
-  },
-  {
-    letter: 'ป',
-    none: { word: 'ปู', ipa: 'puː', gloss: 'crab; to lay flat' },
-    ek: { word: 'ปู่', ipa: 'pùː', gloss: 'grandpa' },
-    tho: { word: 'ปู้', ipa: 'pûː', gloss: 'to wreck' },
-    tri: { word: 'ปู๊', ipa: 'púː', gloss: 'horn sound' },
-    chattawa: { word: 'ปู๋', ipa: 'pǔː', gloss: 'vulgar slang, female genitals' },
-  },
-  {
-    letter: 'อ',
-    none: { word: 'อา', ipa: 'ʔaː', gloss: "aunt/uncle (dad's sibling)" },
-    ek: { word: 'อ่า', ipa: 'ʔàː' },
-    tho: { word: 'อ้า', ipa: 'ʔâː', gloss: 'to open wide' },
-    tri: { word: 'อ๊า', ipa: 'ʔáː' },
-    chattawa: { word: 'อ๋า', ipa: 'ʔǎː' },
-  },
-];
-
-/** Ten high-class word families, same letter+vowel base carried through
- *  every mark. A few cells are dialect/onomatopoeia words rather than
- *  everyday vocabulary — noted in their own gloss — and a couple have no
- *  established word at all, left without a gloss rather than swapped for
- *  a different real word that breaks the row's own base spelling. */
-const HIGH_WORD_FAMILIES: FamilyRow[] = [
-  {
-    letter: 'ข',
-    none: { word: 'ขา', ipa: 'kʰǎː', gloss: 'leg' },
-    ek: { word: 'ข่า', ipa: 'kʰàː', gloss: 'galangal (herb)' },
-    tho: { word: 'ข้า', ipa: 'kʰâː', gloss: 'I, servant (archaic)' },
-  },
-  {
-    letter: 'ผ',
-    none: { word: 'ผา', ipa: 'pʰǎː', gloss: 'cliff' },
-    ek: { word: 'ผ่า', ipa: 'pʰàː', gloss: 'to split; surgery' },
-    tho: { word: 'ผ้า', ipa: 'pʰâː', gloss: 'cloth' },
-  },
-  {
-    letter: 'ส',
-    none: { word: 'สู', ipa: 'sǔː', gloss: 'you (archaic); breeze' },
-    ek: { word: 'สู่', ipa: 'sùː', gloss: 'towards' },
-    tho: { word: 'สู้', ipa: 'sûː', gloss: 'to fight' },
-  },
-  {
-    letter: 'ฉ',
-    none: { word: 'ฉี', ipa: 'tɕʰǐː', gloss: 'sound (dialect)' },
-    ek: { word: 'ฉี่', ipa: 'tɕʰìː', gloss: 'pee' },
-    tho: { word: 'ฉี้', ipa: 'tɕʰîː', gloss: 'exclamation (slang)' },
-  },
-  {
-    letter: 'ห',
-    none: { word: 'หู', ipa: 'hǔː', gloss: 'ear' },
-    ek: { word: 'หู่', ipa: 'hùː', gloss: 'low hum (dialect)' },
-    tho: { word: 'หู้', ipa: 'hûː', gloss: 'tofu (เต้าหู้)' },
-  },
-  {
-    letter: 'ถ',
-    none: { word: 'ถำ', ipa: 'tʰǎm' },
-    ek: { word: 'ถ่ำ', ipa: 'tʰàm', gloss: 'sound (dialect)' },
-    tho: { word: 'ถ้ำ', ipa: 'tʰâm', gloss: 'cave' },
-  },
-  {
-    letter: 'ห',
-    none: { word: 'ไห', ipa: 'hǎj', gloss: 'clay jar' },
-    ek: { word: 'ไห่', ipa: 'hàj' },
-    tho: { word: 'ไห้', ipa: 'hâj', gloss: 'cries (ร้องไห้)' },
-  },
-  {
-    letter: 'ข',
-    none: { word: 'ไข', ipa: 'kʰǎj', gloss: 'fat; to unlock' },
-    ek: { word: 'ไข่', ipa: 'kʰàj', gloss: 'egg' },
-    tho: { word: 'ไข้', ipa: 'kʰâj', gloss: 'fever, sick' },
-  },
-  {
-    letter: 'ข',
-    none: { word: 'เขา', ipa: 'kʰǎw', gloss: 'he/she; mountain' },
-    ek: { word: 'เข่า', ipa: 'kʰàw', gloss: 'knee' },
-    tho: { word: 'เข้า', ipa: 'kʰâw', gloss: 'to enter' },
-  },
-  {
-    letter: 'ฝ',
-    none: { word: 'ฝา', ipa: 'faː', gloss: 'lid, cover' },
-    ek: { word: 'ฝ่า', ipa: 'fàː', gloss: 'palm (of the hand)' },
-    tho: { word: 'ฝ้า', ipa: 'fâː', gloss: 'melasma, skin blotch' },
-  },
-];
-
 /** Five compound words combining two of the syllables above — real
  *  connected speech built from this drill's own vocabulary. */
 const HIGH_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
@@ -213,83 +50,6 @@ const HIGH_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
   { word: 'เข้าถ้ำ', ipa: 'kʰâw.tʰâm', gloss: 'to enter a cave' },
   { word: 'สู้เขา', ipa: 'sûː.kʰǎw', gloss: 'fight them! / hang in there!' },
   { word: 'ผ่าเข่า', ipa: 'pʰàː.kʰàw', gloss: 'knee surgery' },
-];
-
-/** Eleven low-class word families — one real word per mark. Low class is
- *  where Thai's tone marks stop matching their own names: ่ (mai ek, "the
- *  first mark") produces Falling here, and ้ (mai tho, "the second mark")
- *  produces High — the reverse pairing from mid/high class, where ่→Low
- *  and ้→Falling. */
-const LOW_WORD_FAMILIES: FamilyRow[] = [
-  {
-    letter: 'ค',
-    none: { word: 'คา', ipa: 'kʰaː', gloss: 'to be lodged, stuck; trade' },
-    ek: { word: 'ค่า', ipa: 'kʰâː', gloss: 'value, cost, price' },
-    tho: { word: 'ค้า', ipa: 'kʰáː', gloss: 'to trade, do business' },
-  },
-  {
-    letter: 'ท',
-    none: { word: 'ที', ipa: 'tʰiː', gloss: 'time, turn (อีกที)' },
-    ek: { word: 'ที่', ipa: 'tʰîː', gloss: 'place, at; order (1st, 2nd)' },
-    tho: { word: 'ที้', ipa: 'tʰíː', gloss: 'slang, sound effect, nickname' },
-  },
-  {
-    letter: 'ซ',
-    none: { word: 'ซือ', ipa: 'sɯː', gloss: 'straightforward, honest' },
-    ek: { word: 'ซื่อ', ipa: 'sɯ̂ː', gloss: 'honest, naive, direct' },
-    tho: { word: 'ซื้อ', ipa: 'sɯ́ː', gloss: 'to buy' },
-  },
-  {
-    letter: 'ร',
-    none: { word: 'รู', ipa: 'ruː', gloss: 'hole' },
-    ek: { word: 'รู่', ipa: 'rûː', gloss: 'drooping, bent (ลู่/รู่)' },
-    tho: { word: 'รู้', ipa: 'rúː', gloss: 'to know' },
-  },
-  {
-    letter: 'ม',
-    none: { word: 'แม', ipa: 'mɛː', gloss: 'sound, particle (regional)' },
-    ek: { word: 'แม่', ipa: 'mɛ̂ː', gloss: 'mother' },
-    tho: { word: 'แม้', ipa: 'mɛ́ː', gloss: 'even if, although' },
-  },
-  {
-    letter: 'ง',
-    none: { word: 'โง', ipa: 'ŋoː', gloss: 'curved up, bent upward' },
-    ek: { word: 'โง่', ipa: 'ŋôː', gloss: 'stupid, foolish' },
-    tho: { word: 'โง้', ipa: 'ŋóː', gloss: 'sharply curved, exaggerated arch' },
-  },
-  {
-    letter: 'ช',
-    none: { word: 'ชัย', ipa: 'tɕʰaj', gloss: 'victory, triumph' },
-    ek: { word: 'ใช่', ipa: 'tɕʰâj', gloss: 'yes, correct' },
-    tho: { word: 'ใช้', ipa: 'tɕʰáj', gloss: 'to use, spend' },
-  },
-  {
-    letter: 'ล',
-    none: { word: 'ลำ', ipa: 'lam', gloss: 'trunk, body; boat/plane classifier' },
-    ek: { word: 'ล่ำ', ipa: 'lâm', gloss: 'muscular, stocky (ล่ำบึ้ก)' },
-    tho: { word: 'ล้ำ', ipa: 'lám', gloss: 'advanced, protruding (ล้ำหน้า)' },
-  },
-  {
-    letter: 'ว',
-    none: { word: 'ไว', ipa: 'waj', gloss: 'fast, quick' },
-    // ห-นำ, not plain ว+ok — the wai greeting has no everyday "ไว่" spelling
-    // of its own, so Thai reaches this Falling tone through a silent ห
-    // reassigning ว to high-class rules instead (high + ้ → Falling too).
-    ek: { word: 'ไหว้', ipa: 'wâj', gloss: 'the wai (gesture of respect)' },
-    tho: { word: 'ไว้', ipa: 'wáj', gloss: 'to keep, store, keep for later' },
-  },
-  {
-    letter: 'น',
-    none: { word: 'เนา', ipa: 'naw', gloss: 'to baste (sewing); a brief stay' },
-    ek: { word: 'เน่า', ipa: 'nâw', gloss: 'rotten, spoiled, foul' },
-    tho: { word: 'เน้า', ipa: 'náw', gloss: 'dialect, sound particle' },
-  },
-  {
-    letter: 'พ',
-    none: { word: 'พอ', ipa: 'pʰɔː', gloss: 'enough, sufficient' },
-    ek: { word: 'พ่อ', ipa: 'pʰɔ̂ː', gloss: 'father' },
-    tho: { word: 'พ้อ', ipa: 'pʰɔ́ː', gloss: 'to complain, reproach (ตัดพ้อ)' },
-  },
 ];
 
 /** Three compound words combining two of the syllables above. */
@@ -335,44 +95,11 @@ const CLASS_LABEL: Record<ConsonantClass, string> = {
   low: 'Low class',
 };
 
-/** One practice video per class, for the Chant loop's class tabs. */
+/** One practice video per class, for the matrix's class tabs. */
 const CLASS_VIDEO: Record<ConsonantClass, { href: string; label: string }> = {
   mid: { href: 'https://www.youtube.com/watch?v=LpU5Pngmq9c', label: 'ฝึกผันเสียงอักษรกลาง ครูนกเล็ก — Mid class tone drill' },
   high: { href: 'https://www.youtube.com/watch?v=fniDdFIKMvA', label: 'ฝึกผันเสียงอักษรสูง ครูนกเล็ก — High class tone drill' },
   low: { href: 'https://www.youtube.com/watch?v=t4iClxXLuoU', label: 'ฝึกผันเสียงวรรณยุกต์ไทย อักษรต่ำ ครูนกเล็ก — Low class tone drill' },
-};
-
-/** Which marks a class's word-family table has a column for, the tone each
- *  lands on, and the order to show them in. Always unmarked first, then ่
- *  ้ ๊ ๋ — same mark-application order as the unified tone table above,
- *  regardless of which tone each mark happens to land on for this class.
- *  `glyph` is omitted for the unmarked column, which renders "No mark"
- *  instead of a MarkGlyph. */
-type FamilyMark = 'none' | 'ek' | 'tho' | 'tri' | 'chattawa';
-const CLASS_FAMILY_COLUMNS: Record<ConsonantClass, { dataKey: FamilyMark; tone: ToneName; glyph?: string }[]> = {
-  mid: [
-    { dataKey: 'none', tone: 'Mid' },
-    { dataKey: 'ek', tone: 'Low', glyph: '่' },
-    { dataKey: 'tho', tone: 'Falling', glyph: '้' },
-    { dataKey: 'tri', tone: 'High', glyph: '๊' },
-    { dataKey: 'chattawa', tone: 'Rising', glyph: '๋' },
-  ],
-  high: [
-    { dataKey: 'none', tone: 'Rising' },
-    { dataKey: 'ek', tone: 'Low', glyph: '่' },
-    { dataKey: 'tho', tone: 'Falling', glyph: '้' },
-  ],
-  low: [
-    { dataKey: 'none', tone: 'Mid' },
-    { dataKey: 'ek', tone: 'Falling', glyph: '่' },
-    { dataKey: 'tho', tone: 'High', glyph: '้' },
-  ],
-};
-
-const CLASS_FAMILIES: Record<ConsonantClass, FamilyRow[]> = {
-  mid: MID_WORD_FAMILIES,
-  high: HIGH_WORD_FAMILIES,
-  low: LOW_WORD_FAMILIES,
 };
 
 /** Six mid-class compound words, both syllables mid-class initials. */
@@ -567,15 +294,15 @@ function ClassVideoLink({ href, label, color }: { href: string; label: string; c
 
 /** Which tone marks are orthographically legal on each consonant class — ๊
  *  and ๋ are only ever written over mid-class letters (see the note below
- *  the unified tone table below). Drives the chant loop's per-class step
- *  count: 5 for mid, 3 for high/low. */
+ *  the unified tone table below). Drives the per-class length of the
+ *  chant: 5 steps for mid, 3 for high/low. */
 const LEGAL_MARKS: Record<ConsonantClass, (ToneMark | null)[]> = {
   mid: [null, 'ek', 'tho', 'tri', 'chattawa'],
   high: [null, 'ek', 'tho'],
   low: [null, 'ek', 'tho'],
 };
 
-/** One step of the tone-mark chant loop: the mark applied and the tone it
+/** One step of the tone-mark chant: the mark applied and the tone it
  *  produces on an open long-vowel syllable. isLive stays true throughout —
  *  the chant cycles marks, not live/dead register, which the unified table
  *  above already covers on its own axis. Reuses standardCellMatch so the
@@ -776,17 +503,11 @@ function TryIt({
  *  vocal mnemonic per tone (TONE_CUE) instead of the class/mark rule. */
 function PracticeSentence() {
   return (
-    <div className={styles.practiceBox}>
+    <div className={styles.practiceBlock}>
       <p style={{ margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <strong>Practice sentence</strong>
         <PlayButton words={PRACTICE_SENTENCE.map(w => w.word)} title="Play the whole sentence" />
       </p>
-      <ClassVideoLink
-        href="https://www.youtube.com/watch?v=-qUQirAAN6Q"
-        label="5 Thai Tones in 1 Sentence — Let's Learn Thai with Kanitsa"
-        color="#b45309"
-      />
-
       <p className={styles.practiceSentence}>
         {PRACTICE_SENTENCE.map(({ word, ipa, gloss, tone }, i) => (
           <span
@@ -832,14 +553,15 @@ function PracticeSentence() {
           })}
         </tbody>
       </table>
+
+      <ClassVideoLink
+        href="https://www.youtube.com/watch?v=-qUQirAAN6Q"
+        label="5 Thai Tones in 1 Sentence — Let's Learn Thai with Kanitsa"
+        color="#b45309"
+      />
     </div>
   );
 }
-
-/** Fixed example letter per class for the chant row — mid picks up on
- *  the app's own classic ปา drill, high/low on the letters the classic
- *  5-tone drill sentence already uses elsewhere in this tab. */
-const CHANT_LETTER: Record<ConsonantClass, string> = { mid: 'ป', high: 'ข', low: 'ค' };
 
 /** The glyph actually written for a given mark. ToneCard's own corner badge
  *  always shows the *resulting* tone's own defining mark — fine for
@@ -850,69 +572,6 @@ const CHANT_LETTER: Record<ConsonantClass, string> = { mid: 'ป', high: 'ข', 
 const CHANT_MARK_GLYPH: Record<'ek' | 'tho' | 'tri' | 'chattawa', string> = {
   ek: '่', tho: '้', tri: '๊', chattawa: '๋',
 };
-
-function ChantLoop() {
-  const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
-  const consonant = CONSONANTS.find(c => c.letter === CHANT_LETTER[activeClass])!;
-  const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
-
-  return (
-    <div style={{ marginTop: 24 }}>
-      <p style={{ marginBottom: 8 }}>
-        <strong>Chant loop</strong>{' '}
-        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — chant a consonant through every legal tone mark
-        </span>
-      </p>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-        {(['mid', 'high', 'low'] as const).map(klass => {
-          const active = klass === activeClass;
-          return (
-            <button
-              key={klass}
-              type="button"
-              onClick={() => setActiveClass(klass)}
-              style={{
-                fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 700, padding: '7px 16px',
-                borderRadius: 6, cursor: 'pointer', border: `2px solid ${CLASS_COLOR[klass]}`,
-                background: active ? CLASS_COLOR[klass] : '#fff',
-                color: active ? '#fff' : CLASS_COLOR[klass],
-              }}
-            >
-              {CLASS_LABEL[klass]}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ marginBottom: 14 }}>
-        <ClassVideoLink
-          href={CLASS_VIDEO[activeClass].href}
-          label={CLASS_VIDEO[activeClass].label}
-          color={CLASS_COLOR[activeClass]}
-        />
-      </div>
-      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
-        {consonant.klass === 'mid'
-          ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
-          : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {sequence.map(({ mark, tone }) => (
-          <div key={mark ?? 'none'} style={{ minWidth: 130, flex: '1 0 130px' }}>
-            {activeClass === 'low' && (
-              <div style={{ height: '1.4rem', marginBottom: 2 }}>
-                {mark && <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" />}
-              </div>
-            )}
-            <ToneCard tone={thaiTone(tone)} compact hideExample />
-          </div>
-        ))}
-      </div>
-
-      <ClassWordFamilies klass={activeClass} />
-    </div>
-  );
-}
 
 /** Combining tone diacritic per CLAUDE.md's IPA convention, placed on a
  *  syllable's vowel to spell its pronunciation. */
@@ -1304,6 +963,23 @@ function silentHColumns(base: MatrixColumn[]): MatrixColumn[] {
  *  offering them a silent ห would spell words that don't exist. */
 const canTakeSilentH = (c: Consonant) => c.klass === 'low' && !!c.sonorant;
 
+/** A Thai term that stands on its own: click to hear it, hover for its IPA
+ *  and what it is. Everything but the word itself lives in the tooltip —
+ *  two terms side by side show the contrast between them faster than a
+ *  sentence explaining it would. */
+function Term({ word, ipa, note }: { word: string; ipa: string; note?: string }) {
+  return (
+    <span
+      className={styles.label}
+      style={{ fontFamily: 'var(--thai-font)', cursor: 'pointer' }}
+      data-tooltip={note ? `/${ipa}/ · ${note}` : `/${ipa}/`}
+      onClick={() => speakThai(word)}
+    >
+      {word}
+    </span>
+  );
+}
+
 /** Thai glyphs quoted inside an English sentence — the Thai face, at the
  *  size of the copy around them. */
 function ThaiInline({ children, color }: { children: ReactNode; color?: string }) {
@@ -1359,7 +1035,10 @@ function ToneColumnHeader({ tone, spellings }: {
           // both spell Falling) reads as two recipes, not one run-on string.
           <span key={`${sp.base}-${sp.mark ?? 'none'}`} style={{ display: 'block', marginTop: n > 0 ? 2 : 0 }}>
             <ThaiInline color={sp.color}>{sp.base}</ThaiInline>
-            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" /></>}
+            {/* The mark takes the line's own grey: the card right above it
+                already carries the tone colour, and repeating it here only
+                competes with the class colour on the letter. */}
+            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} fontSize="1.2rem" /></>}
           </span>
         ))}
       </span>
@@ -1394,6 +1073,8 @@ function PairSpelling({ syll, ipa, gap }: { syll: string; ipa: string; gap?: boo
  *  table instead of two class tables a reader has to join up themselves. */
 function PairMatrix() {
   const [sound, setSound] = useState(TONE_PAIRS[0].sound);
+  // Row and column of the cell sounding right now; null between runs.
+  const [playing, setPlaying] = useState<{ row: number; col: number } | null>(null);
   const pair = TONE_PAIRS.find(p => p.sound === sound) ?? TONE_PAIRS[0];
   const [letter, setLetter] = useState(pair.low[0].letter);
   const lowLetter = pair.low.some(l => l.letter === letter) ? letter : pair.low[0].letter;
@@ -1453,55 +1134,69 @@ function PairMatrix() {
         </div>
       )}
 
-      <table className={`${styles.cueTable} ${styles.matrixTable}`}>
-        <thead>
-          <tr>
-            <th></th>
-            {PAIR_COLUMNS.map(col => (
-              <ToneColumnHeader
-                key={col.tone}
-                tone={col.tone}
-                spellings={col.spellings.map(sp => ({
-                  base: sp.side === 'high' ? partnerBase(pair, lowLetter) : lowLetter,
-                  color: CLASS_COLOR[sp.side],
-                  mark: sp.mark,
-                }))}
-              />
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {VOWEL_ROWS.map((v, i) => {
-            const rowSylls = PAIR_COLUMNS.flatMap(col => col.spellings.map(sp => spell(v, sp.side, sp.mark)));
-            return (
-              <tr key={i}>
-                <td
-                  className={styles.cueThaiWord}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => speakThai(rowSylls)}
-                >
-                  {v.pre}{lowLetter}{v.attach}{v.trail}
-                </td>
-                {PAIR_COLUMNS.map(col => {
-                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[col.tone] + v.core.slice(1);
-                  return (
-                    <td key={col.tone} className={styles.cueThaiWord} style={{ color: TONE_COLOR[col.tone] }}>
-                      {col.spellings.map((sp, n) => (
-                        <PairSpelling
-                          key={`${sp.side}-${sp.mark ?? 'none'}`}
-                          syll={spell(v, sp.side, sp.mark)}
-                          ipa={ipa}
-                          gap={n > 0}
-                        />
-                      ))}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className={styles.tableScroll}>
+        <table className={`${styles.cueTable} ${styles.matrixTable}`}>
+          <thead>
+            <tr>
+              <th></th>
+              {PAIR_COLUMNS.map(col => (
+                <ToneColumnHeader
+                  key={col.tone}
+                  tone={col.tone}
+                  spellings={col.spellings.map(sp => ({
+                    base: sp.side === 'high' ? partnerBase(pair, lowLetter) : lowLetter,
+                    color: CLASS_COLOR[sp.side],
+                    mark: sp.mark,
+                  }))}
+                />
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {VOWEL_ROWS.map((v, i) => {
+              // One clip per tone, not per spelling: where a tone has two
+              // spellings they are homophones, so playing both would repeat
+              // the same sound. The queue therefore lines up with the columns.
+              const rowSylls = PAIR_COLUMNS.map(col => spell(v, col.spellings[0].side, col.spellings[0].mark));
+              return (
+                <tr key={i}>
+                  {/* No letter here: the unmarked column right beside it
+                      spells this exact syllable already. The cell earns its
+                      keep as the row's play control instead. */}
+                  <td style={{ textAlign: 'center' }}>
+                    <PlayButton
+                      words={rowSylls}
+                      title={`Play the ${v.pre}◌${v.attach}${v.trail} row`}
+                      size={24}
+                      onWord={col => setPlaying(col === null ? null : { row: i, col })}
+                    />
+                  </td>
+                  {PAIR_COLUMNS.map((col, ci) => {
+                    const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[col.tone] + v.core.slice(1);
+                    const isPlaying = playing?.row === i && playing.col === ci;
+                    return (
+                      <td
+                        key={col.tone}
+                        className={`${styles.cueThaiWord} ${isPlaying ? styles.playingCell : ''}`}
+                        style={{ color: TONE_COLOR[col.tone] }}
+                      >
+                        {col.spellings.map((sp, n) => (
+                          <PairSpelling
+                            key={`${sp.side}-${sp.mark ?? 'none'}`}
+                            syll={spell(v, sp.side, sp.mark)}
+                            ipa={ipa}
+                            gap={n > 0}
+                          />
+                        ))}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <CompoundWords
         words={[
           ...(LETTER_COMPOUNDS[lowLetter] ?? []),
@@ -1523,9 +1218,9 @@ const PAIR_TAB_COLOR = '#7c3aed';
 type MatrixMode = ConsonantClass | 'pair';
 
 /** One consonant, shown two ways: the tone chant on a fixed vowel up top
- *  (same idea as the Chant loop above) and that same consonant's full
- *  vowel range against those marks below. Ties the vowel and tone systems
- *  to one shared letter instead of teaching them with no common example. */
+ *  and that same consonant's full vowel range against those marks below.
+ *  Ties the vowel and tone systems to one shared letter instead of
+ *  teaching them with no common example. */
 function VowelToneMatrix() {
   const [activeClass, setActiveClass] = useState<MatrixMode>('mid');
   // In the paired view the letter picker below is idle — it keeps the last
@@ -1539,6 +1234,9 @@ function VowelToneMatrix() {
   const bareInitial = consonant.initial.replace(/\//g, '');
   const [showSilentH, setShowSilentH] = useState(false);
   const [groupBySound, setGroupBySound] = useState(true);
+  // Which cell the row's play button is sounding right now, as row index and
+  // column index; null between runs.
+  const [playing, setPlaying] = useState<{ row: number; col: number } | null>(null);
   const silentHAvailable = canTakeSilentH(consonant);
   const sequence = useMemo<MatrixColumn[]>(() => {
     const base = chantSequence(consonant.klass);
@@ -1666,71 +1364,78 @@ function VowelToneMatrix() {
           </p>
         ))}
 
-        <table className={`${styles.cueTable} ${styles.matrixTable}`}>
-          <thead>
-            <tr>
-              <th></th>
-              {sequence.map(col => (
-                <ToneColumnHeader
-                  key={columnKey(col)}
-                  tone={col.tone}
-                  spellings={[{
-                    base: col.silentH ? 'ห' + letter : letter,
-                    color: col.silentH ? CLASS_COLOR.high : CLASS_COLOR[consonant.klass],
-                    mark: col.mark,
-                  }]}
-                />
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {VOWEL_ROWS.map((v, i) => {
-              // A tone mark sits on the letter carrying the vowel, so in a ห นำ
-              // spelling it follows the second consonant rather than the ห:
-              // เ + ห + ง + ◌ื + ◌่ + อ = เหงื่อ.
-              const rowSylls = sequence.map(({ mark, silentH }) =>
-                v.pre + (silentH ? 'ห' : '') + letter + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail);
-              return (
-              <tr key={i}>
-                <td
-                  className={styles.cueThaiWord}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => speakThai(rowSylls)}
-                >
-                  {v.pre}{letter}{v.attach}{v.trail}
-                </td>
-                {sequence.map((col, colIndex) => {
-                  const { tone } = col;
-                  const color = TONE_COLOR[tone];
-                  const syll = rowSylls[colIndex];
-                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
-                  // Prefer a verified real word for this exact syllable
-                  // (KNOWN_GLOSSES) over v.example, which is one fixed word
-                  // per row from vowels.ts, usually built on a different
-                  // consonant than whatever's selected here, and sometimes
-                  // itself already carries a mark (กี่ for the ◌ี row) —
-                  // matching it requires the exact same letter *and* mark,
-                  // not just "the unmarked column."
-                  const gloss = KNOWN_GLOSSES[syll] ?? (syll === v.example ? v.gloss : undefined);
-                  return (
-                    <td key={columnKey(col)} className={styles.cueThaiWord}>
-                      <span
-                        className={styles.label}
-                        style={{ color, cursor: 'pointer' }}
-                        data-tooltip={`/${ipa}/`}
-                        onClick={() => speakThai(syll)}
-                      >
-                        {syll}
-                      </span>
-                      {gloss && <span className={styles.cellGloss}>{gloss}</span>}
-                    </td>
-                  );
-                })}
+        <div className={styles.tableScroll}>
+          <table className={`${styles.cueTable} ${styles.matrixTable}`}>
+            <thead>
+              <tr>
+                <th></th>
+                {sequence.map(col => (
+                  <ToneColumnHeader
+                    key={columnKey(col)}
+                    tone={col.tone}
+                    spellings={[{
+                      base: col.silentH ? 'ห' + letter : letter,
+                      color: col.silentH ? CLASS_COLOR.high : CLASS_COLOR[consonant.klass],
+                      mark: col.mark,
+                    }]}
+                  />
+                ))}
               </tr>
-              );
-            })}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {VOWEL_ROWS.map((v, i) => {
+                // A tone mark sits on the letter carrying the vowel, so in a ห นำ
+                // spelling it follows the second consonant rather than the ห:
+                // เ + ห + ง + ◌ื + ◌่ + อ = เหงื่อ.
+                const rowSylls = sequence.map(({ mark, silentH }) =>
+                  v.pre + (silentH ? 'ห' : '') + letter + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail);
+                return (
+                <tr key={i}>
+                  <td style={{ textAlign: 'center' }}>
+                    <PlayButton
+                      words={rowSylls}
+                      title={`Play the ${v.pre}◌${v.attach}${v.trail} row`}
+                      size={24}
+                      onWord={col => setPlaying(col === null ? null : { row: i, col })}
+                    />
+                  </td>
+                  {sequence.map((col, colIndex) => {
+                    const { tone } = col;
+                    const color = TONE_COLOR[tone];
+                    const syll = rowSylls[colIndex];
+                    const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
+                    // Prefer a verified real word for this exact syllable
+                    // (KNOWN_GLOSSES) over v.example, which is one fixed word
+                    // per row from vowels.ts, usually built on a different
+                    // consonant than whatever's selected here, and sometimes
+                    // itself already carries a mark (กี่ for the ◌ี row) —
+                    // matching it requires the exact same letter *and* mark,
+                    // not just "the unmarked column."
+                    const gloss = KNOWN_GLOSSES[syll] ?? (syll === v.example ? v.gloss : undefined);
+                    const isPlaying = playing?.row === i && playing.col === colIndex;
+                    return (
+                      <td
+                        key={columnKey(col)}
+                        className={`${styles.cueThaiWord} ${isPlaying ? styles.playingCell : ''}`}
+                      >
+                        <span
+                          className={styles.label}
+                          style={{ color, cursor: 'pointer' }}
+                          data-tooltip={`/${ipa}/`}
+                          onClick={() => speakThai(syll)}
+                        >
+                          {syll}
+                        </span>
+                        {gloss && <span className={styles.cellGloss}>{gloss}</span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
         <CompoundWords
           words={LETTER_COMPOUNDS[letter] ?? CLASS_COMPOUND_WORDS[consonant.klass]}
           subtitle={LETTER_COMPOUNDS[letter]
@@ -1739,66 +1444,6 @@ function VowelToneMatrix() {
         />
         </>
       )}
-    </div>
-  );
-}
-
-/** One tone-colored word cell — the Thai word with its gloss printed right
- *  below it, rather than only behind a hover tooltip, so the translation is
- *  visible without interacting with the table at all. `gloss` is absent
- *  for a spelling that isn't an established word — the word itself still
- *  shows, just with no translation line under it. The IPA stays tooltip-
- *  only either way, so the cell itself doesn't get any longer. */
-function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
-  return (
-    <td className={`${styles.cueThaiWord} ${styles.label}`} style={{ cursor: 'help' }} data-tooltip={`/${ipa}/`}>
-      <span style={{ color: TONE_COLOR[tone] }}>{word}</span>
-      {gloss && <span className={styles.cellGloss}>{gloss}</span>}
-    </td>
-  );
-}
-
-/** One class's word-family table + compound words — scoped to whichever
- *  class tab the Chant loop currently has active, rather than three
- *  always-visible sections stacked below it. */
-function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
-  const columns = CLASS_FAMILY_COLUMNS[klass];
-  const rows = CLASS_FAMILIES[klass];
-  return (
-    <div style={{ marginTop: 24 }}>
-      <p style={{ marginBottom: 8 }}>
-        <strong>{CLASS_LABEL[klass]} word families</strong>{' '}
-        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — {rows.length} real words per mark
-          {columns.length < 5 && `; ${CLASS_LABEL[klass].toLowerCase()} only ever reaches ${columns.length} of the 5 tones`}
-        </span>
-      </p>
-      <table className={styles.cueTable}>
-        <thead>
-          <tr>
-            <th>Letter</th>
-            {columns.map(col => (
-              <th key={col.dataKey} style={col.glyph ? undefined : { color: TONE_COLOR[col.tone] }}>
-                {col.glyph ? <MarkGlyph mark={col.glyph} color={TONE_COLOR[col.tone]} fontSize="1.3rem" /> : 'No mark'}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>
-              <td className={styles.cueThaiWord}>{row.letter}</td>
-              {columns.map(col => {
-                const w = row[col.dataKey];
-                return w
-                  ? <WordCell key={col.dataKey} {...w} tone={col.tone} />
-                  : <td key={col.dataKey} style={{ color: '#ccc' }} title="No common word for this combination">—</td>;
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
     </div>
   );
 }
@@ -1842,7 +1487,7 @@ export function TonesTab() {
   // into one key ('mid+high-dead') since they all land on Low tone — split
   // apart, each of the 4 needs picking out individually. Mai Ek (มาร์กเอก) always
   // counts as "long" here regardless of the syllable's actual vowel length,
-  // matching the column header "Dead long / Mai Ek", which folds both together.
+  // matching the column header "Long dead / Mai Ek", which folds both together.
   const deadMatch = (klass: 'mid' | 'high', col: 'short' | 'long') =>
     standardMatch?.key === 'mid+high-dead' &&
     analysis?.klass === klass &&
@@ -1905,133 +1550,135 @@ export function TonesTab() {
             onClick={() => toggleAll(THAI_SPLIT_IDS)}
           />
         </div>
-        <table className={styles.toneTable}>
-          <colgroup>
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Live</th>
-              <th>Dead short</th>
-              <th>
-                Dead long<br />
-                <span className={styles.headerMarkRow}>
-                  Mai Ek <ToneGlyph name="Low" color="#fff" fontSize="1.2rem" />
-                </span>
-              </th>
-              <th>
-                <span className={styles.headerMarkRow}>
-                  Mai Tho <ToneGlyph name="Falling" color="#fff" fontSize="1.2rem" />
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={styles.cellMid}>Mid</td>
-              <td>
-                <ToneCard tone={thaiTone('Mid')} highlighted={standardMatch?.key === 'mid-live'} />
-              </td>
-              {splitCells.has('mid-high-dead') ? (
-                <>
-                  <td>
-                    <ToneCard
-                      tone={thaiTone('Low')} example="ตก" exampleGloss="tòk · to fall"
-                      highlighted={deadMatch('mid', 'short')}
-                    />
-                  </td>
-                  <td>
-                    <ToneCard
-                      tone={thaiTone('Low')} example="จาก" exampleGloss="tɕàːk · from"
-                      highlighted={deadMatch('mid', 'long')}
-                    />
-                  </td>
-                </>
-              ) : (
-                <SplitTd rowSpan={2} colSpan={2}>
-                  <ToneCard
-                    tone={thaiTone('Low')} example="ถูก" exampleGloss="tʰùːk · correct"
-                    highlighted={standardMatch?.key === 'mid+high-dead'}
-                  />
-                </SplitTd>
-              )}
-              {splitCells.has('mid-high-maitho') ? (
-                <SplitTd>
-                  <ToneCard
-                    tone={thaiTone('Falling')} example="ป้า" exampleGloss="pâː · aunt"
-                    highlighted={standardMatch?.key === 'mid+high-maitho' && analysis?.klass === 'mid'}
-                  />
-                </SplitTd>
-              ) : (
-                <SplitTd rowSpan={2}>
-                  <ToneCard
-                    tone={thaiTone('Falling')} example="ป้า" exampleGloss="pâː · aunt"
-                    highlighted={standardMatch?.key === 'mid+high-maitho'}
-                  />
-                </SplitTd>
-              )}
-            </tr>
-            <tr>
-              <td className={styles.cellHigh}>High</td>
-              <td>
-                <ToneCard tone={thaiTone('Rising')} highlighted={standardMatch?.key === 'high-live'} />
-              </td>
-              {splitCells.has('mid-high-dead') && (
-                <>
-                  <td>
-                    <ToneCard
-                      tone={thaiTone('Low')} example="ผัก" exampleGloss="pʰàk · vegetable"
-                      highlighted={deadMatch('high', 'short')}
-                    />
-                  </td>
-                  <td>
+        <div className={styles.tableScroll}>
+          <table className={styles.toneTable}>
+            <colgroup>
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Live</th>
+                <th>Short dead</th>
+                <th>
+                  Long dead<br />
+                  <span className={styles.headerMarkRow}>
+                    Mai Ek <ToneGlyph name="Low" color="#fff" fontSize="1.2rem" />
+                  </span>
+                </th>
+                <th>
+                  <span className={styles.headerMarkRow}>
+                    Mai Tho <ToneGlyph name="Falling" color="#fff" fontSize="1.2rem" />
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={styles.cellMid}>Mid</td>
+                <td>
+                  <ToneCard tone={thaiTone('Mid')} highlighted={standardMatch?.key === 'mid-live'} />
+                </td>
+                {splitCells.has('mid-high-dead') ? (
+                  <>
+                    <td>
+                      <ToneCard
+                        tone={thaiTone('Low')} example="ตก" exampleGloss="tòk · to fall"
+                        highlighted={deadMatch('mid', 'short')}
+                      />
+                    </td>
+                    <td>
+                      <ToneCard
+                        tone={thaiTone('Low')} example="จาก" exampleGloss="tɕàːk · from"
+                        highlighted={deadMatch('mid', 'long')}
+                      />
+                    </td>
+                  </>
+                ) : (
+                  <SplitTd rowSpan={2} colSpan={2}>
                     <ToneCard
                       tone={thaiTone('Low')} example="ถูก" exampleGloss="tʰùːk · correct"
-                      highlighted={deadMatch('high', 'long')}
+                      highlighted={standardMatch?.key === 'mid+high-dead'}
                     />
-                  </td>
-                </>
-              )}
-              {splitCells.has('mid-high-maitho') && (
-                <SplitTd>
+                  </SplitTd>
+                )}
+                {splitCells.has('mid-high-maitho') ? (
+                  <SplitTd>
+                    <ToneCard
+                      tone={thaiTone('Falling')} example="ป้า" exampleGloss="pâː · aunt"
+                      highlighted={standardMatch?.key === 'mid+high-maitho' && analysis?.klass === 'mid'}
+                    />
+                  </SplitTd>
+                ) : (
+                  <SplitTd rowSpan={2}>
+                    <ToneCard
+                      tone={thaiTone('Falling')} example="ป้า" exampleGloss="pâː · aunt"
+                      highlighted={standardMatch?.key === 'mid+high-maitho'}
+                    />
+                  </SplitTd>
+                )}
+              </tr>
+              <tr>
+                <td className={styles.cellHigh}>High</td>
+                <td>
+                  <ToneCard tone={thaiTone('Rising')} highlighted={standardMatch?.key === 'high-live'} />
+                </td>
+                {splitCells.has('mid-high-dead') && (
+                  <>
+                    <td>
+                      <ToneCard
+                        tone={thaiTone('Low')} example="ผัก" exampleGloss="pʰàk · vegetable"
+                        highlighted={deadMatch('high', 'short')}
+                      />
+                    </td>
+                    <td>
+                      <ToneCard
+                        tone={thaiTone('Low')} example="ถูก" exampleGloss="tʰùːk · correct"
+                        highlighted={deadMatch('high', 'long')}
+                      />
+                    </td>
+                  </>
+                )}
+                {splitCells.has('mid-high-maitho') && (
+                  <SplitTd>
+                    <ToneCard
+                      tone={thaiTone('Falling')} example="ข้าว" exampleGloss="kʰâːw · rice"
+                      highlighted={standardMatch?.key === 'mid+high-maitho' && analysis?.klass === 'high'}
+                    />
+                  </SplitTd>
+                )}
+              </tr>
+              <tr>
+                <td className={styles.cellLow}>Low</td>
+                <td>
                   <ToneCard
-                    tone={thaiTone('Falling')} example="ข้าว" exampleGloss="kʰâːw · rice"
-                    highlighted={standardMatch?.key === 'mid+high-maitho' && analysis?.klass === 'high'}
+                    tone={thaiTone('Mid')} example="มา" exampleGloss="maː · to come"
+                    highlighted={standardMatch?.key === 'low-live'}
                   />
-                </SplitTd>
-              )}
-            </tr>
-            <tr>
-              <td className={styles.cellLow}>Low</td>
-              <td>
-                <ToneCard
-                  tone={thaiTone('Mid')} example="มา" exampleGloss="maː · to come"
-                  highlighted={standardMatch?.key === 'low-live'}
-                />
-              </td>
-              <td>
-                <ToneCard
-                  tone={thaiTone('High')} example="นก" exampleGloss="nók · bird"
-                  highlighted={standardMatch?.key === 'low-deadshort'}
-                />
-              </td>
-              <td>
-                <ToneCard
-                  tone={thaiTone('Falling')} example="มาก" exampleGloss="mâːk · much"
-                  highlighted={standardMatch?.key === 'low-deadlong'}
-                />
-              </td>
-              <td>
-                <ToneCard tone={thaiTone('High')} highlighted={standardMatch?.key === 'low-maitho'} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td>
+                  <ToneCard
+                    tone={thaiTone('High')} example="นก" exampleGloss="nók · bird"
+                    highlighted={standardMatch?.key === 'low-deadshort'}
+                  />
+                </td>
+                <td>
+                  <ToneCard
+                    tone={thaiTone('Falling')} example="มาก" exampleGloss="mâːk · much"
+                    highlighted={standardMatch?.key === 'low-deadlong'}
+                  />
+                </td>
+                <td>
+                  <ToneCard tone={thaiTone('High')} highlighted={standardMatch?.key === 'low-maitho'} />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
           Table covers ่ and ้ only. Mid class also has ๊ (→ High) and ๋ (→ Rising), not shown
@@ -2059,7 +1706,8 @@ export function TonesTab() {
           No ๊ or ๋ columns — those two marks are Standard Thai-only inventions, layered on
           top of the older A/B/C/dead system Northern's tones come from, and this source
           doesn't cover what tone they'd take here. Mai Ek isn't its own column either —
-          it always matches unmarked Dead long, so the two are merged below.
+          it always matches an unmarked dead syllable with a long vowel, so the two are
+          merged below.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -2071,90 +1719,92 @@ export function TonesTab() {
             onClick={() => toggleAll(NORTHERN_SPLIT_IDS)}
           />
         </div>
-        <table className={styles.toneTable}>
-          <colgroup>
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-            <col style={{ width: '21.75%' }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Normal</th>
-              <th>Dead (short)</th>
-              <th>
-                Dead (long)<br />
-                <span className={styles.headerMarkRow}>
-                  Mai Ek <MarkGlyph mark="่" color="#fff" title="Mai Ek" fontSize="1.2rem" />
-                </span>
-              </th>
-              <th>
-                <span className={styles.headerMarkRow}>
-                  Mai Tho <MarkGlyph mark="้" color="#fff" title="Mai Tho" fontSize="1.2rem" />
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={styles.cellHigh}>High</td>
-              <td>
-                <ToneBoxCell
-                  outcomes={NORTHERN_TONE_BOX[0].cells[0]}
-                  matched={northernMatch?.cellKey === 'high-normal'}
-                  highlightCode={northernMatch?.cellKey === 'high-normal' ? northernMatch.code : null}
-                />
-              </td>
-              {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
-                const id = `high-mid-${col}`;
-                const cellKey = `high+mid-${col}`;
-                return splitCells.has(id) ? (
-                  <SplitTd key={id}>
-                    <ToneBoxCell
-                      outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]}
-                      matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'high'}
-                    />
-                  </SplitTd>
-                ) : (
-                  <SplitTd key={id} rowSpan={2}>
-                    <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]} matched={northernMatch?.cellKey === cellKey} />
-                  </SplitTd>
-                );
-              })}
-            </tr>
-            <tr>
-              <td className={styles.cellMid}>Mid</td>
-              <td>
-                <ToneBoxCell
-                  outcomes={NORTHERN_TONE_BOX[1].cells[0]}
-                  highlightCode={northernMatch?.cellKey === 'mid-normal' ? northernMatch.code : null}
-                />
-              </td>
-              {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
-                const id = `high-mid-${col}`;
-                const cellKey = `high+mid-${col}`;
-                return splitCells.has(id) && (
-                  <SplitTd key={id}>
-                    <ToneBoxCell
-                      outcomes={NORTHERN_TONE_BOX[1].cells[i + 1]}
-                      matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'mid'}
-                    />
-                  </SplitTd>
-                );
-              })}
-            </tr>
-            <tr>
-              <td className={styles.cellLow}>Low</td>
-              {(['low-normal', 'low-deadshort', 'low-deadlong', 'low-maitho'] as const).map((key, i) => (
-                <td key={key}>
-                  <ToneBoxCell outcomes={NORTHERN_TONE_BOX[2].cells[i]} matched={northernMatch?.cellKey === key} />
+        <div className={styles.tableScroll}>
+          <table className={styles.toneTable}>
+            <colgroup>
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+              <col style={{ width: '21.75%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Normal</th>
+                <th>Short dead</th>
+                <th>
+                  Long dead<br />
+                  <span className={styles.headerMarkRow}>
+                    Mai Ek <MarkGlyph mark="่" color="#fff" title="Mai Ek" fontSize="1.2rem" />
+                  </span>
+                </th>
+                <th>
+                  <span className={styles.headerMarkRow}>
+                    Mai Tho <MarkGlyph mark="้" color="#fff" title="Mai Tho" fontSize="1.2rem" />
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={styles.cellHigh}>High</td>
+                <td>
+                  <ToneBoxCell
+                    outcomes={NORTHERN_TONE_BOX[0].cells[0]}
+                    matched={northernMatch?.cellKey === 'high-normal'}
+                    highlightCode={northernMatch?.cellKey === 'high-normal' ? northernMatch.code : null}
+                  />
                 </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+                {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
+                  const id = `high-mid-${col}`;
+                  const cellKey = `high+mid-${col}`;
+                  return splitCells.has(id) ? (
+                    <SplitTd key={id}>
+                      <ToneBoxCell
+                        outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]}
+                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'high'}
+                      />
+                    </SplitTd>
+                  ) : (
+                    <SplitTd key={id} rowSpan={2}>
+                      <ToneBoxCell outcomes={NORTHERN_TONE_BOX[0].cells[i + 1]} matched={northernMatch?.cellKey === cellKey} />
+                    </SplitTd>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td className={styles.cellMid}>Mid</td>
+                <td>
+                  <ToneBoxCell
+                    outcomes={NORTHERN_TONE_BOX[1].cells[0]}
+                    highlightCode={northernMatch?.cellKey === 'mid-normal' ? northernMatch.code : null}
+                  />
+                </td>
+                {(['deadshort', 'deadlong', 'maitho'] as const).map((col, i) => {
+                  const id = `high-mid-${col}`;
+                  const cellKey = `high+mid-${col}`;
+                  return splitCells.has(id) && (
+                    <SplitTd key={id}>
+                      <ToneBoxCell
+                        outcomes={NORTHERN_TONE_BOX[1].cells[i + 1]}
+                        matched={northernMatch?.cellKey === cellKey && analysis?.klass === 'mid'}
+                      />
+                    </SplitTd>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td className={styles.cellLow}>Low</td>
+                {(['low-normal', 'low-deadshort', 'low-deadlong', 'low-maitho'] as const).map((key, i) => (
+                  <td key={key}>
+                    <ToneBoxCell outcomes={NORTHERN_TONE_BOX[2].cells[i]} matched={northernMatch?.cellKey === key} />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <p style={{ fontSize: '0.83rem', color: '#666', marginTop: 10 }}>
           Source: Gedney (1999), as tabulated in Wikipedia's{' '}
@@ -2174,35 +1824,6 @@ export function TonesTab() {
       )}
 
       <div className="tone-rules" style={{ marginTop: 24 }}>
-        <p style={{ fontSize: '0.83rem', color: '#555', margin: '0 0 6px 0' }}>
-          Each card above plots its tone as a pitch curve over time. Vertical scale = Chao
-          tone letters (1 = lowest pitch, 5 = highest). Horizontal = duration.
-        </p>
-        {lang === 'thai' && (
-        <>
-        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 4px 0' }}>
-          Card names abbreviate the full form prefixed with{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียง</span>{' '}
-          <em>(/sǐaŋ/, "tone")</em> — e.g.{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงสามัญ</span>,{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>เสียงจัตวา</span>, etc.
-        </p>
-        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
-          Tone marks themselves take{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้</span>{' '}
-          <em>(/máj/, "stick")</em> — e.g.{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้เอก</span>,{' '}
-          <span style={{ fontFamily: 'var(--thai-font)' }}>ไม้โท</span>{' '}
-          (hover a card's corner glyph for IPA).
-        </p>
-        </>
-        )}
-        {lang === 'northern' && (
-        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 10px 0' }}>
-          Card names are Gedney box codes — which class + environment combinations
-          (see the table above) produce that tone.
-        </p>
-        )}
         <p style={{ fontSize: '0.83rem', margin: '0 0 10px 0' }}>
           <strong>Number of unique tones: {lang === 'thai' ? THAI_TONES.length : NORTHERN_TONES.length}</strong>
         </p>
@@ -2211,25 +1832,25 @@ export function TonesTab() {
             <ToneCard key={i} tone={t} compact={lang === 'northern'} />
           ))}
         </div>
+        {/* Under the cards, not above them: every sentence here points at
+            something printed on a card, so it only reads as an explanation
+            once the reader has the cards in front of them. */}
+        {lang === 'thai' && (
+        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 14px 0', lineHeight: 1.9 }}>
+          <Term word="เสียง" ipa="sǐaŋ" />: sound, ex:{' '}
+          <Term word="เสียงเอก" ipa="sǐaŋ.èːk" note="Low tone" /><br />
+          <Term word="ไม้" ipa="máj" />: stick, ex:{' '}
+          <Term word="ไม้เอก" ipa="máj.èːk" note="Low tone mark" />
+        </p>
+        )}
+        {lang === 'northern' && (
+        <p style={{ fontSize: '0.78rem', color: '#666', margin: '0 0 14px 0' }}>
+          Card names are Gedney box codes — which class + environment combinations
+          (see the table above) produce that tone.
+        </p>
+        )}
+        {lang === 'thai' && <PracticeSentence />}
       </div>
-
-      {lang === 'thai' && (
-      <div className={styles.drillBox}>
-        <strong>How to practice:</strong> say each tone while tracing the curve with your finger or voice.<br />
-        <strong>Classic drill (5 real words):</strong>{' '}
-        <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>คา · ข่า · ค่า · ค้า · ขา</span>
-        {' '}<span style={{ color: '#666' }}>(kʰaː · kʰàː · kʰâː · kʰáː · kʰǎː) = <em>stuck · galangal · cost · to trade · leg</em></span>
-        {' '}— all 5 tones in canonical order (Mid · Low · Falling · High · Rising).<br />
-        <strong>Alt drill (one mid-class letter + all 4 tone marks):</strong>{' '}
-        <span style={{ fontFamily: 'var(--thai-font)', fontSize: '1.05rem' }}>ปา · ป่า · ป้า · ป๊า · ป๋า</span>
-        {' '}<span style={{ color: '#666' }}>(paː · pàː · pâː · páː · pǎː) = <em>throw · forest · aunt · dad · dad (slang)</em></span>
-        {' '}— showcases no-mark, ่, ้, ๊, ๋ all on one mid-class initial.
-      </div>
-      )}
-
-      {lang === 'thai' && <PracticeSentence />}
-
-      {lang === 'thai' && <ChantLoop />}
 
       {lang === 'thai' && <VowelToneMatrix />}
     </div>

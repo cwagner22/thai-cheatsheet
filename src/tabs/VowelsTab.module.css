@@ -10,14 +10,22 @@
 }
 
 .label[data-tooltip]::after {
-  content: attr(data-tooltip);
+  /* Empty and unpadded until hovered. The text belongs on the hover rule,
+   * not here: an absolutely positioned box still counts towards the
+   * scrollable overflow of the page even at `opacity: 0`, so a tooltip
+   * carrying its `nowrap` line of text at all times widens the document by
+   * however far the longest one reaches past the right edge — which on a
+   * phone is a page that scrolls sideways over empty space. Collapsed to
+   * 0x0 it contributes nothing, and swapping both properties on hover
+   * still leaves opacity free to fade. */
+  content: '';
+  padding: 0;
   position: absolute;
   bottom: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%);
   background: #1f2937;
   color: #fff;
-  padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -30,6 +38,8 @@
 }
 
 .label[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  padding: 4px 8px;
   opacity: 1;
 }
 

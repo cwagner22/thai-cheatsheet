@@ -19,7 +19,8 @@ function splitCaption(nameEn: string): { short: string; full?: string } {
  *  that cell, rather than defaulting to whichever combination the entry's
  *  own example happened to be written for. `hideExample` drops the word
  *  entirely instead, for callers with no single word that fits every
- *  instance (a chant loop that varies by whichever consonant is selected). */
+ *  instance — a column header standing over whichever consonant the
+ *  reader has selected, say. */
 export function ToneCard({
   tone, example, exampleGloss, highlighted, compact, hideExample,
 }: { tone: ToneEntry; example?: string; exampleGloss?: string; highlighted?: boolean; compact?: boolean; hideExample?: boolean }) {

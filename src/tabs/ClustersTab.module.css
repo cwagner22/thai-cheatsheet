@@ -1,12 +1,80 @@
+/* Pure-CSS tooltip — fires instantly on hover, no native delay. Same
+ * pattern as ConsonantsTab.module.css / VowelsTab.module.css, duplicated
+ * here because CSS Modules scope class names per file — `.label` in one
+ * module's stylesheet doesn't reach a className built from another.
+ * Centered on its word: these sit in table cells and mid-sentence, where a
+ * left-anchored bubble would hang off toward the neighbouring column. */
+.label {
+  position: relative;
+}
+
+.label[data-tooltip]::after {
+  /* Empty and unpadded until hovered. The text belongs on the hover rule,
+   * not here: an absolutely positioned box still counts towards the
+   * scrollable overflow of the page even at `opacity: 0`, so a tooltip
+   * carrying its `nowrap` line of text at all times widens the document by
+   * however far the longest one reaches past the right edge — which on a
+   * phone is a page that scrolls sideways over empty space. Collapsed to
+   * 0x0 it contributes nothing, and swapping both properties on hover
+   * still leaves opacity free to fade. */
+  content: '';
+  padding: 0;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 10;
+}
+
+.label[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  padding: 4px 8px;
+  opacity: 1;
+}
+
+/* Touch has no hover, so there a tap reveals the translation (the word's
+ * click handler sets data-show for a beat, and plays the audio at the same
+ * time). Gated on `hover: none` so that on a mouse the bubble stays tied to
+ * the pointer being over the word, rather than a click leaving one stuck on
+ * screen after the pointer has moved away. */
+@media (hover: none) {
+  .label[data-tooltip][data-show]::after {
+    opacity: 1;
+  }
+}
+
+/* Inline Thai in prose and in the example strips — larger than the global
+ * .thai-name used in table cells, so the script holds its own against the
+ * English running alongside it. */
+.exampleWord {
+  font-family: var(--thai-font);
+  font-size: 1.1rem;
+}
+
 .sectionSub {
   font-size: 0.78rem;
   color: #555;
   margin-left: 6px;
 }
 
+/* Held back from the Thai it annotates: the transcription stays on the
+ * page — it's what this tab teaches — but at this weight the script reads
+ * first and the line doesn't turn into two competing texts. The tooltip
+ * carries it at full contrast for anyone who wants to read it closely. */
 .ipa {
   font-size: 0.78rem;
   color: #555;
+  opacity: 0.65;
 }
 
 .ex {
