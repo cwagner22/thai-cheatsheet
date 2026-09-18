@@ -72,6 +72,24 @@ export interface SoundGroup {
   letters: Consonant[];
 }
 
+/** Groups a set of letters by shared initial sound (e.g. ด/ฎ both /d/),
+ *  same shape as the fixed groups below: letters that sound identical stay
+ *  distinct entries (different history, different rarity) but read as one
+ *  unit. `final` is left empty — callers that need it derive it from the
+ *  letters, which don't always agree on their final. */
+export function groupByInitial(rows: Consonant[]): SoundGroup[] {
+  const order: string[] = [];
+  const map = new Map<string, Consonant[]>();
+  for (const c of rows) {
+    if (!map.has(c.initial)) {
+      order.push(c.initial);
+      map.set(c.initial, []);
+    }
+    map.get(c.initial)!.push(c);
+  }
+  return order.map(sound => ({ sound, final: '', letters: map.get(sound)! }));
+}
+
 export const MID_UNPAIRED_GROUPS: SoundGroup[] = [
   { sound: '/k/', final: '/k/', letters: [c('ก')] },
   { sound: '/tɕ/', final: '/t/', letters: [c('จ')] },
@@ -107,6 +125,32 @@ export const HIGH_LOW_PAIRS: HighLowPair[] = [
   { sound: '/f/', final: '/p/', high: [c('ฝ')], low: [c('ฟ')] },
   { sound: '/s/', final: '/t/', high: [c('ศ'), c('ษ'), c('ส')], low: [c('ซ')] },
   { sound: '/h/', final: '—', high: [c('ห')], low: [c('ฮ')] },
+];
+
+/** A sound that reaches all five tones by pairing two spellings: the
+ *  low-class letter covers Mid/Falling/High, and its partner covers Low and
+ *  Rising. The partner is either a high-class twin letter (ข for ค) or,
+ *  for the ten single low-class letters that have no twin, a silent ห
+ *  written in front (`high: null`) — which hands the syllable to the
+ *  high-class rules without adding a sound. */
+export interface TonePair {
+  sound: string;
+  low: Consonant[];
+  high: Consonant | null;
+}
+
+/** Letters a learner should be shown for a sound: the obsolete ones are
+ *  never written any more, and a rare one is only worth showing when the
+ *  sound has nothing else. */
+function usable(letters: Consonant[]): Consonant[] {
+  const live = letters.filter(l => !l.obsolete);
+  const common = live.filter(l => !l.rare);
+  return common.length > 0 ? common : live;
+}
+
+export const TONE_PAIRS: TonePair[] = [
+  ...HIGH_LOW_PAIRS.map(p => ({ sound: p.sound, low: usable(p.low), high: usable(p.high)[0] ?? null })),
+  ...SONORANT_GROUPS.map(g => ({ sound: g.sound, low: usable(g.letters), high: null })),
 ];
 
 function c(letter: string): Consonant {

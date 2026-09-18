@@ -1,6 +1,6 @@
 import { useState, useMemo, type ReactNode } from 'react';
 import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
-import { CONSONANTS, byClass, type ConsonantClass, type Consonant } from '../data/consonants';
+import { CONSONANTS, byClass, groupByInitial, TONE_PAIRS, type ConsonantClass, type Consonant, type TonePair } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
 import { standardCellMatch, northernCellMatch, type CellMatch, type NorthernCellMatch } from '../lib/toneLookup';
@@ -385,11 +385,166 @@ const MID_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
   { word: 'เก่าแก่', ipa: 'kàw.kɛ̀ː', gloss: 'old, time-honored' },
 ];
 
-const CLASS_COMPOUND_WORDS: Record<ConsonantClass, { word: string; ipa: string; gloss: string }[]> = {
+type CompoundWord = { word: string; ipa: string; gloss: string };
+
+const CLASS_COMPOUND_WORDS: Record<ConsonantClass, CompoundWord[]> = {
   mid: MID_COMPOUND_WORDS,
   high: HIGH_COMPOUND_WORDS,
   low: LOW_COMPOUND_WORDS,
 };
+
+/** Everyday two-syllable words that open with each letter, shown under that
+ *  letter's matrix so the single syllables above it land in something a
+ *  learner would actually say. Spelling and meaning are dictionary-checked
+ *  and the IPA follows the pronunciation given there; a letter with no
+ *  entry falls back to its class's compounds. Rare and obsolete letters
+ *  have none — they barely start words at all. */
+const LETTER_COMPOUNDS: Record<string, CompoundWord[]> = {
+  // mid
+  'ก': [
+    { word: 'กาแฟ', ipa: 'kaː.fɛː', gloss: 'coffee' },
+    { word: 'กางเกง', ipa: 'kaːŋ.keːŋ', gloss: 'trousers' },
+    { word: 'การบ้าน', ipa: 'kaːn.bâːn', gloss: 'homework' },
+  ],
+  'จ': [{ word: 'จริงใจ', ipa: 'tɕiŋ.tɕaj', gloss: 'sincere, straight with someone' }],
+  'ด': [
+    { word: 'ดีใจ', ipa: 'diː.tɕaj', gloss: 'glad, pleased' },
+    { word: 'ดูแล', ipa: 'duː.lɛː', gloss: 'to look after, take care of' },
+    { word: 'ดอกไม้', ipa: 'dɔ̀ːk.máːj', gloss: 'flower' },
+  ],
+  'ต': [
+    { word: 'ตาบอด', ipa: 'taː.bɔ̀ːt', gloss: 'blind' },
+    { word: 'ตื่นเต้น', ipa: 'tɯ̀ːn.tên', gloss: 'excited' },
+  ],
+  'บ': [
+    { word: 'บางที', ipa: 'baːŋ.tʰiː', gloss: 'sometimes; maybe' },
+    { word: 'บ้านเมือง', ipa: 'bâːn.mɯaŋ', gloss: 'the country, the nation' },
+  ],
+  'ป': [{ word: 'ป่าไม้', ipa: 'pàː.máːj', gloss: 'forest, woodland' }],
+  'อ': [
+    { word: 'อาหาร', ipa: 'ʔaː.hǎːn', gloss: 'food' },
+    { word: 'อากาศ', ipa: 'ʔaː.kàːt', gloss: 'air; weather' },
+  ],
+  // high
+  'ข': [{ word: 'ขอบคุณ', ipa: 'kʰɔ̀ːp.kʰun', gloss: 'thank you' }],
+  'ฉ': [
+    { word: 'ฉลาด', ipa: 'tɕʰà.làːt', gloss: 'clever, sharp' },
+    { word: 'ฉีดยา', ipa: 'tɕʰìːt.jaː', gloss: 'to give an injection' },
+    { word: 'ฉับพลัน', ipa: 'tɕʰàp.pʰlan', gloss: 'sudden, at once' },
+  ],
+  'ถ': [
+    { word: 'ถี่ถ้วน', ipa: 'tʰìː.tʰûan', gloss: 'thorough, meticulous' },
+    { word: 'ถือสา', ipa: 'tʰɯ̌ː.sǎː', gloss: 'to take offence at (usu. negated)' },
+  ],
+  'ผ': [
+    { word: 'ผู้ชาย', ipa: 'pʰûː.tɕʰaːj', gloss: 'man' },
+    { word: 'ผีเสื้อ', ipa: 'pʰǐː.sɯ̂a', gloss: 'butterfly' },
+  ],
+  'ฝ': [{ word: 'ฝีมือ', ipa: 'fǐː.mɯː', gloss: 'skill, craftsmanship' }],
+  'ส': [{ word: 'สีสัน', ipa: 'sǐː.sǎn', gloss: 'colours; vividness' }],
+  'ห': [
+    { word: 'หัวใจ', ipa: 'hǔa.tɕaj', gloss: 'heart' },
+    { word: 'ห้องน้ำ', ipa: 'hɔ̂ŋ.náːm', gloss: 'bathroom' },
+  ],
+  // low
+  'ค': [
+    { word: 'ค้าขาย', ipa: 'kʰáː.kʰǎːj', gloss: 'to trade, do business' },
+    { word: 'คุณค่า', ipa: 'kʰun.kʰâː', gloss: 'value, worth' },
+    { word: 'ความรัก', ipa: 'kʰwaːm.rák', gloss: 'love' },
+  ],
+  'ช': [
+    { word: 'ชื่อเสียง', ipa: 'tɕʰɯ̂ː.sǐaŋ', gloss: 'fame, reputation' },
+    { word: 'ชาเย็น', ipa: 'tɕʰaː.jen', gloss: 'iced tea' },
+    { word: 'ช้างเผือก', ipa: 'tɕʰáːŋ.pʰɯ̀ak', gloss: 'white elephant' },
+  ],
+  'ซ': [
+    { word: 'ซื้อขาย', ipa: 'sɯ́ː.kʰǎːj', gloss: 'to buy and sell' },
+    { word: 'ซ่อมแซม', ipa: 'sɔ̂m.sɛːm', gloss: 'to repair, mend' },
+  ],
+  'ท': [
+    { word: 'ท่าทาง', ipa: 'tʰâː.tʰaːŋ', gloss: 'manner, bearing' },
+    { word: 'ทำงาน', ipa: 'tʰam.ŋaːn', gloss: 'to work' },
+    { word: 'ทั่วไป', ipa: 'tʰûa.paj', gloss: 'general, ordinary' },
+  ],
+  'ธ': [
+    { word: 'ธุระ', ipa: 'tʰú.ráʔ', gloss: 'an errand, business to attend to' },
+    { word: 'ธรรมดา', ipa: 'tʰam.má.daː', gloss: 'ordinary, the usual' },
+  ],
+  'น': [
+    { word: 'น่ารัก', ipa: 'nâː.rák', gloss: 'cute, lovable' },
+    { word: 'น้ำแข็ง', ipa: 'nám.kʰɛ̌ŋ', gloss: 'ice' },
+  ],
+  'พ': [
+    { word: 'พ่อแม่', ipa: 'pʰɔ̂ː.mɛ̂ː', gloss: 'parents' },
+    { word: 'พี่น้อง', ipa: 'pʰîː.nɔ́ːŋ', gloss: 'siblings' },
+  ],
+  'ฟ': [
+    { word: 'ฟ้าผ่า', ipa: 'fáː.pʰàː', gloss: 'a lightning strike' },
+    { word: 'ฟันปลอม', ipa: 'fan.plɔːm', gloss: 'false teeth' },
+    { word: 'ฟุตบอล', ipa: 'fút.bɔn', gloss: 'football' },
+  ],
+  'ม': [
+    { word: 'มือถือ', ipa: 'mɯː.tʰɯ̌ː', gloss: 'mobile phone' },
+    { word: 'ม้าลาย', ipa: 'máː.laːj', gloss: 'zebra' },
+    { word: 'มากมาย', ipa: 'mâːk.maːj', gloss: 'plentiful, no end of' },
+  ],
+  'ย': [
+    { word: 'ยิ้มแย้ม', ipa: 'jím.jɛ́ːm', gloss: 'beaming, all smiles' },
+    { word: 'ยากจน', ipa: 'jâːk.tɕon', gloss: 'poor, destitute' },
+  ],
+  'ร': [
+    { word: 'ร้านค้า', ipa: 'ráːn.kʰáː', gloss: 'a shop' },
+    { word: 'เรื่องราว', ipa: 'rɯ̂aŋ.raːw', gloss: 'a story, the whole account' },
+    { word: 'รู้สึก', ipa: 'rúː.sɯ̀k', gloss: 'to feel' },
+  ],
+  'ล': [
+    { word: 'ลูกหลาน', ipa: 'lûːk.lǎːn', gloss: 'children and grandchildren, descendants' },
+    { word: 'ลำบาก', ipa: 'lam.bàːk', gloss: 'hard, a struggle' },
+  ],
+  'ว': [
+    { word: 'วันนี้', ipa: 'wan.níː', gloss: 'today' },
+    { word: 'ไว้ใจ', ipa: 'wáj.tɕaj', gloss: 'to trust' },
+    { word: 'วุ่นวาย', ipa: 'wûn.waːj', gloss: 'chaotic, in a fuss' },
+  ],
+  'ฮ': [
+    { word: 'ฮ่องเต้', ipa: 'hɔ̂ŋ.têː', gloss: 'Chinese emperor' },
+    { word: 'ฮึดฮัด', ipa: 'hɯ́t.hát', gloss: 'to huff in annoyance' },
+  ],
+};
+
+/** The compound-word table: word, IPA, meaning. Sits under a matrix rather
+ *  than beside the chant, so the syllables above it are the ones it's
+ *  built from. */
+function CompoundWords({ words, subtitle }: { words: CompoundWord[]; subtitle: string }) {
+  if (words.length === 0) return null;
+  return (
+    <div style={{ marginTop: 18 }}>
+      <p style={{ marginBottom: 6, fontSize: '0.85rem' }}>
+        <strong>Compound words</strong>{' '}
+        <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>— {subtitle}</span>
+      </p>
+      <table className={styles.cueTable}>
+        <tbody>
+          {words.map(({ word, ipa, gloss }) => (
+            <tr key={word}>
+              <td
+                className={styles.cueThaiWord}
+                style={{ width: '1%', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                onClick={() => speakThai(word)}
+              >
+                {word}
+              </td>
+              <td style={{ width: '1%', whiteSpace: 'nowrap', color: '#888', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
+                /{ipa}/
+              </td>
+              <td style={{ color: '#888', fontSize: '0.85rem' }}>{gloss}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 /** Bookmark-style link to a practice video, accent-colored per class. */
 function ClassVideoLink({ href, label, color }: { href: string; label: string; color: string }) {
@@ -796,7 +951,11 @@ const VOWEL_ROWS: { pre: string; attach: string; trail: string; core: string; ex
  *  with no comment-and-entries below (e.g. ฎ, ฏ, ฐ, ศ, ษ, ญ, ฑ, ฒ, ณ, ฬ)
  *  genuinely has zero real bare open-syllable words for these 9 vowel
  *  shapes, not an unaudited gap. Some entries are vulgar or slang — labeled
- *  inline — kept because this app doesn't otherwise censor real vocabulary. */
+ *  inline — kept because this app doesn't otherwise censor real vocabulary.
+ *  The ห นำ block at the end covers the silent-ห spellings, which belong to
+ *  the letter after the ห rather than to ห itself. Every entry below is
+ *  checked against a dictionary; a syllable the matrix can build but no
+ *  dictionary lists simply has no entry here and shows without a gloss. */
 const KNOWN_GLOSSES: Record<string, string> = {
   // --- mid class ---
   // ก
@@ -874,6 +1033,14 @@ const KNOWN_GLOSSES: Record<string, string> = {
   'แฉ': 'to expose, reveal (a scandal)',
   'ฉ้อ': 'to defraud, cheat (ฉ้อโกง)',
   // ฐ — no real bare-syllable words
+  // ถ
+  'ถา': 'to swoop, dive down', 'ถ้า': 'if',
+  'ถี่': 'close together, frequent',
+  'ถือ': 'to hold; to observe, regard',
+  'ถู': 'to scrub, wipe',
+  'แถ': 'to glide, skid sideways',
+  'โถ': 'a lidded pot; also "oh dear!"',
+  'ถ่อ': 'punting pole; to pole a boat',
   // ผ
   'ผา': 'cliff',
   'ผ่า': 'to cut open, split',
@@ -1036,26 +1203,60 @@ const KNOWN_GLOSSES: Record<string, string> = {
   'ฮื่อ': 'uh-huh, yeah (informal)',
   'ฮู้': 'to know (Northern Thai)',
   'ฮ่อ': 'Haw — Yunnanese Chinese',
+
+  // --- ห นำ (silent ห) forms ---
+  // Only the 10 single low-class letters take these, and only the two
+  // spellings the letter can't otherwise reach: no mark (Rising) and ่
+  // (Low). ห + ญ/ณ/ฬ yields nothing real for these vowel shapes.
+  // ง
+  'หงอ': 'cowed, afraid to fight back', 'หงี่': 'randy, lustful (crude)',
+  'แหง': 'for sure (usu. แหงๆ)', 'แหง่': 'buffalo calf; a clingy kid (ลูกแหง่)',
+  'โหง': 'a violent, unnatural death (ตายโหง)',
+  // น
+  'หนา': 'thick', 'หนี': 'to flee, run away',
+  'หนู': 'mouse, rat; I/you (a girl or child)', 'หน่อ': 'sprout, shoot; offspring',
+  'แหน': 'to guard jealously (หวงแหน)', 'โหน': 'to hang from, swing by the arms',
+  // ม
+  'หมา': 'dog', 'หมี': 'bear', 'หมี่': 'rice noodles', 'หมู': 'pig; easy, a pushover',
+  'หมู่': 'group, batch', 'หมอ': 'doctor; an expert', 'หม่า': 'to soak, steep',
+  'แหม': 'oh, come on! (interjection)', 'โหม': 'to go all out, pour it on',
+  'เหม่': 'hey! (angry shout)', 'เหม่อ': 'absent-minded, staring blankly',
+  // ย
+  'หย่า': 'to divorce', 'แหย': 'timid, sheepish', 'แหย่': 'to poke at; to tease',
+  // ร
+  'หรือ': 'or', 'หรู': 'fancy, luxurious', 'หรี่': 'to dim, turn down',
+  'หรอ': 'to wear away (สึกหรอ); also "really?"', 'เหรอ': 'really? (question particle)',
+  'โหร': 'astrologer',
+  // ล
+  'หลา': 'yard (0.91 m)', 'หล่อ': 'to cast (metal); handsome', 'โหล': 'a dozen',
+  'โหล่': 'last, in last place', 'เหล่': 'cross-eyed', 'เหลอ': 'blank-faced, clueless',
+  // ว
+  'หวี': 'comb', 'หวือ': 'whoosh (sound)', 'เหว': 'ravine, chasm',
+  'เหว่': 'lonely, desolate (ว้าเหว่)', 'โหว่': 'gaping, holed through',
 };
 
 
 /** One consonant button in the matrix's picker. */
 function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; onClick: () => void }) {
   const color = CLASS_COLOR[c.klass];
-  // How restricted this letter is, if at all. The corner tag is positioned
-  // out of the flow so the Thai glyph stays centered on the same baseline
-  // as every unflagged letter beside it; the button just reserves a little
-  // extra room on that side so the tag never overlaps the glyph.
-  const flag = c.obsolete ? 'obs' : c.rare ? 'r' : null;
+  // The same R / OBS chips the consonants page prints after a letter's name,
+  // here pinned to the button's corner: out of the flow, and with the tag's
+  // own margin dropped, so a flagged button stays exactly the size of an
+  // unflagged one and the row of letters keeps an even rhythm.
+  const flag = c.obsolete
+    ? { tag: 'obsolete-tag', text: 'OBS', title: 'obsolete letter' }
+    : c.rare
+      ? { tag: 'rare-tag', text: 'R', title: 'rare letter' }
+      : null;
   return (
     <button
       type="button"
       onClick={onClick}
-      title={c.obsolete ? 'obsolete letter' : c.rare ? 'rare letter' : undefined}
+      title={flag?.title}
       style={{
         position: 'relative',
         fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
-        padding: flag ? '6px 18px 7px 10px' : '6px 10px 7px', borderRadius: 8,
+        padding: '6px 10px 7px', borderRadius: 8,
         cursor: 'pointer', fontWeight: 500,
         border: `1.5px solid ${active ? color : '#ddd'}`,
         background: active ? `${color}1a` : '#fff',
@@ -1065,37 +1266,300 @@ function LetterButton({ c, active, onClick }: { c: Consonant; active: boolean; o
       {c.letter}
       {flag && (
         <span
-          style={{
-            position: 'absolute', right: 4, bottom: 2,
-            fontFamily: "'Inter', sans-serif", fontSize: '0.5rem', fontWeight: 700,
-            lineHeight: 1, letterSpacing: '0.02em',
-            color: active ? color : '#9ca3af',
-          }}
+          className={flag.tag}
+          style={{ position: 'absolute', bottom: -7, right: -4, margin: 0, lineHeight: 1.3, pointerEvents: 'none' }}
         >
-          {flag}
+          {flag.text}
         </span>
       )}
     </button>
   );
 }
 
+/** One column of the vowel x tone matrix. `silentH` marks a column spelled
+ *  with a leading silent ห (ห นำ): the ห is written but not pronounced, and
+ *  it hands the syllable to the high-class rules, which is the only way a
+ *  single low-class letter can spell the two tones it otherwise can't. */
+type MatrixColumn = { mark: ToneMark | null; tone: ToneName; silentH?: boolean };
+
+const columnKey = (col: MatrixColumn) => `${col.silentH ? 'h-' : ''}${col.mark ?? 'none'}`;
+
+/** Position in the canonical tone order — THAI_TONES is already listed in it. */
+const toneOrder = (tone: ToneName) => THAI_TONES.findIndex(t => t.nameEn === tone);
+
+/** The ห นำ columns worth adding for a low-class letter: the high-class
+ *  chant minus every tone the letter already reaches on its own. Derived
+ *  rather than listed so it stays right if the chant tables ever change —
+ *  today it yields Rising (no mark) and Low (่), while ้ is left out
+ *  because plain ่ already spells Falling for a low-class letter. */
+function silentHColumns(base: MatrixColumn[]): MatrixColumn[] {
+  return chantSequence('high')
+    .filter(h => !base.some(b => b.tone === h.tone))
+    .map(h => ({ ...h, silentH: true }));
+}
+
+/** ห นำ is only available to the 10 single low-class letters (อักษรเดี่ยว,
+ *  the sonorants). The other low-class letters each have a high-class twin
+ *  (ค/ข, ช/ฉ, ท/ถ ...) and reach the missing tones by switching to it, so
+ *  offering them a silent ห would spell words that don't exist. */
+const canTakeSilentH = (c: Consonant) => c.klass === 'low' && !!c.sonorant;
+
+/** Thai glyphs quoted inside an English sentence — the Thai face, at the
+ *  size of the copy around them. */
+function ThaiInline({ children, color }: { children: ReactNode; color?: string }) {
+  return <span style={{ fontFamily: 'var(--thai-font)', color }}>{children}</span>;
+}
+
+/** Which spellings of a pair produce each tone, derived from the same
+ *  lookup the rest of this tab uses rather than listed by hand: the
+ *  low-class letter with each mark it can take, then the high-class
+ *  partner with each of its own, grouped by the tone that comes out.
+ *  Falling ends up with two spellings — ค่า and ข้า say the same thing —
+ *  which is exactly the overlap this view exists to show. */
+function pairColumns(): { tone: ToneName; spellings: { side: ConsonantClass; mark: ToneMark | null }[] }[] {
+  const spellings = (['low', 'high'] as const).flatMap(side =>
+    LEGAL_MARKS[side].map(mark => ({
+      side,
+      mark,
+      tone: standardCellMatch({ initial: '', klass: side, mark, isLive: true, vowelLength: 'long', hasFinal: false }).tone,
+    })));
+  return THAI_TONES.map(t => t.nameEn as ToneName).map(tone => ({
+    tone,
+    spellings: spellings.filter(sp => sp.tone === tone).map(({ side, mark }) => ({ side, mark })),
+  }));
+}
+
+const PAIR_COLUMNS = pairColumns();
+
+/** How the partner spelling is written, for the column header: a twin
+ *  letter stands on its own, a silent ห goes in front of the low letter. */
+const partnerBase = (pair: TonePair, letter: string) => (pair.high ? pair.high.letter : 'ห' + letter);
+
+/** A matrix column header: the tone's own card, and under it how this
+ *  column is spelled — each base letter in its class colour, followed by
+ *  the mark written on it (or "no mark"). Shared by both matrices so a
+ *  reader moving between them reads the same header twice, and the case and
+ *  letter-spacing the table's `th` rule applies are reset once, here,
+ *  rather than reaching into the card. */
+function ToneColumnHeader({ tone, spellings }: {
+  tone: ToneName;
+  spellings: { base: string; color: string; mark: ToneMark | null }[];
+}) {
+  return (
+    <th style={{ color: TONE_COLOR[tone], textTransform: 'none', letterSpacing: 0, verticalAlign: 'top' }}>
+      <ToneCard tone={thaiTone(tone)} compact hideExample />
+      <span
+        style={{
+          display: 'block', marginTop: 7, marginBottom: 2, fontSize: '0.82rem',
+          fontWeight: 400, color: '#666',
+        }}
+      >
+        {spellings.map((sp, n) => (
+          // One spelling per line: a tone with two of them (ว + ่ and หว + ้
+          // both spell Falling) reads as two recipes, not one run-on string.
+          <span key={`${sp.base}-${sp.mark ?? 'none'}`} style={{ display: 'block', marginTop: n > 0 ? 2 : 0 }}>
+            <ThaiInline color={sp.color}>{sp.base}</ThaiInline>
+            {sp.mark && <> + <MarkGlyph mark={CHANT_MARK_GLYPH[sp.mark]} color={TONE_COLOR[tone]} fontSize="1.2rem" /></>}
+          </span>
+        ))}
+      </span>
+    </th>
+  );
+}
+
+/** One spelling in a pair-matrix cell: the syllable, its tone color, the
+ *  IPA behind a tooltip and the gloss under it — the same treatment the
+ *  single-letter matrix gives its cells, so a reader moving between the two
+ *  views reads them the same way. */
+function PairSpelling({ syll, ipa, gap }: { syll: string; ipa: string; gap?: boolean }) {
+  const gloss = KNOWN_GLOSSES[syll];
+  return (
+    <span style={{ display: 'block', marginTop: gap ? 7 : 0 }}>
+      <span
+        className={styles.label}
+        style={{ cursor: 'pointer' }}
+        data-tooltip={`/${ipa}/`}
+        onClick={() => speakThai(syll)}
+      >
+        {syll}
+      </span>
+      {gloss && <span className={styles.cellGloss}>{gloss}</span>}
+    </span>
+  );
+}
+
+/** One sound, spelled across all five tones. A low-class letter can only
+ *  reach three of them; this view sets it beside the partner that covers
+ *  the other two, so the whole tone range of a single sound reads as one
+ *  table instead of two class tables a reader has to join up themselves. */
+function PairMatrix() {
+  const [sound, setSound] = useState(TONE_PAIRS[0].sound);
+  const pair = TONE_PAIRS.find(p => p.sound === sound) ?? TONE_PAIRS[0];
+  const [letter, setLetter] = useState(pair.low[0].letter);
+  const lowLetter = pair.low.some(l => l.letter === letter) ? letter : pair.low[0].letter;
+  const bareInitial = pair.sound.replace(/\//g, '');
+
+  const selectPair = (p: TonePair) => {
+    setSound(p.sound);
+    setLetter(p.low[0].letter);
+  };
+
+  const spell = (v: (typeof VOWEL_ROWS)[number], side: ConsonantClass, mark: ToneMark | null) =>
+    v.pre
+    + (side === 'high' ? partnerBase(pair, lowLetter) : lowLetter)
+    + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail;
+
+  return (
+    <div>
+      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 10 }}>
+        One sound, both spellings. The low-class letter covers Mid, Falling and High; its partner —
+        a high-class twin, or a silent <ThaiInline>ห</ThaiInline> for the letters that have no twin —
+        covers Low and Rising.
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 16px', marginBottom: 10 }}>
+        {TONE_PAIRS.map(p => {
+          const active = p.sound === pair.sound;
+          return (
+            <div key={p.sound} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontSize: '0.62rem', color: '#999', fontFamily: 'monospace' }}>{p.sound}</span>
+              <button
+                type="button"
+                onClick={() => selectPair(p)}
+                style={{
+                  fontFamily: 'var(--thai-font)', fontSize: '1.05rem', lineHeight: 1,
+                  padding: '6px 10px 7px', borderRadius: 8, cursor: 'pointer', fontWeight: 500,
+                  border: `1.5px solid ${active ? PAIR_TAB_COLOR : '#ddd'}`,
+                  background: active ? `${PAIR_TAB_COLOR}14` : '#fff',
+                }}
+              >
+                {/* Each half in its own class colour — the same red and green
+                    the class tabs use — so the button itself says which
+                    letter is the low one and which covers the two tones it
+                    can't reach. */}
+                <span style={{ color: CLASS_COLOR.low }}>{p.low.map(l => l.letter).join(' ')}</span>
+                <span style={{ color: '#bbb' }}> · </span>
+                <span style={{ color: CLASS_COLOR.high }}>{p.high ? p.high.letter : 'ห นำ'}</span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      {pair.low.length > 1 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+          <span style={{ fontSize: '0.78rem', color: '#888' }}>Low letter:</span>
+          {pair.low.map(l => (
+            <LetterButton key={l.letter} c={l} active={l.letter === lowLetter} onClick={() => setLetter(l.letter)} />
+          ))}
+        </div>
+      )}
+
+      <table className={`${styles.cueTable} ${styles.matrixTable}`}>
+        <thead>
+          <tr>
+            <th></th>
+            {PAIR_COLUMNS.map(col => (
+              <ToneColumnHeader
+                key={col.tone}
+                tone={col.tone}
+                spellings={col.spellings.map(sp => ({
+                  base: sp.side === 'high' ? partnerBase(pair, lowLetter) : lowLetter,
+                  color: CLASS_COLOR[sp.side],
+                  mark: sp.mark,
+                }))}
+              />
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {VOWEL_ROWS.map((v, i) => {
+            const rowSylls = PAIR_COLUMNS.flatMap(col => col.spellings.map(sp => spell(v, sp.side, sp.mark)));
+            return (
+              <tr key={i}>
+                <td
+                  className={styles.cueThaiWord}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => speakThai(rowSylls)}
+                >
+                  {v.pre}{lowLetter}{v.attach}{v.trail}
+                </td>
+                {PAIR_COLUMNS.map(col => {
+                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[col.tone] + v.core.slice(1);
+                  return (
+                    <td key={col.tone} className={styles.cueThaiWord} style={{ color: TONE_COLOR[col.tone] }}>
+                      {col.spellings.map((sp, n) => (
+                        <PairSpelling
+                          key={`${sp.side}-${sp.mark ?? 'none'}`}
+                          syll={spell(v, sp.side, sp.mark)}
+                          ipa={ipa}
+                          gap={n > 0}
+                        />
+                      ))}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <CompoundWords
+        words={[
+          ...(LETTER_COMPOUNDS[lowLetter] ?? []),
+          ...(pair.high ? LETTER_COMPOUNDS[pair.high.letter] ?? [] : []),
+        ]}
+        subtitle={`everyday words that start with ${lowLetter}${pair.high ? ` or ${pair.high.letter}` : ''}`}
+      />
+    </div>
+  );
+}
+
+/** The paired view isn't one class, so it gets its own tab colour rather
+ *  than borrowing a class's. */
+const PAIR_TAB_COLOR = '#7c3aed';
+
+/** The matrix's four views: one per consonant class, plus the paired view
+ *  that puts a low-class letter next to the partner covering its missing
+ *  two tones. */
+type MatrixMode = ConsonantClass | 'pair';
+
 /** One consonant, shown two ways: the tone chant on a fixed vowel up top
  *  (same idea as the Chant loop above) and that same consonant's full
  *  vowel range against those marks below. Ties the vowel and tone systems
  *  to one shared letter instead of teaching them with no common example. */
 function VowelToneMatrix() {
-  const [activeClass, setActiveClass] = useState<ConsonantClass>('mid');
-  const classLetters = useMemo(() => byClass(activeClass).filter(c => !c.obsolete), [activeClass]);
+  const [activeClass, setActiveClass] = useState<MatrixMode>('mid');
+  // In the paired view the letter picker below is idle — it keeps the last
+  // single-letter class so the state it holds is still valid on the way back.
   const [letter, setLetter] = useState('ป');
   const consonant = CONSONANTS.find(c => c.letter === letter)!;
+  // In the paired view the letter picker below is idle — it keeps the last
+  // single-letter class so the state it holds is still valid on the way back.
+  const pickerClass: ConsonantClass = activeClass === 'pair' ? consonant.klass : activeClass;
+  const classLetters = useMemo(() => byClass(pickerClass).filter(c => !c.obsolete), [pickerClass]);
   const bareInitial = consonant.initial.replace(/\//g, '');
-  const sequence = useMemo(() => chantSequence(consonant.klass), [consonant.klass]);
+  const [showSilentH, setShowSilentH] = useState(false);
+  const [groupBySound, setGroupBySound] = useState(true);
+  const silentHAvailable = canTakeSilentH(consonant);
+  const sequence = useMemo<MatrixColumn[]>(() => {
+    const base = chantSequence(consonant.klass);
+    if (!(showSilentH && silentHAvailable)) return base;
+    // Sorted by tone rather than by mark: with the ห นำ columns added the
+    // letter covers all five tones, and reading them in the canonical order
+    // (Mid · Low · Falling · High · Rising) matters more than keeping the
+    // two spelling devices in separate blocks.
+    return [...base, ...silentHColumns(base)]
+      .sort((a, b) => toneOrder(a.tone) - toneOrder(b.tone));
+  }, [consonant.klass, showSilentH, silentHAvailable]);
 
   // Switching class tabs also jumps the selected letter to that class's
-  // first one, so the picker and the grids below always agree.
+  // first one, so the picker and the grids below always agree. Low class
+  // opens on its first single letter (ง) instead of ค: only the single
+  // letters can take the ห นำ columns, so landing on a paired one would
+  // hide that toggle behind a letter change.
   const selectClass = (klass: ConsonantClass) => {
     setActiveClass(klass);
-    const first = byClass(klass).find(c => !c.obsolete);
+    const letters = byClass(klass).filter(c => !c.obsolete);
+    const first = letters.find(canTakeSilentH) ?? letters[0];
     if (first) setLetter(first.letter);
   };
 
@@ -1104,109 +1568,177 @@ function VowelToneMatrix() {
       <p style={{ marginBottom: 8 }}>
         <strong>Vowel &times; tone matrix</strong>{' '}
         <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-          — one consonant: every legal tone mark up top, every vowel against those marks below
+          {activeClass === 'pair'
+            ? '— one sound, both of its spellings: all five tones against every vowel'
+            : '— one consonant: every legal tone mark up top, every vowel against those marks below'}
         </span>
       </p>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-        {(['mid', 'high', 'low'] as const).map(klass => {
-          const active = klass === activeClass;
+        {(['mid', 'high', 'low', 'pair'] as const).map(mode => {
+          const active = mode === activeClass;
+          const color = mode === 'pair' ? PAIR_TAB_COLOR : CLASS_COLOR[mode];
           return (
             <button
-              key={klass}
+              key={mode}
               type="button"
-              onClick={() => selectClass(klass)}
+              onClick={() => (mode === 'pair' ? setActiveClass('pair') : selectClass(mode))}
               style={{
                 fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 700, padding: '7px 16px',
-                borderRadius: 6, cursor: 'pointer', border: `2px solid ${CLASS_COLOR[klass]}`,
-                background: active ? CLASS_COLOR[klass] : '#fff',
-                color: active ? '#fff' : CLASS_COLOR[klass],
+                borderRadius: 6, cursor: 'pointer', border: `2px solid ${color}`,
+                background: active ? color : '#fff',
+                color: active ? '#fff' : color,
               }}
             >
-              {CLASS_LABEL[klass]}
+              {mode === 'pair' ? 'High + Low pair' : CLASS_LABEL[mode]}
             </button>
           );
         })}
       </div>
-      <div style={{ marginBottom: 14 }}>
-        <ClassVideoLink
-          href={CLASS_VIDEO[activeClass].href}
-          label={CLASS_VIDEO[activeClass].label}
-          color={CLASS_COLOR[activeClass]}
-        />
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-        {classLetters.map(c => (
-          <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+      {activeClass === 'pair' ? <PairMatrix /> : (
+        <>
+        <div style={{ marginBottom: 14 }}>
+          <ClassVideoLink
+            href={CLASS_VIDEO[activeClass].href}
+            label={CLASS_VIDEO[activeClass].label}
+            color={CLASS_COLOR[activeClass]}
+          />
+        </div>
+        <label
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5, marginBottom: 8,
+            fontSize: '0.78rem', color: '#555', cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={groupBySound}
+            onChange={e => setGroupBySound(e.target.checked)}
+          />
+          Group by sound
+        </label>
+        {groupBySound ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 16px', marginBottom: 10 }}>
+            {groupByInitial(classLetters).map(g => (
+              <div key={g.sound} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={{ fontSize: '0.62rem', color: '#999', fontFamily: 'monospace' }}>{g.sound}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {g.letters.map(c => (
+                    <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+            {classLetters.map(c => (
+              <LetterButton key={c.letter} c={c} active={c.letter === letter} onClick={() => setLetter(c.letter)} />
+            ))}
+          </div>
+        )}
+        <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
+          {consonant.klass === 'mid'
+            ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
+            : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
+        </p>
+        {consonant.klass === 'low' && (silentHAvailable ? (
+          <label
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12,
+              fontSize: '0.78rem', color: '#555', cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={showSilentH}
+              onChange={e => setShowSilentH(e.target.checked)}
+            />
+            <span>
+              Add <ThaiInline>ห นำ</ThaiInline> — the silent ห that lends{' '}
+              <ThaiInline>{letter}</ThaiInline> the Low and Rising tones it can't spell on its own.
+            </span>
+          </label>
+        ) : (
+          <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
+            <ThaiInline>{letter}</ThaiInline> reaches Low and Rising through its high-class twin,
+            not through a silent ห — that is only for the 10 single low-class letters{' '}
+            (<ThaiInline>ง ญ ณ น ม ย ร ล ว ฬ</ThaiInline>).
+          </p>
         ))}
-      </div>
-      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 12 }}>
-        {consonant.klass === 'mid'
-          ? 'Mid class takes all 4 marks — the only class with a full 5-tone chant.'
-          : 'No ๊ or ๋ here — those two marks are only ever written over mid-class letters.'}
-      </p>
 
-      <table className={`${styles.cueTable} ${styles.matrixTable}`}>
-        <thead>
-          <tr>
-            <th></th>
-            {sequence.map(({ mark, tone }) => (
-              <th key={mark ?? 'none'} style={mark ? undefined : { color: TONE_COLOR[tone] }}>
-                {mark ? <MarkGlyph mark={CHANT_MARK_GLYPH[mark]} color={TONE_COLOR[tone]} fontSize="1.3rem" /> : 'No mark'}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td></td>
-            {sequence.map(({ mark, tone }) => (
-              <td key={mark ?? 'none'} style={{ paddingBottom: 14 }}>
-                <ToneCard tone={thaiTone(tone)} compact hideExample />
-              </td>
-            ))}
-          </tr>
-          {VOWEL_ROWS.map((v, i) => {
-            const rowSylls = sequence.map(({ mark }) => v.pre + letter + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail);
-            return (
-            <tr key={i}>
-              <td
-                className={styles.cueThaiWord}
-                style={{ cursor: 'pointer' }}
-                onClick={() => speakThai(rowSylls)}
-              >
-                {v.pre}{letter}{v.attach}{v.trail}
-              </td>
-              {sequence.map(({ mark, tone }, colIndex) => {
-                const color = TONE_COLOR[tone];
-                const syll = rowSylls[colIndex];
-                const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
-                // Prefer a verified real word for this exact syllable
-                // (KNOWN_GLOSSES) over v.example, which is one fixed word
-                // per row from vowels.ts, usually built on a different
-                // consonant than whatever's selected here, and sometimes
-                // itself already carries a mark (กี่ for the ◌ี row) —
-                // matching it requires the exact same letter *and* mark,
-                // not just "the unmarked column."
-                const gloss = KNOWN_GLOSSES[syll] ?? (syll === v.example ? v.gloss : undefined);
-                return (
-                  <td key={mark ?? 'none'} className={styles.cueThaiWord}>
-                    <span
-                      className={styles.label}
-                      style={{ color, cursor: 'pointer' }}
-                      data-tooltip={`/${ipa}/`}
-                      onClick={() => speakThai(syll)}
-                    >
-                      {syll}
-                    </span>
-                    {gloss && <span className={styles.cellGloss}>{gloss}</span>}
-                  </td>
-                );
-              })}
+        <table className={`${styles.cueTable} ${styles.matrixTable}`}>
+          <thead>
+            <tr>
+              <th></th>
+              {sequence.map(col => (
+                <ToneColumnHeader
+                  key={columnKey(col)}
+                  tone={col.tone}
+                  spellings={[{
+                    base: col.silentH ? 'ห' + letter : letter,
+                    color: col.silentH ? CLASS_COLOR.high : CLASS_COLOR[consonant.klass],
+                    mark: col.mark,
+                  }]}
+                />
+              ))}
             </tr>
-            );
-          })}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {VOWEL_ROWS.map((v, i) => {
+              // A tone mark sits on the letter carrying the vowel, so in a ห นำ
+              // spelling it follows the second consonant rather than the ห:
+              // เ + ห + ง + ◌ื + ◌่ + อ = เหงื่อ.
+              const rowSylls = sequence.map(({ mark, silentH }) =>
+                v.pre + (silentH ? 'ห' : '') + letter + v.attach + (mark ? CHANT_MARK_GLYPH[mark] : '') + v.trail);
+              return (
+              <tr key={i}>
+                <td
+                  className={styles.cueThaiWord}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => speakThai(rowSylls)}
+                >
+                  {v.pre}{letter}{v.attach}{v.trail}
+                </td>
+                {sequence.map((col, colIndex) => {
+                  const { tone } = col;
+                  const color = TONE_COLOR[tone];
+                  const syll = rowSylls[colIndex];
+                  const ipa = bareInitial + v.core[0] + TONE_DIACRITIC[tone] + v.core.slice(1);
+                  // Prefer a verified real word for this exact syllable
+                  // (KNOWN_GLOSSES) over v.example, which is one fixed word
+                  // per row from vowels.ts, usually built on a different
+                  // consonant than whatever's selected here, and sometimes
+                  // itself already carries a mark (กี่ for the ◌ี row) —
+                  // matching it requires the exact same letter *and* mark,
+                  // not just "the unmarked column."
+                  const gloss = KNOWN_GLOSSES[syll] ?? (syll === v.example ? v.gloss : undefined);
+                  return (
+                    <td key={columnKey(col)} className={styles.cueThaiWord}>
+                      <span
+                        className={styles.label}
+                        style={{ color, cursor: 'pointer' }}
+                        data-tooltip={`/${ipa}/`}
+                        onClick={() => speakThai(syll)}
+                      >
+                        {syll}
+                      </span>
+                      {gloss && <span className={styles.cellGloss}>{gloss}</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <CompoundWords
+          words={LETTER_COMPOUNDS[letter] ?? CLASS_COMPOUND_WORDS[consonant.klass]}
+          subtitle={LETTER_COMPOUNDS[letter]
+            ? `everyday words that start with ${letter}`
+            : `${CLASS_LABEL[consonant.klass].toLowerCase()} pairs — ${letter} starts few words of its own`}
+        />
+        </>
+      )}
     </div>
   );
 }
@@ -1232,7 +1764,6 @@ function WordCell({ word, ipa, gloss, tone }: MidWord & { tone: ToneName }) {
 function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
   const columns = CLASS_FAMILY_COLUMNS[klass];
   const rows = CLASS_FAMILIES[klass];
-  const compounds = CLASS_COMPOUND_WORDS[klass];
   return (
     <div style={{ marginTop: 24 }}>
       <p style={{ marginBottom: 8 }}>
@@ -1268,29 +1799,6 @@ function ClassWordFamilies({ klass }: { klass: ConsonantClass }) {
         </tbody>
       </table>
 
-      {compounds.length > 0 && (
-        <>
-          <p style={{ marginTop: 14, marginBottom: 6, fontSize: '0.85rem' }}>
-            <strong>Compound words</strong>{' '}
-            <span style={{ fontWeight: 400, color: '#666', fontSize: '0.82rem' }}>
-              — built from the syllables above
-            </span>
-          </p>
-          <table className={styles.cueTable}>
-            <tbody>
-              {compounds.map(({ word, ipa, gloss }, i) => (
-                <tr key={i}>
-                  <td className={styles.cueThaiWord} style={{ width: '1%', whiteSpace: 'nowrap' }}>{word}</td>
-                  <td style={{ width: '1%', whiteSpace: 'nowrap', color: '#888', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
-                    /{ipa}/
-                  </td>
-                  <td style={{ color: '#888', fontSize: '0.85rem' }}>{gloss}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
     </div>
   );
 }

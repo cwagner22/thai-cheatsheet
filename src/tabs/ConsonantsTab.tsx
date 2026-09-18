@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { byClass, CONSONANTS } from '../data/consonants';
-import type { Consonant, SoundGroup } from '../data/consonants';
+import { byClass, CONSONANTS, groupByInitial } from '../data/consonants';
+import type { Consonant } from '../data/consonants';
 import { speakThai } from '../lib/speak';
 import { PlayButton } from '../components/PlayButton';
 import styles from './ConsonantsTab.module.css';
@@ -123,23 +123,6 @@ function ConsonantWord({ text, by }: { text: string; by: 'letter' | 'nameShort' 
       {text}
     </span>
   );
-}
-
-/** Groups a class's letters by shared sound (e.g. ด/ฎ both /d/), same shape
- *  as the By Sound view's own groups — letters that sound identical stay
- *  distinct entries (different history, different rarity) but read as one
- *  row instead of one apiece. */
-function groupByInitial(rows: Consonant[]): SoundGroup[] {
-  const order: string[] = [];
-  const map = new Map<string, Consonant[]>();
-  for (const c of rows) {
-    if (!map.has(c.initial)) {
-      order.push(c.initial);
-      map.set(c.initial, []);
-    }
-    map.get(c.initial)!.push(c);
-  }
-  return order.map(sound => ({ sound, final: '', letters: map.get(sound)! }));
 }
 
 function ClassTable({ klass, headerClass, groupBySound }: { klass: Consonant['klass']; headerClass: string; groupBySound?: boolean }) {
