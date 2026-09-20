@@ -1,3 +1,5 @@
+import type { ToneName } from '../lib/toneLookup';
+
 export interface ToneEntry {
   /** Primary label (Standard: Thai class name "สามัญ"; Northern: Gedney box code, e.g. "A1–2"). */
   name: string;
@@ -177,3 +179,15 @@ export const NORTHERN_TONE_BOX: ToneBoxRow[] = [
     ],
   },
 ];
+
+/** The color each tone is drawn in, wherever it appears — the contour cards
+ *  on the Tones tab and the target bands on the Speaking tab. Matches the
+ *  `color` on the THAI_TONES entries above; kept as its own lookup because
+ *  those are keyed by Thai name while every consumer has an English one. */
+export const TONE_COLOR: Record<ToneName, string> = {
+  Mid: '#2563eb',     // blue
+  Low: '#dc2626',     // red
+  Falling: '#7c3aed', // purple
+  High: '#16a34a',    // green
+  Rising: '#db2777',  // pink
+};

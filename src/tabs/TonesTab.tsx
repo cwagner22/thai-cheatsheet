@@ -1,5 +1,5 @@
 import { useState, useMemo, type ReactNode } from 'react';
-import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, type ToneBoxOutcome } from '../data/tones';
+import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, TONE_COLOR, type ToneBoxOutcome } from '../data/tones';
 import { CONSONANTS, byClass, groupByInitial, TONE_PAIRS, type ConsonantClass, type Consonant, type TonePair } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
@@ -61,16 +61,6 @@ const LOW_COMPOUND_WORDS: { word: string; ipa: string; gloss: string }[] = [
 
 /** Look up a NORTHERN_TONES entry by its Gedney box code — for the tone box table below. */
 const northernTone = (name: string) => NORTHERN_TONES.find(t => t.name === name)!;
-
-/** Contour-graph colors from THAI_TONES — kept in sync by hand for now so
- *  this file doesn't depend on the data module just for a tiny lookup. */
-const TONE_COLOR: Record<ToneName, string> = {
-  Mid: '#2563eb',     // blue
-  Low: '#dc2626',     // red
-  Falling: '#7c3aed', // purple
-  High: '#16a34a',    // green
-  Rising: '#db2777',  // pink
-};
 
 /** Tone-mark glyph by tone name. Mid has no mark — the cell stays empty. */
 const TONE_MARK: Record<ToneName, string> = {

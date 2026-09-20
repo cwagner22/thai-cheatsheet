@@ -107,3 +107,7 @@ above:
 - `src/data/alphabetPoem.ts` — `anchorRom`, `extRom`, `practiceWords[].rom`
 - `src/tabs/ClustersTab.tsx` — inline IPA in Non-Conforming, Cluster Rules,
   Orthography, and all quirks sections
+- `src/data/phrases.ts` — `ipa` on every syllable of every practice sentence.
+  The Speaking tab reads each syllable's tone back off its IPA diacritic, so a
+  Paiboon spelling here does not just look wrong, it silently drops the
+  syllable to mid tone and draws the wrong target.
