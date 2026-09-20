@@ -103,8 +103,10 @@ export interface SyllableScore {
   /** The native syllable scored — or, when the learner ran several
    *  together, one span covering all of them with their spellings joined. */
   span: SyllableSpan;
-  /** The syllables `span` covers, when there is more than one. */
-  parts?: string[];
+  /** The syllables `span` covers, when there is more than one, each with
+   *  its own tone — a merged chip still colours every syllable by its own
+   *  tone, not by the first one's. */
+  parts?: { thai: string; tone: ToneName }[];
   verdict: SyllableVerdict;
   /** Mean semitones above (+) or below (−) the native voice on this syllable. */
   levelSt: number;
@@ -274,11 +276,11 @@ function scoreSyllables(
   return groupSlots(spans, ref, lrn).map(({ idx, ran }) => {
     const first = spans[idx[0]];
     const last = spans[idx[idx.length - 1]];
-    const parts = idx.map(i => spans[i].thai);
+    const parts = idx.map(i => ({ thai: spans[i].thai, tone: spans[i].tone }));
     const span: SyllableSpan =
       idx.length === 1
         ? first
-        : { ...first, thai: parts.join(''), ipa: idx.map(i => spans[i].ipa).join('.'), endMs: last.endMs };
+        : { ...first, thai: parts.map(p => p.thai).join(''), ipa: idx.map(i => spans[i].ipa).join('.'), endMs: last.endMs };
     const refSt = idx.flatMap(i => ref[i]);
     const lrnSt = idx.flatMap(i => lrn[i]);
     const same = <T,>(pick: (span: SyllableSpan) => T, fallback: T): T => {

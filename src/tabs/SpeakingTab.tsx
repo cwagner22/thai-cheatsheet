@@ -878,7 +878,11 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
               className={`${styles.scoreChip} ${chipClass(score.verdict)}`}
               title={score.hint || `${score.span.tone} tone — matched the native voice`}
             >
-              <span className={styles.scoreThai} style={{ color: TONE_COLOR[score.span.tone] }}>{score.span.thai}</span>
+              <span className={styles.scoreThai}>
+                {(score.parts ?? [{ thai: score.span.thai, tone: score.span.tone }]).map((part, j) => (
+                  <span key={j} style={{ color: TONE_COLOR[part.tone] }}>{part.thai}</span>
+                ))}
+              </span>
               <span className={styles.scoreLabel}>{SYLLABLE_LABEL[score.verdict]}</span>
             </span>
           ))}
@@ -886,15 +890,22 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
       )}
       {merged.length > 0 && (
         <p className={styles.paceLine}>
-          {merged.map(s => s.parts!.join(' + ')).join(', ')} ran together in your take and are marked as one.
+          {merged.map(s => s.parts!.map(p => p.thai).join(' + ')).join(', ')} ran together in your take and are marked as one.
         </p>
       )}
       {hints.length > 0 && (
         <ul className={styles.hintList}>
           {hints.map((score, i) => (
             <li key={i}>
-              <span className={styles.hintThai} style={{ color: TONE_COLOR[score.span.tone] }}>{score.span.thai}</span>{' '}
-              <span className={styles.hintTone}>({score.span.tone.toLowerCase()})</span> {score.hint}
+              <span className={styles.hintThai}>
+                {(score.parts ?? [{ thai: score.span.thai, tone: score.span.tone }]).map((part, j) => (
+                  <span key={j} style={{ color: TONE_COLOR[part.tone] }}>{part.thai}</span>
+                ))}
+              </span>{' '}
+              <span className={styles.hintTone}>
+                ({(score.parts ?? [score.span]).map(p => p.tone.toLowerCase()).join(' + ')})
+              </span>{' '}
+              {score.hint}
             </li>
           ))}
         </ul>
