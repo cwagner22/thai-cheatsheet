@@ -97,6 +97,13 @@
 .stopping { background: var(--ink); box-shadow: none; }
 .stopping .recDot { border-radius: 2px; box-shadow: none; }
 .keys { font-size: 0.78rem; color: var(--ink-3); }
+
+.method { margin: -8px 0 14px; font-size: 0.86rem; color: var(--ink-2); }
+.method summary { cursor: pointer; color: var(--ink-3); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; list-style: none; }
+.method summary::before { content: '▸ '; }
+.method[open] summary::before { content: '▾ '; }
+.method ol { margin: 8px 0 0; padding-left: 20px; line-height: 1.55; max-width: 62ch; }
+.method li + li { margin-top: 4px; }
 .keys kbd {
   font-family: var(--mono-font);
   font-size: 0.7rem;

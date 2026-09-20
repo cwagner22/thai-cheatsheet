@@ -209,6 +209,13 @@ td.initial-sound, td.final-sound { font-family: var(--mono-font); font-size: 0.9
 .tone-rules { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 0.82rem; line-height: 1.7; }
 .tone-rules h2 { font-size: 1rem; margin-bottom: 8px; }
 
+/* Five one-line cues: what making each tone feels like, above the table
+   that says when each tone occurs. */
+.tone-feel { margin: 0 0 18px; font-size: 0.86rem; color: var(--ink-2); }
+.tone-feel-title { margin: 0 0 6px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-3); font-weight: 600; }
+.tone-feel ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 24px; }
+.tone-feel strong { font-weight: 600; margin-right: 6px; }
+
 .footer { margin-top: 96px; font-size: 0.78rem; color: var(--ink-3); }
 
 /* ===== VIEW TOGGLE ===== */

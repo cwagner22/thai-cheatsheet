@@ -707,6 +707,16 @@ function PracticePanel({
         </div>
       </header>
 
+      <details className={styles.method}>
+        <summary>How to practise a tone</summary>
+        <ol>
+          <li><b>Hear</b> the native voice and watch its line: level, dipping, rising, or peak-and-drop. Ignore the spelling.</li>
+          <li><b>Feel</b> what your throat does to make that shape — low is relaxed and dropped, falling is a quick tighten then release, high is held tension, rising starts loose and tightens.</li>
+          <li><b>See</b> your own line against the dashed native one; where they part is where the throat did something else.</li>
+          <li><b>Lock it in</b>: say the word until the shape and the sensation come together, then the meaning rides on that, not on a rule.</li>
+        </ol>
+      </details>
+
       <div className={styles.stack}>
         <PhraseScope
           data={nativeScope}

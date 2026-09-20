@@ -1533,6 +1533,17 @@ export function TonesTab() {
           <strong>falling tone</strong>
         </div>
 
+        <div className="tone-feel" aria-label="What each tone feels like">
+          <p className="tone-feel-title">In the throat</p>
+          <ul>
+            {THAI_TONES.filter(t => t.feel).map(t => (
+              <li key={t.name}>
+                <strong style={{ color: t.color }}>{t.nameEn}</strong> {t.feel}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ margin: 0 }}><strong>Unified tone table</strong></p>
           <SplitAllButton

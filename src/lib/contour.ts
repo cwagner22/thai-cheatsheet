@@ -9,6 +9,7 @@ import type { Frame } from './capture';
 import { foldOctave, hzToSemitones, registerHz as registerHzOf } from './pitch';
 import { dtwAlign, SPEECH_SHARE } from './align';
 import type { SyllableSpan } from './segment';
+import { THAI_TONES } from '../data/tones';
 
 /** Keyed by combining diacritic; the IPA is decomposed first because some
  *  vowels have a precomposed form (à) and some do not (ɯ̌). */
@@ -179,6 +180,13 @@ const TONE_SIDE: Record<ToneName, -1 | 0 | 1> = {
   Rising: 1,
 };
 
+/** The throat cue for each tone, from the Tones tab's cards, so a hint ends
+ *  with something the learner can do rather than only what was measured. */
+const TONE_FEEL = Object.fromEntries(
+  THAI_TONES.map(t => [t.nameEn as ToneName, t.feel ?? '']),
+) as Record<ToneName, string>;
+const cue = (span: SyllableSpan) => (TONE_FEEL[span.tone] ? ` · ${span.tone.toLowerCase()} tone: ${TONE_FEEL[span.tone]}` : '');
+
 /** Learner speech frames landing in each slot, relative to the native
  *  slot's. Separates a slot with sound in it that was too brief to read
  *  from a slot with nothing in it at all. It cannot tell a skipped syllable
@@ -312,7 +320,7 @@ function scoreSyllables(
       const above = levelSt > 0;
       return {
         ...base, levelSt, verdict: above ? ('high' as const) : ('low' as const),
-        hint: `your pitch on ${span.thai} sits about ${Math.abs(levelSt).toFixed(1)} st ${above ? 'higher' : 'lower'} than the native voice — ${above ? 'start it lower' : 'bring it up'}`,
+        hint: `your pitch on ${span.thai} sits about ${Math.abs(levelSt).toFixed(1)} st ${above ? 'higher' : 'lower'} than the native voice — ${above ? 'start it lower' : 'bring it up'}${cue(span)}`,
       };
     }
 
@@ -325,13 +333,13 @@ function scoreSyllables(
       if (against > got && against >= 0.6) {
         return {
           ...base, levelSt, verdict: 'shape' as const,
-          hint: `the native pitch slides ${way} across ${span.thai}; yours goes the other way`,
+          hint: `the native pitch slides ${way} across ${span.thai}; yours goes the other way${cue(span)}`,
         };
       }
       if (got < FLAT_SHARE * want) {
         return {
           ...base, levelSt, verdict: 'flat' as const,
-          hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${got.toFixed(1)} st — let it ${taught < 0 ? 'drop' : 'climb'} more`,
+          hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${got.toFixed(1)} st${cue(span)}`,
         };
       }
     }

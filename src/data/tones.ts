@@ -23,6 +23,10 @@ export interface ToneEntry {
   ipa: string;
   /** SVG path for the pitch contour (viewBox 0 0 160 80). */
   path: string;
+  /** What producing the tone feels like in the throat — the cue a learner
+   *  can act on while speaking, as opposed to the pitch shape they can only
+   *  see afterwards. Standard Thai only. */
+  feel?: string;
   /** Example Thai word */
   example: string;
   /** IPA reading + gloss, e.g. "piː · year" */
@@ -33,6 +37,7 @@ export const THAI_TONES: ToneEntry[] = [
   {
     name: 'สามัญ', nameEn: 'Mid', nameIpa: '/sǎː.man/', color: '#2563eb',
     desc: 'Mid', chao: '33332', ipa: '˧',
+    feel: 'no push: your ordinary speaking pitch, held level',
     path: 'M 14,40 L 50,40 L 90,40 L 125,40 L 155,55',
     example: 'ปี', exampleGloss: 'piː · year',
   },
@@ -40,6 +45,7 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'เอก', nameEn: 'Low', nameIpa: '/èːk/',
     mark: '่', markName: 'ไม้เอก', markIpa: '/máj.èːk/', color: '#dc2626',
     desc: 'Low', chao: '21111', ipa: '˨˩',
+    feel: 'relax the folds; let the larynx drop and stay down',
     path: 'M 14,55 L 50,70 L 90,70 L 125,70 L 155,70',
     example: 'ไข่', exampleGloss: 'kʰàj · egg',
   },
@@ -47,6 +53,7 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'โท', nameEn: 'Falling', nameIpa: '/tʰoː/',
     mark: '้', markName: 'ไม้โท', markIpa: '/máj.tʰoː/', color: '#7c3aed',
     desc: 'Falling', chao: '551', ipa: '˥˩',
+    feel: 'tighten quickly to hit the top, then let go',
     path: 'M 14,10 L 85,10 L 155,70',
     example: 'พี่', exampleGloss: 'pʰîː · older sibling',
   },
@@ -54,6 +61,7 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'ตรี', nameEn: 'High', nameIpa: '/triː/',
     mark: '๊', markName: 'ไม้ตรี', markIpa: '/máj.triː/', color: '#16a34a',
     desc: 'High', chao: '45', ipa: '˦˥',
+    feel: 'hold tension near the top of your range',
     path: 'M 14,25 L 155,10',
     example: 'น้ำ', exampleGloss: 'nám · water',
   },
@@ -61,6 +69,7 @@ export const THAI_TONES: ToneEntry[] = [
     name: 'จัตวา', nameEn: 'Rising', nameIpa: '/tɕàt.tà.waː/',
     mark: '๋', markName: 'ไม้จัตวา', markIpa: '/máj.tɕàt.tà.waː/', color: '#db2777',
     desc: 'Rising', chao: '214', ipa: '˨˩˦',
+    feel: 'start relaxed and low, tighten smoothly upward',
     path: 'M 14,55 L 85,70 L 155,25',
     example: 'หา', exampleGloss: 'hǎː · search',
   },
