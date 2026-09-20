@@ -15,7 +15,6 @@ import {
 import { cachedReference, captureReference, playReference, type Playback, type Reference } from '../lib/reference';
 import { PhraseScope, type ScopeData } from '../components/PhraseScope';
 import scopeStyles from '../components/PhraseScope.module.css';
-import { PlayButton } from '../components/PlayButton';
 import { speakThai } from '../lib/speak';
 import { readRoute, writeRoute } from '../lib/route';
 import styles from './SpeakingTab.module.css';
@@ -43,6 +42,8 @@ type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
 /** Which panel a playhead is running across, if any. */
 type Playing = 'native' | 'you' | null;
 
+const ALL_PHRASES = PHRASE_GROUPS.flatMap(g => g.phrases);
+
 const NATIVE_LABEL = 'Native · Google Translate';
 const YOU_LABEL = 'You';
 
@@ -53,14 +54,26 @@ function emptyScope(windowMs: number, label: string, emptyText: string, gain: nu
 export function SpeakingTab() {
   const [phrase, setPhrase] = useState<Phrase>(() => {
     const wanted = readRoute().sub;
-    return PHRASE_GROUPS.flatMap(g => g.phrases).find(p => p.id === wanted) ?? PHRASE_GROUPS[0].phrases[0];
+    return ALL_PHRASES.find(p => p.id === wanted) ?? ALL_PHRASES[0];
   });
   useEffect(() => writeRoute('speaking', phrase.id), [phrase]);
+  const pick = useCallback((id: string) => {
+    const next = ALL_PHRASES.find(p => p.id === id);
+    if (next) setPhrase(current => (current.id === next.id ? current : next));
+  }, []);
+  /** Moves to the neighbouring sentence, wrapping at the ends. */
+  const step = useCallback(
+    (delta: number) => {
+      const i = ALL_PHRASES.findIndex(p => p.id === phrase.id);
+      setPhrase(ALL_PHRASES[(i + delta + ALL_PHRASES.length) % ALL_PHRASES.length]);
+    },
+    [phrase],
+  );
   // A hash typed or pasted while the tab is open selects that sentence.
   useEffect(() => {
     const onHash = () => {
       const wanted = readRoute().sub;
-      const next = PHRASE_GROUPS.flatMap(g => g.phrases).find(p => p.id === wanted);
+      const next = ALL_PHRASES.find(p => p.id === wanted);
       if (next) setPhrase(current => (current.id === next.id ? current : next));
     };
     window.addEventListener('hashchange', onHash);
@@ -485,18 +498,22 @@ export function SpeakingTab() {
     if (busy) return;
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'A' || tag === 'TEXTAREA') return;
+      if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'A' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.code === 'Space') {
         e.preventDefault();
         void record();
-      } else if (e.code === 'KeyL' && !e.metaKey && !e.ctrlKey) {
+      } else if (e.code === 'KeyL') {
         e.preventDefault();
         listen();
+      } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+        e.preventDefault();
+        step(e.code === 'ArrowRight' ? 1 : -1);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [busy, record, listen]);
+  }, [busy, record, listen, step]);
 
   const onToggleTextbook = () => {
     const next = !showTextbook;
@@ -531,6 +548,8 @@ export function SpeakingTab() {
         revision={revision}
         heard={heard}
         mismatches={mismatches}
+        onPick={pick}
+        onStep={step}
         live={live || playing === 'you'}
         nativeLive={refStatus === 'loading' || refStatus === 'playing' || playing === 'native'}
         busy={busy}
@@ -579,6 +598,8 @@ function PracticePanel({
   playing,
   heard,
   mismatches,
+  onPick,
+  onStep,
   onListen,
   onListenToTake,
   onRecord,
@@ -606,6 +627,8 @@ function PracticePanel({
   heard: boolean;
   /** Native syllables whose movement contradicts their tone's direction. */
   mismatches: string[];
+  onPick: (id: string) => void;
+  onStep: (delta: number) => void;
   onListen: () => void;
   onListenToTake: () => void;
   onRecord: () => void;
@@ -619,6 +642,25 @@ function PracticePanel({
     <div className={styles.panel}>
       <header className={styles.poster}>
         <div>
+          <div className={styles.switcher}>
+            <button type="button" className={styles.stepBtn} onClick={() => onStep(-1)} disabled={busy} aria-label="Previous sentence">‹</button>
+            <select
+              className={styles.sentenceSelect}
+              value={phrase.id}
+              onChange={e => onPick(e.target.value)}
+              disabled={busy}
+              aria-label="Sentence"
+            >
+              {PHRASE_GROUPS.map(group => (
+                <optgroup key={group.id} label={group.title}>
+                  {group.phrases.map(p => (
+                    <option key={p.id} value={p.id}>{thaiOf(p)} — {p.meaning}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <button type="button" className={styles.stepBtn} onClick={() => onStep(1)} disabled={busy} aria-label="Next sentence">›</button>
+          </div>
           <p className={styles.sentence}>
             {phrase.words.map((word, i) => (
               <button
@@ -660,7 +702,7 @@ function PracticePanel({
             </button>
           )}
           <span className={styles.keys}>
-            <kbd>Space</kbd> records · <kbd>L</kbd> plays the native voice
+            <kbd>Space</kbd> records · <kbd>L</kbd> native voice · <kbd>←</kbd> <kbd>→</kbd> sentences
           </span>
         </div>
       </header>
@@ -863,7 +905,6 @@ function PhraseRow({ phrase, selected, onSelect }: { phrase: Phrase; selected: b
         <span className={styles.rowMeaning}>{phrase.meaning}</span>
         <span className={styles.rowGo}>{selected ? 'Practising' : 'Practise →'}</span>
       </button>
-      <PlayButton words={thaiOf(phrase)} title="Play this sentence" />
     </div>
   );
 }
