@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase } from '../data/phrases';
-import { TONE_COLOR, TONE_FEEL } from '../data/tones';
+import { TONE_COLOR } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
 import { SPEECH_SHARE } from '../lib/align';
 import {
@@ -698,14 +698,6 @@ function PracticePanel({
             <span className={styles.gloss}>{phrase.meaning}</span>
             <span className={styles.tap}>· tap a word to hear it</span>
           </div>
-          <p className={styles.cues}>
-            {[...new Set(phrase.words.flatMap(w => w.syllables.map(s => toneOf(s.ipa))))].map((tone, i) => (
-              <span key={tone} className={styles.cue}>
-                {i > 0 && <span className={styles.cueSep}> · </span>}
-                <b style={{ color: TONE_COLOR[tone] }}>{tone.toLowerCase()}</b> {TONE_FEEL[tone]}
-              </span>
-            ))}
-          </p>
         </div>
         <div className={styles.act}>
           {status === 'recording' ? (
@@ -733,12 +725,17 @@ function PracticePanel({
       </header>
 
       <details className={styles.method}>
-        <summary>How to practise a tone</summary>
+        <summary>How to practise a tone — the throat first, the lines second</summary>
+        <p>
+          A tone is remembered as what your throat does, not as a line to read or a rule to work
+          out from the spelling. The pictures here are for checking afterwards; while you speak,
+          attend to the sensation.
+        </p>
         <ol>
-          <li><b>Hear</b> the native voice and watch its line: level, dipping, rising, or peak-and-drop. Ignore the spelling.</li>
-          <li><b>Feel</b> what your throat does to make that shape — low is relaxed and dropped, falling is a quick tighten then release, high is held tension, rising starts loose and tightens.</li>
-          <li><b>See</b> your own line against the dashed native one; where they part is where the throat did something else.</li>
-          <li><b>Lock it in</b>: say the word until the shape and the sensation come together, then the meaning rides on that, not on a rule.</li>
+          <li><b>Hear</b> the native voice: level, dipping, rising, or peak-and-drop. Don't look at the letters.</li>
+          <li><b>Feel</b> what your throat does to make that shape. The cues are on the Tones page: low is relaxed and dropped, falling is a quick tighten then release, high is held tension, rising starts loose and tightens.</li>
+          <li><b>Check</b> your line against the dashed native one — after the take, not during it. Where they part is where the throat did something else.</li>
+          <li><b>Lock it in</b>: repeat until the sensation and the sound arrive together; the meaning then rides on that.</li>
         </ol>
       </details>
 

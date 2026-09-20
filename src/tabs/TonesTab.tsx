@@ -513,6 +513,8 @@ function PracticeSentence() {
       </p>
       <p style={{ fontSize: '0.85rem', color: '#666', margin: '14px 0 4px' }}>
         <em>"Doesn't grandpa know?"</em>
+        {' · '}
+        <a href="#/speaking/khunpu" style={{ color: 'inherit' }}>practise it against the native voice →</a>
       </p>
 
       <table className={styles.cueTable}>
