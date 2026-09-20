@@ -1,4 +1,7 @@
-# Thai Cheat Sheet — project notes
+# Thai Lab — project notes
+
+The app is called Thai Lab; the repository and the Pages URL keep the
+original name `thai-cheatsheet`.
 
 ## Pronunciation notation: IPA only, with tone diacritics
 

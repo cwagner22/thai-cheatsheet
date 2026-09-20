@@ -98,7 +98,7 @@ export function App() {
   return (
     <div className="shell">
       <nav className="side" aria-label="Sections">
-        <div className="brand"><span className="brand-mark">ก</span>Thai Cheat Sheet</div>
+        <div className="brand"><span className="brand-mark">ก</span>Thai Lab</div>
         <NavGroup title="Practise" tabs={PRACTISE} kind="practise" active={tab} onPick={setTab} />
         <NavGroup title="Reference" tabs={REFERENCE} kind="reference" active={tab} onPick={setTab} />
         <div className="side-foot">
@@ -125,7 +125,7 @@ export function App() {
         {tab === 'typing' && <TypingTab />}
         {tab === 'writing' && <WritingTab />}
 
-        <p className="footer">Thai Cheat Sheet · built for quick reference</p>
+        <p className="footer">Thai Lab · speak, type, write — and look it up</p>
       </main>
     </div>
   );
