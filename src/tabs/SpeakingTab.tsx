@@ -744,7 +744,8 @@ function PracticePanel({
                 type="button"
                 className={`${styles.wordBtn} ${spokenWord === i ? styles.wordSpeaking : ''}`}
                 onClick={() => speakThai(thaiOfWord(word))}
-                title={`/${ipaOfWord(word)}/ · ${word.gloss}`}
+                data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
+                aria-label={`${thaiOfWord(word)} — play`}
               >
                 {word.syllables.map((syl, j) => (
                   <span key={j} style={{ color: TONE_COLOR[syllableTone(syl)] }}>{syl.thai}</span>
@@ -752,11 +753,8 @@ function PracticePanel({
               </button>
             ))}
           </p>
-          <div className={styles.under}>
-            {ipaOf(phrase).trim() && <span className={styles.posterIpa}>/{ipaOf(phrase)}/</span>}
-            <span className={styles.gloss}>{phrase.meaning}</span>
-            {!speaking && <span className={styles.tap}>· tap a word to hear it</span>}
-          </div>
+          {ipaOf(phrase).trim() && <p className={styles.posterIpa}>/{ipaOf(phrase)}/</p>}
+          <p className={styles.gloss}>{phrase.meaning}</p>
         </div>
         <div className={styles.act}>
           {status === 'recording' ? (
