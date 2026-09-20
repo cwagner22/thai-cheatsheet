@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Count-in — what the You panel shows</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--low:#dc2626;--mid:#2563eb;--fall:#7c3aed;--high:#16a34a;--rise:#db2777;--thai:'Noto Serif Thai',serif;--ui:'Bricolage Grotesque',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+  body{margin:0;background:#eceef1;font-family:var(--ui);color:#0f0f10;font-size:15px;padding:28px 32px}
+  h1{font-size:1.1rem;margin:0 0 4px} p.sub{margin:0 0 22px;color:#64748b;font-size:.86rem;max-width:820px;line-height:1.5}
+  .opt{margin-bottom:34px;max-width:960px} .opt h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 6px}
+  .opt p.why{margin:0 0 12px;font-size:.84rem;color:#475569;line-height:1.5}
+  .th{font-family:var(--thai);font-weight:700}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .cap{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px;font-weight:600}
+  /* the panel */
+  .panel{position:relative;background:#05070d;border-radius:12px;height:280px;overflow:hidden;font-family:var(--mono);color:#94a3b8;font-size:.62rem}
+  .grid{position:absolute;left:44px;right:34px;top:14px;bottom:26px;border:1px solid rgba(226,232,240,.22)}
+  .grid i{position:absolute;left:0;right:0;border-top:1px solid rgba(255,255,255,.08)}
+  .lbl{position:absolute;left:56px;top:22px;color:#e8edf5;font-family:var(--ui);font-size:.78rem;font-weight:600}
+  .ax{position:absolute;right:8px;color:#94a3b8}
+  .band{position:absolute;height:22px;border-radius:11px;opacity:.55}
+  .band.low{background:var(--low)}.band.mid{background:var(--mid)}.band.fall{background:var(--fall)}.band.high{background:var(--high)}
+  .ghost{position:absolute;height:0;border-top:2px dashed #fbbf24}
+  .slot{position:absolute;bottom:34px;background:rgba(0,0,0,.55);padding:1px 6px;border-radius:4px;font-family:var(--thai);font-weight:700;font-size:.85rem}
+  .vline{position:absolute;top:14px;bottom:26px;border-left:1px solid rgba(255,255,255,.12)}
+  .spec{position:absolute;left:44px;right:34px;top:14px;bottom:26px;background-image:linear-gradient(90deg,transparent 0 8%,#f97316 8% 18%,transparent 18% 24%,#fbbf24 24% 40%,transparent 40%);background-size:100% 55%;background-repeat:no-repeat;background-position:0 55%;opacity:.85}
+  .spec::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d,transparent 40%,transparent 60%,#05070d);opacity:.7}
+  .head{position:absolute;top:14px;bottom:26px;border-left:2px solid rgba(248,250,252,.9)}
+
+  /* A — prompter: syllables at their slots */
+  .syl{position:absolute;top:44px;font-family:var(--thai);font-weight:700;font-size:2.2rem;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.9);transform:translateX(-50%);opacity:.9}
+  .syl.now{opacity:1;text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:10px}
+  .syl.done{opacity:.45}
+  .count{position:absolute;right:40px;top:16px;font-family:var(--ui);font-weight:800;font-size:2.4rem;color:#fff;text-shadow:0 0 18px rgba(0,0,0,.8);line-height:1}
+  .count small{font-size:.7rem;font-weight:600;color:#cbd5e1;display:block;text-align:right;letter-spacing:.08em;text-transform:uppercase}
+
+  /* B — banner */
+  .banner{position:absolute;left:44px;right:34px;top:34px;text-align:center;font-family:var(--thai);font-weight:700;font-size:2.6rem;line-height:1.15;text-shadow:0 2px 14px rgba(0,0,0,.9)}
+  .banner small{display:block;font-family:var(--mono);font-size:.78rem;color:#cbd5e1;font-weight:400;margin-top:2px}
+  .bigcount{position:absolute;right:40px;bottom:40px;font-family:var(--ui);font-weight:800;font-size:4.5rem;color:#fff;text-shadow:0 0 22px rgba(0,0,0,.85);line-height:1}
+
+  /* C — current */
+  .centre{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--ui);font-weight:800;font-size:6rem;color:#fff;text-shadow:0 0 24px rgba(0,0,0,.8)}
+</style>
+<body>
+<h1>Count-in and recording — what the You panel shows</h1>
+<p class="sub">Left: the count-in. Right: mid-take, playhead moving. In all three the native pitch is drawn dashed on your panel before you speak, so the glide you are about to make is in front of you; the textbook bands stay under the toggle. What differs is where the sentence goes.</p>
+
+<section class="opt">
+  <h2>A — prompter: each syllable over its own slot</h2>
+  <p class="why">The syllables sit large along the top of the panel, each above the time where the native voice says it — so the sentence reads left to right as time does, and the glide under each syllable is the glide for that syllable. While recording, the playhead reaches a syllable and it lights up; passed ones fade. The count sits small in the corner so it never covers a glide.</p>
+  <div class="pair">
+    <div><p class="cap">count-in</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span>
+        <span class="vline" style="left:32%"></span><span class="vline" style="left:46%"></span><span class="vline" style="left:60%"></span>
+        <span class="band low" style="left:18%;width:14%;top:150px;transform:rotate(-14deg)"></span><span class="band low" style="left:32%;width:14%;top:158px;transform:rotate(-6deg)"></span><span class="band mid" style="left:46%;width:14%;top:128px"></span><span class="band high" style="left:60%;width:22%;top:100px;transform:rotate(-10deg)"></span>
+        <span class="ghost" style="left:18%;width:14%;top:126px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:150px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:140px"></span><span class="ghost" style="left:60%;width:22%;top:130px;transform:rotate(-12deg)"></span>
+        <span class="syl" style="left:25%;color:var(--low)">ส</span><span class="syl" style="left:39%;color:var(--low)">วัส</span><span class="syl" style="left:53%;color:var(--mid)">ดี</span><span class="syl" style="left:71%;color:var(--high)">ครับ</span>
+        <span class="count"><small>ready</small>2</span>
+        <span class="ax" style="top:14px">+5</span><span class="ax" style="top:50%">0</span><span class="ax" style="bottom:40px">−5</span></div></div>
+    <div><p class="cap">recording</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span><span class="spec"></span>
+        <span class="vline" style="left:32%"></span><span class="vline" style="left:46%"></span><span class="vline" style="left:60%"></span>
+        <span class="ghost" style="left:18%;width:14%;top:126px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:150px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:140px"></span><span class="ghost" style="left:60%;width:22%;top:130px;transform:rotate(-12deg)"></span>
+        <span class="syl done" style="left:25%;color:var(--low)">ส</span><span class="syl done" style="left:39%;color:var(--low)">วัส</span><span class="syl now" style="left:53%;color:var(--mid)">ดี</span><span class="syl" style="left:71%;color:var(--high)">ครับ</span>
+        <span class="head" style="left:50%"></span>
+        <span class="ax" style="top:14px">+5</span><span class="ax" style="top:50%">0</span><span class="ax" style="bottom:40px">−5</span></div></div>
+  </div>
+</section>
+
+<section class="opt">
+  <h2>B — banner: the sentence across the top, count large in the corner</h2>
+  <p class="why">The whole sentence centred in one line at the top of the panel, IPA under it, the glides beneath; the count is big in the bottom-right where there is rarely a glide. Easiest to read from a distance; the link between a syllable and its glide is by colour only, not by position. While recording the banner stays and the playhead runs under it.</p>
+  <div class="pair">
+    <div><p class="cap">count-in</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span>
+        <div class="banner"><span style="color:var(--low)">สวัส</span><span style="color:var(--mid)">ดี</span> <span style="color:var(--high)">ครับ</span><small>/sà.wàt.diː kʰráp/</small></div>
+        <span class="band low" style="left:18%;width:14%;top:170px;transform:rotate(-14deg)"></span><span class="band low" style="left:32%;width:14%;top:178px;transform:rotate(-6deg)"></span><span class="band mid" style="left:46%;width:14%;top:148px"></span><span class="band high" style="left:60%;width:22%;top:120px;transform:rotate(-10deg)"></span>
+        <span class="ghost" style="left:18%;width:14%;top:146px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:170px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:160px"></span><span class="ghost" style="left:60%;width:22%;top:150px;transform:rotate(-12deg)"></span>
+        <span class="slot" style="left:24%;color:var(--low)">ส</span><span class="slot" style="left:38%;color:var(--low)">วัส</span><span class="slot" style="left:52%;color:var(--mid)">ดี</span><span class="slot" style="left:70%;color:var(--high)">ครับ</span>
+        <span class="bigcount">2</span></div></div>
+    <div><p class="cap">recording</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span><span class="spec" style="top:80px"></span>
+        <div class="banner"><span style="color:var(--low)">สวัส</span><span style="color:var(--mid)">ดี</span> <span style="color:var(--high)">ครับ</span><small>/sà.wàt.diː kʰráp/</small></div>
+        <span class="ghost" style="left:18%;width:14%;top:146px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:170px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:160px"></span><span class="ghost" style="left:60%;width:22%;top:150px;transform:rotate(-12deg)"></span>
+        <span class="slot" style="left:24%;color:var(--low)">ส</span><span class="slot" style="left:38%;color:var(--low)">วัส</span><span class="slot" style="left:52%;color:var(--mid)">ดี</span><span class="slot" style="left:70%;color:var(--high)">ครับ</span>
+        <span class="head" style="left:50%"></span></div></div>
+  </div>
+</section>
+
+<section class="opt">
+  <h2>C — today, plus the glide</h2>
+  <p class="why">Keep the big centred number, add only the native dashed line so the count-in already shows what to aim for. The sentence stays where it is above the panels. Smallest change; the number does cover the middle of the glides for the two seconds it is there.</p>
+  <div class="pair">
+    <div><p class="cap">count-in</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span>
+        <span class="band low" style="left:18%;width:14%;top:150px;transform:rotate(-14deg)"></span><span class="band low" style="left:32%;width:14%;top:158px;transform:rotate(-6deg)"></span><span class="band mid" style="left:46%;width:14%;top:128px"></span><span class="band high" style="left:60%;width:22%;top:100px;transform:rotate(-10deg)"></span>
+        <span class="ghost" style="left:18%;width:14%;top:126px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:150px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:140px"></span><span class="ghost" style="left:60%;width:22%;top:130px;transform:rotate(-12deg)"></span>
+        <span class="slot" style="left:24%;color:var(--low)">ส</span><span class="slot" style="left:38%;color:var(--low)">วัส</span><span class="slot" style="left:52%;color:var(--mid)">ดี</span><span class="slot" style="left:70%;color:var(--high)">ครับ</span>
+        <div class="centre">2</div></div></div>
+    <div><p class="cap">recording</p>
+      <div class="panel"><div class="grid"><i style="top:25%"></i><i style="top:50%"></i><i style="top:75%"></i></div><span class="lbl">You</span><span class="spec"></span>
+        <span class="ghost" style="left:18%;width:14%;top:126px;transform:rotate(22deg)"></span><span class="ghost" style="left:32%;width:14%;top:150px;transform:rotate(-8deg)"></span><span class="ghost" style="left:46%;width:14%;top:140px"></span><span class="ghost" style="left:60%;width:22%;top:130px;transform:rotate(-12deg)"></span>
+        <span class="slot" style="left:24%;color:var(--low)">ส</span><span class="slot" style="left:38%;color:var(--low)">วัส</span><span class="slot" style="left:52%;color:var(--mid)">ดี</span><span class="slot" style="left:70%;color:var(--high)">ครับ</span>
+        <span class="head" style="left:50%"></span></div></div>
+  </div>
+</section>
+</body></html>

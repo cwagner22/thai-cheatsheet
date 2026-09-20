@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sentence picker — options</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--surface:#fff;--panel:#f8f9fb;--ink:#0f0f10;--ink-2:#44474d;--ink-3:#8a8d94;--rule:#e8e9ec;--record:#dc2626;
+    --low:#dc2626;--mid:#2563eb;--fall:#7c3aed;--high:#16a34a;--rise:#db2777;--thai:'Noto Serif Thai',serif;--ui:'Bricolage Grotesque',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+  *{box-sizing:border-box} body{margin:0;background:#eceef1;font-family:var(--ui);color:var(--ink);font-size:15px;padding:28px 32px}
+  h1{font-size:1.1rem;margin:0 0 4px} p.sub{margin:0 0 22px;color:#64748b;font-size:.86rem;max-width:820px;line-height:1.5}
+  .opt{margin-bottom:34px} .opt h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 6px}
+  .opt p.why{margin:0 0 12px;font-size:.84rem;color:#475569;line-height:1.5;max-width:820px}
+  .th{font-family:var(--thai);font-weight:700}.low{color:var(--low)}.mid{color:var(--mid)}.fall{color:var(--fall)}.high{color:var(--high)}.rise{color:var(--rise)}
+  .screen{background:var(--surface);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.10);display:grid;grid-template-columns:200px 1fr;overflow:hidden;max-width:1080px}
+  .side{border-right:1px solid var(--rule);padding:22px 14px;font-size:.9rem}.side b{display:block;margin:0 8px 18px;font-weight:800}.side .g{font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:0 10px 6px;font-weight:600}
+  .side a{display:block;padding:7px 10px;color:var(--ink-2);border-radius:8px}.side a.on{color:var(--ink);font-weight:600;box-shadow:inset 3px 0 var(--ink)}
+  main{padding:26px 30px 30px;min-width:0}
+  .crumb{font-size:.74rem;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin:0 0 14px}
+  .poster{display:grid;grid-template-columns:1fr auto;gap:12px 24px;align-items:end;padding-bottom:16px;border-bottom:1px solid var(--rule);margin-bottom:14px}
+  .sentence{font-size:2.6rem;line-height:1.15;margin:0 0 4px}
+  .under{font-size:.86rem;color:var(--ink-3)}.under .ipa{font-family:var(--mono);color:var(--ink-2)}
+  .rec{display:inline-flex;align-items:center;gap:9px;background:var(--record);color:#fff;border:0;border-radius:999px;padding:11px 20px;font:inherit;font-weight:600}
+  .rec i{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .panel{background:#05070d;border-radius:10px;height:120px;margin-bottom:8px;position:relative;
+    background-image:linear-gradient(90deg,transparent 0 10%,#f97316 10% 22%,transparent 22% 30%,#fbbf24 30% 45%,transparent 45% 53%,#f97316 53% 66%,transparent 66%);background-size:100% 55%;background-repeat:no-repeat;background-position:0 50%}
+  .panel::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d,transparent 40%,transparent 60%,#05070d);opacity:.75;border-radius:10px}
+  .panel span{position:absolute;left:12px;top:8px;color:#e2e8f0;font-size:.7rem;font-weight:600;z-index:1}
+  .edit{font-size:.76rem;color:var(--ink-3);border:1px solid var(--rule);border-radius:6px;padding:3px 9px;background:var(--panel)}
+
+  /* A — side rail */
+  .A main{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:0 26px}
+  .A .work{min-width:0}
+  .rail{border-left:1px solid var(--rule);padding-left:18px;max-height:420px;overflow:auto;position:relative}
+  .rail h3{font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:8px 0 6px;font-weight:600;position:sticky;top:0;background:var(--surface);padding:6px 0 4px}
+  .rail .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .rail .top b{font-size:.9rem;font-weight:600}
+  .item{display:block;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px}
+  .item .th{font-size:1.15rem;line-height:1.25;display:block}
+  .item small{display:block;color:var(--ink-3);font-size:.76rem}
+  .item.on{background:var(--panel);box-shadow:inset 3px 0 var(--ink)}
+  .item.custom small::after{content:" · yours";color:var(--fall)}
+  .rail .add{display:block;text-align:center;padding:9px;border:1px dashed var(--rule);border-radius:8px;color:var(--ink-3);font-size:.8rem;margin-top:6px}
+
+  /* B — chip strip */
+  .strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin:-4px 0 12px;scrollbar-width:thin}
+  .strip .grp{display:flex;align-items:center;gap:8px;padding-right:10px;border-right:1px solid var(--rule)}
+  .strip .grp:last-child{border:0}
+  .strip .gl{font-size:.62rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);writing-mode:vertical-rl;transform:rotate(180deg);font-weight:600}
+  .chipx{flex:none;border:1px solid var(--rule);border-radius:10px;padding:7px 12px;background:var(--surface);cursor:pointer}
+  .chipx .th{font-size:1.15rem;display:block;line-height:1.2}
+  .chipx small{color:var(--ink-3);font-size:.7rem}
+  .chipx.on{border-color:var(--ink);background:var(--panel)}
+  .chipx.add{border-style:dashed;color:var(--ink-3);display:grid;place-items:center;font-size:1.2rem;min-width:44px}
+
+  /* C — search */
+  .search{position:relative;margin:0 0 14px;max-width:520px}
+  .search input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--rule);border-radius:10px;font:inherit;font-size:.95rem;background:var(--panel)}
+  .search .ico{position:absolute;left:12px;top:11px;color:var(--ink-3)}
+  .results{position:absolute;left:0;right:0;top:44px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.12);padding:6px;z-index:3}
+  .results .r{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 10px;border-radius:8px;align-items:center}
+  .results .r.on{background:var(--panel)}
+  .results .r .th{font-size:1.1rem}.results .r small{color:var(--ink-3);font-size:.76rem;display:block}
+  .results .r .k{font-family:var(--mono);font-size:.68rem;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px;padding:0 5px}
+  .results .foot{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-3);padding:8px 10px 4px;border-top:1px solid var(--rule);margin-top:4px}
+</style>
+<body>
+<h1>Sentence picker — three ways, one component each</h1>
+<p class="sub">Each replaces both the dropdown and the list at the bottom. All three keep ← → and show which sentences are yours; the pencil / “+” is where custom sentences get added and edited (saved in the browser).</p>
+
+<section class="opt">
+  <h2>A — side rail</h2>
+  <p class="why">A scrollable column to the right of the panels on wide screens: every sentence visible, grouped, one click to switch, the current one marked. Under about 1100 px the rail drops below the panels as the same list. The “+ Add a sentence” slot sits at the foot of the rail, and each of your own sentences gets a small pencil on hover.</p>
+  <div class="screen A">
+    <nav class="side"><b>ก Thai Cheat Sheet</b><div class="g">Practise</div><a class="on">Speaking</a><a>Typing</a><a>Writing</a><div class="g" style="margin-top:14px">Reference</div><a>Consonants</a><a>Vowels</a><a>Tones</a></nav>
+    <main>
+      <div class="work">
+        <p class="crumb">Practise · Speaking</p>
+        <div class="poster"><div><p class="sentence th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></p><div class="under"><span class="ipa">/sà.wàt.diː kʰráp/</span> &nbsp; Hello.</div></div><button class="rec"><i></i>Try again</button></div>
+        <div class="panel"><span>Native · Google Translate</span></div>
+        <div class="panel"><span>You</span></div>
+      </div>
+      <aside class="rail">
+        <div class="top"><b>Sentences</b><span class="edit">✎ Edit</span></div>
+        <h3>Greetings &amp; courtesy</h3>
+        <a class="item on"><span class="th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span><small>Hello.</small></a>
+        <a class="item"><span class="th"><span class="low">ขอบ</span><span class="mid">คุณ</span><span class="fall">มาก</span><span class="high">ครับ</span></span><small>Thank you very much.</small></a>
+        <a class="item"><span class="th"><span class="low">ขอ</span><span class="fall">โทษ</span><span class="high">ครับ</span></span><small>Sorry. / Excuse me.</small></a>
+        <h3>Everyday</h3>
+        <a class="item"><span class="th"><span class="mid">คุณ</span><span class="low">สบาย</span><span class="mid">ดี</span><span class="rise">ไหม</span></span><small>How are you?</small></a>
+        <a class="item"><span class="th"><span class="low">อร่อย</span><span class="fall">มาก</span></span><small>Delicious!</small></a>
+        <h3>Yours</h3>
+        <a class="item custom"><span class="th"><span class="mid">ไป</span><span class="rise">ไหน</span><span class="mid">มา</span></span><small>Where have you been?</small></a>
+        <a class="add">+ Add a sentence</a>
+      </aside>
+    </main>
+  </div>
+</section>
+
+<section class="opt">
+  <h2>B — chip strip</h2>
+  <p class="why">One horizontal, scrollable row of Thai chips right above the sentence, grouped by thin dividers with the group name turned on its side. Fast with a trackpad, works the same on every width, costs one row of height. A dashed “+” chip at the end adds a sentence; long-press or the pencil edits yours.</p>
+  <div class="screen">
+    <nav class="side"><b>ก Thai Cheat Sheet</b><div class="g">Practise</div><a class="on">Speaking</a><a>Typing</a><a>Writing</a><div class="g" style="margin-top:14px">Reference</div><a>Consonants</a><a>Vowels</a><a>Tones</a></nav>
+    <main>
+      <p class="crumb">Practise · Speaking</p>
+      <div class="strip">
+        <div class="grp"><span class="gl">Greetings</span>
+          <a class="chipx on"><span class="th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span><small>Hello.</small></a>
+          <a class="chipx"><span class="th"><span class="low">ขอบ</span><span class="mid">คุณ</span><span class="fall">มาก</span><span class="high">ครับ</span></span><small>Thank you</small></a>
+          <a class="chipx"><span class="th"><span class="low">ขอ</span><span class="fall">โทษ</span><span class="high">ครับ</span></span><small>Sorry</small></a></div>
+        <div class="grp"><span class="gl">Everyday</span>
+          <a class="chipx"><span class="th"><span class="mid">คุณ</span><span class="low">สบาย</span><span class="mid">ดี</span><span class="rise">ไหม</span></span><small>How are you?</small></a>
+          <a class="chipx"><span class="th"><span class="low">อร่อย</span><span class="fall">มาก</span></span><small>Delicious</small></a>
+          <a class="chipx"><span class="th"><span class="fall">เท่า</span><span class="mid">ไร</span><span class="high">ครับ</span></span><small>How much?</small></a></div>
+        <div class="grp"><span class="gl">Yours</span>
+          <a class="chipx"><span class="th"><span class="mid">ไป</span><span class="rise">ไหน</span><span class="mid">มา</span></span><small>Where have you been? ✎</small></a>
+          <a class="chipx add">+</a></div>
+      </div>
+      <div class="poster"><div><p class="sentence th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></p><div class="under"><span class="ipa">/sà.wàt.diː kʰráp/</span> &nbsp; Hello.</div></div><button class="rec"><i></i>Try again</button></div>
+      <div class="panel"><span>Native · Google Translate</span></div>
+      <div class="panel"><span>You</span></div>
+    </main>
+  </div>
+</section>
+
+<section class="opt">
+  <h2>C — search box</h2>
+  <p class="why">A single field above the sentence. Click it (or press <code>/</code>) and the whole list drops down, filtered as you type — Thai or English — with ↑ ↓ Enter. Scales to hundreds of custom sentences without growing; the cost is one extra keystroke to see the list at all. Adding a sentence is the last row of the results.</p>
+  <div class="screen">
+    <nav class="side"><b>ก Thai Cheat Sheet</b><div class="g">Practise</div><a class="on">Speaking</a><a>Typing</a><a>Writing</a><div class="g" style="margin-top:14px">Reference</div><a>Consonants</a><a>Vowels</a><a>Tones</a></nav>
+    <main>
+      <p class="crumb">Practise · Speaking</p>
+      <div class="search"><span class="ico">⌕</span><input value="ขอ" placeholder="Find a sentence — Thai or English">
+        <div class="results">
+          <div class="r on"><div><span class="th"><span class="low">ขอบ</span><span class="mid">คุณ</span><span class="fall">มาก</span><span class="high">ครับ</span></span><small>Thank you very much. · Greetings</small></div><span class="k">↵</span></div>
+          <div class="r"><div><span class="th"><span class="low">ขอ</span><span class="fall">โทษ</span><span class="high">ครับ</span></span><small>Sorry. / Excuse me. · Greetings</small></div></div>
+          <div class="r"><div><span class="th"><span class="mid">ไป</span><span class="rise">ไหน</span><span class="mid">มา</span></span><small>Where have you been? · Yours ✎</small></div></div>
+          <div class="foot"><span>↑ ↓ to move · Enter to practise</span><span>+ Add “ขอ…” as a new sentence</span></div>
+        </div>
+      </div>
+      <div class="poster" style="margin-top:150px"><div><p class="sentence th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></p><div class="under"><span class="ipa">/sà.wàt.diː kʰráp/</span> &nbsp; Hello.</div></div><button class="rec"><i></i>Try again</button></div>
+      <div class="panel"><span>Native · Google Translate</span></div>
+    </main>
+  </div>
+</section>
+</body></html>
