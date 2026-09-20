@@ -46,7 +46,7 @@ const FIT_TAIL_MS = 250;
 /** A take may overrun the time axis while the learner is still making
  *  sound, so the final particle is not cut off; capped so a noisy room
  *  cannot keep the microphone open. */
-const OVERRUN_LIMIT = 1.8;
+const OVERRUN_LIMIT = 2.5;
 const TRAILING_SILENCE_MS = 260;
 
 type Status = 'idle' | 'listening' | 'counting' | 'recording' | 'done' | 'denied';
@@ -899,7 +899,7 @@ function PracticePanel({
         <p className={styles.hintLine}>The native voice first — your recording starts right after.</p>
       )}
       {status === 'recording' && (
-        <p className={styles.hintLine}>Listening… say the sentence as the playhead moves.</p>
+        <p className={styles.hintLine}>Listening… say the sentence at your own pace; recording stops when you go quiet.</p>
       )}
       {status === 'done' && <Report comparison={comparison} hasReference={refStatus === 'ready'} />}
       {status === 'done' && !busy && (
@@ -913,6 +913,7 @@ function PracticePanel({
 
 const SYLLABLE_LABEL: Record<SyllableVerdict, string> = {
   good: '✓ on target',
+  unsure: '? not judged',
   high: '↑ too high',
   low: '↓ too low',
   flat: '— flat',
@@ -920,7 +921,7 @@ const SYLLABLE_LABEL: Record<SyllableVerdict, string> = {
   missing: '· not heard',
 };
 const chipClass = (verdict: SyllableVerdict) =>
-  verdict === 'good' ? styles.scoreGood : verdict === 'missing' ? '' : styles.scoreOff;
+  verdict === 'good' ? styles.scoreGood : verdict === 'missing' || verdict === 'unsure' ? '' : styles.scoreOff;
 
 function Report({ comparison, hasReference }: { comparison: Comparison | null; hasReference: boolean }) {
   if (!hasReference) {
@@ -937,6 +938,7 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
   const quiet = comparison.learnerPeakRms < 0.03;
   const scores = comparison.syllables;
   const onTarget = scores.filter(s => s.verdict === 'good').length;
+  const judged = scores.filter(s => s.verdict !== 'unsure').length;
   const merged = [...new Set(scores.filter(s => s.parts).map(s => s.parts!.map(p => p.thai).join(' + ')))];
   const hints = scores.filter(s => s.verdict !== 'good' && s.hint).slice(0, 3);
 
@@ -946,9 +948,9 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         <strong>
           {scores.length === 0
             ? 'Recorded.'
-            : onTarget === scores.length
+            : onTarget === judged && judged === scores.length
               ? `All ${scores.length} syllables on target.`
-              : `${onTarget} of ${scores.length} syllables on target.`}
+              : `${onTarget} of ${judged} judged syllables on target${judged < scores.length ? `, ${scores.length - judged} not judged` : ''}.`}
         </strong>
         <span className={styles.refHz}>
           {' '}· {(comparison.learnerMs / 1000).toFixed(1)} s vs {(comparison.referenceMs / 1000).toFixed(1)} s

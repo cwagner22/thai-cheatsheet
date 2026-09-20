@@ -28,10 +28,9 @@ export interface ScopeData {
   syllables?: SyllableSpan[] | null;
   /** Draw the citation-form tone shape over each syllable slot. */
   showTextbook?: boolean;
-  /** Show the sentence to say inside the panel: each syllable large above
-   *  its slot, the one under the playhead marked, passed ones dimmed. On
-   *  while the learner is counted in and recording, when the eye is on the
-   *  panel and not on the page header. */
+  /** Show the sentence to say inside the panel, each syllable large above
+   *  its slot, while the learner is counted in and recording — when the eye
+   *  is on the panel and not on the page header. */
   prompter?: boolean;
 }
 
@@ -308,23 +307,17 @@ function draw(
       ctx.font = `700 ${size}px "Noto Serif Thai", serif`;
       ctx.textBaseline = 'alphabetic';
       ctx.lineJoin = 'round';
+      // The sentence is a thing to read at one's own pace, not a karaoke
+      // line: the slots come from the native voice's timing and the take is
+      // scored on its own, so nothing here follows the playhead.
       const baseline = top + size + 10;
-      const now = elapsedMs;
       for (const { syl, cx } of slots) {
-        const passed = now !== null && now > syl.endMs;
-        const current = now !== null && now >= syl.startMs && now <= syl.endMs;
-        ctx.globalAlpha = passed ? 0.45 : 1;
         ctx.lineWidth = 6;
         ctx.strokeStyle = 'rgba(5,7,13,0.9)';
         ctx.strokeText(syl.thai, cx, baseline);
         ctx.fillStyle = TONE_COLOR[syl.tone];
         ctx.fillText(syl.thai, cx, baseline);
-        if (current) {
-          const tw = ctx.measureText(syl.thai).width;
-          ctx.fillRect(cx - tw / 2, baseline + 8, tw, 4);
-        }
       }
-      ctx.globalAlpha = 1;
     } else {
       ctx.font = '600 14px "Noto Serif Thai", serif';
       for (const syl of data.syllables) {

@@ -100,7 +100,7 @@ function splitOnJumps(segment: TrackPoint[]): TrackPoint[][] {
   return out;
 }
 
-export type SyllableVerdict = 'good' | 'high' | 'low' | 'flat' | 'shape' | 'missing';
+export type SyllableVerdict = 'good' | 'high' | 'low' | 'flat' | 'shape' | 'missing' | 'unsure';
 
 export interface SyllableScore {
   /** The native syllable scored — or, when the learner ran several
@@ -157,6 +157,13 @@ const MOVING_ST = 1.2;
  *  start of a sentence; a learner who makes a third of that has audibly
  *  made the tone. */
 const FLAT_SHARE = 1 / 3;
+/** A swing this much larger than the native voice's own on a syllable —
+ *  on a level tone in either direction, on a contour tone against it — is
+ *  the wrong tone whatever the average level. Measured against the native's
+ *  swing, not zero: connected speech drifts on every syllable, and the
+ *  native voice doing the same thing must always pass. */
+const SWING_ST = 2.5;
+
 /** Learner voiced points in a slot relative to the native's, above which the
  *  slot holds a neighbour's material as well as its own. */
 const SURPLUS_RATIO = 1.5;
@@ -170,7 +177,7 @@ const ABUT_MS = 45;
  *  climbing out of its trough toward a mid neighbour — and that drift is
  *  coarticulation, not the tone. Movement is only asked of the learner when
  *  it goes the way the tone goes. */
-const TONE_DIRECTION: Record<ToneName, -1 | 0 | 1> = {
+export const TONE_DIRECTION: Record<ToneName, -1 | 0 | 1> = {
   Mid: 0,
   Low: -1,
   Falling: -1,
@@ -345,21 +352,46 @@ function scoreSyllables(
     }
 
     const { referenceNet } = base;
-    if (taught !== 0 && Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST) {
-      const want = travel(refSt, taught);
-      const got = travel(lrnSt, taught);
+    const up = travel(lrnSt, 1);
+    const down = travel(lrnSt, -1);
+    const refUp = travel(refSt, 1);
+    const refDown = travel(refSt, -1);
+
+    // A level tone swung well beyond what the native voice does on it is the
+    // wrong tone, whatever the average level: a mid syllable said falling.
+    if (taught === 0 && Math.max(up - refUp, down - refDown) >= SWING_ST) {
+      const way = down - refDown > up - refUp ? 'falls' : 'rises';
+      return {
+        ...base, levelSt, verdict: 'shape' as const,
+        hint: `${span.thai} is a mid tone and stays level; yours ${way} about ${Math.max(up, down).toFixed(0)} st${cue(span)}`,
+      };
+    }
+    if (taught !== 0) {
       const against = travel(lrnSt, taught < 0 ? 1 : -1);
+      const refAgainst = travel(refSt, taught < 0 ? 1 : -1);
+      const withIt = travel(lrnSt, taught);
       const way = taught < 0 ? 'down' : 'up';
-      if (against > got && against >= 0.6) {
+      if (against - refAgainst >= SWING_ST && against > withIt) {
         return {
           ...base, levelSt, verdict: 'shape' as const,
-          hint: `the native pitch slides ${way} across ${span.thai}; yours goes the other way${cue(span)}`,
+          hint: `${span.thai} goes ${way}; yours goes the other way by about ${against.toFixed(0)} st${cue(span)}`,
         };
       }
-      if (got < FLAT_SHARE * want) {
+      const nativeShowsIt = Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST;
+      if (nativeShowsIt) {
+        const want = travel(refSt, taught);
+        if (withIt < FLAT_SHARE * want) {
+          return {
+            ...base, levelSt, verdict: 'flat' as const,
+            hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${withIt.toFixed(1)} st${cue(span)}`,
+          };
+        }
+      } else if (span.tone === 'Falling' || span.tone === 'Rising') {
+        // A contour tone the native voice does not itself glide on here
+        // cannot be judged from this clip; saying so beats a green tick.
         return {
-          ...base, levelSt, verdict: 'flat' as const,
-          hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${got.toFixed(1)} st${cue(span)}`,
+          ...base, levelSt, verdict: 'unsure' as const,
+          hint: `the native voice does not glide ${way} on ${span.thai} in this clip, so your ${span.tone.toLowerCase()} tone there is not judged`,
         };
       }
     }

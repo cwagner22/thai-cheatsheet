@@ -13,7 +13,8 @@
 import type { Frame } from './capture';
 import type { Phrase } from '../data/phrases';
 import type { ToneName } from './toneLookup';
-import { syllableTone } from './contour';
+import { syllableTone, TONE_DIRECTION } from './contour';
+import { foldOctave, hzToSemitones, registerHz } from './pitch';
 
 export interface SyllableSpec {
   thai: string;
@@ -77,6 +78,17 @@ const GAP_MIN_MS = 40;
 /** Frames this close before a silence are a fade-out, not a boundary; the
  *  boundary is where the next syllable starts. */
 const FADE_MS = 60;
+/** Cost per semitone of a slot's contour disagreeing with its tone: a
+ *  rising syllable whose slot falls, a low syllable whose slot sits above
+ *  the register. The native voice is known-correct speech, so its tones are
+ *  a prior on where the boundaries are that energy and proportions do not
+ *  have — on eight syllables in 2.5 s they alone land every slot half a
+ *  syllable early, on the transition into the next one. One object so a
+ *  harness can re-weight it. */
+export const SEGMENT_WEIGHTS = { tone: 0.3 };
+/** A glide this size in the tone's direction is a full tone; less is
+ *  penalised in proportion. Level tones may drift this much unpenalised. */
+const TONE_GLIDE_ST = 1.5;
 
 export function segmentReference(frames: Frame[], specs: SyllableSpec[]): SyllableSpan[] | null {
   const voiced = frames.flatMap((f, i) => (f.hz === null ? [] : [i]));
@@ -147,6 +159,27 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
     return local[i] + PROPORTION_WEIGHT * dev * dev;
   };
 
+  // Pitch in semitones against the clip's own register, per voiced frame.
+  const register = registerHz(frames.flatMap(f => (f.hz === null ? [] : [f.hz])));
+  const st = frames.map(f => (f.hz === null ? null : hzToSemitones(foldOctave(f.hz, register), register)));
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  /** How badly the contour between frames j and i fits syllable k's tone. */
+  const toneCost = (k: number, j: number, i: number): number => {
+    const w = SEGMENT_WEIGHTS.tone;
+    if (w === 0) return 0;
+    const xs: number[] = [];
+    for (let f = j; f <= i; f++) if (st[f] !== null) xs.push(st[f] as number);
+    if (xs.length < 3) return 0;
+    const third = Math.max(1, Math.round(xs.length / 3));
+    const net = mean(xs.slice(-third)) - mean(xs.slice(0, third));
+    const dir = TONE_DIRECTION[specs[k].tone];
+    let bad = dir === 0 ? Math.max(0, Math.abs(net) - TONE_GLIDE_ST) : Math.max(0, TONE_GLIDE_ST - dir * net);
+    const level = mean(xs);
+    if (specs[k].tone === 'Low') bad += Math.max(0, level + 0.5);
+    if (specs[k].tone === 'High') bad += Math.max(0, 0.5 - level);
+    return w * bad;
+  };
+
   // best[k][i]: cheapest way to place boundaries 1..k with boundary k at
   // frame i. Boundaries are ordered and at least a syllable's minimum apart.
   const best: number[][] = [];
@@ -160,7 +193,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
       const own = cost(i, k);
       if (own === INF) continue;
       if (k === 1) {
-        best[0][i] = own;
+        best[0][i] = own + toneCost(0, i0, i);
         continue;
       }
       let bestPrev = INF;
@@ -168,8 +201,10 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
       for (let j = i0; j < i; j++) {
         // Syllable k-1 runs from boundary j to boundary i.
         if (frames[i].t - frames[j].t < minLen(k - 1)) break;
-        if (best[k - 2][j] < bestPrev) {
-          bestPrev = best[k - 2][j];
+        if (best[k - 2][j] === INF) continue;
+        const total = best[k - 2][j] + toneCost(k - 1, j, i);
+        if (total < bestPrev) {
+          bestPrev = total;
           bestJ = j;
         }
       }
@@ -183,8 +218,10 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
   let endI = -1;
   let endCost = INF;
   for (let i = i0; i <= i1; i++) {
-    if (best[n - 2][i] < endCost) {
-      endCost = best[n - 2][i];
+    if (best[n - 2][i] === INF) continue;
+    const total = best[n - 2][i] + toneCost(n - 1, i, i1);
+    if (total < endCost) {
+      endCost = total;
       endI = i;
     }
   }

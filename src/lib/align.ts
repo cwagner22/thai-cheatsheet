@@ -22,13 +22,15 @@ export interface Warp {
 const BAND = 0.3;
 
 /** How much each cue steers the alignment; one object so a harness can
- *  re-weight it. Pitch is the quantity being scored, so it barely steers.
- *  Voicing is kept small because a syllable the pitch tracker lost — an
- *  aspirated final ครับ — is unvoiced but loud, and weighted heavily voicing
- *  matches it to the native's silence before ครับ instead of to ครับ.
- *  Energy carries the alignment. */
+ *  re-weight it. Pitch does not steer at all: it is the quantity being
+ *  scored, and any weight on it lets the warp slide a wrong contour onto
+ *  the right one — a take with every glide mirrored aligned itself into
+ *  passing on a third of its syllables. Voicing is kept small because a
+ *  syllable the pitch tracker lost — an aspirated final ครับ — is unvoiced
+ *  but loud, and weighted heavily voicing matches it to the native's
+ *  silence before ครับ instead of to ครับ. Energy carries the alignment. */
 export const ALIGN_WEIGHTS = {
-  pitch: 0.25,
+  pitch: 0,
   voiced: 0.4,
   energy: 3.0,
 };
