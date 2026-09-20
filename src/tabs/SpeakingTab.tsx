@@ -909,17 +909,17 @@ function PracticePanel({
   );
 }
 
-const SYLLABLE_LABEL: Record<SyllableVerdict, string> = {
-  good: '✓ on target',
-  unsure: '? not judged',
+/** Only clear misses get a label; anything else is shown plain. A green
+ *  tick would claim the syllable was right, and the analysis cannot know
+ *  that — only that nothing contradicted it. */
+const FLAG_LABEL: Partial<Record<SyllableVerdict, string>> = {
   high: '↑ too high',
   low: '↓ too low',
   flat: '— flat',
   shape: '~ wrong way',
   missing: '· not heard',
 };
-const chipClass = (verdict: SyllableVerdict) =>
-  verdict === 'good' ? styles.scoreGood : verdict === 'missing' || verdict === 'unsure' ? '' : styles.scoreOff;
+const isFlag = (verdict: SyllableVerdict) => verdict in FLAG_LABEL;
 
 function Report({ comparison, hasReference }: { comparison: Comparison | null; hasReference: boolean }) {
   if (!hasReference) {
@@ -935,10 +935,9 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
   const pace = comparison.learnerMs / comparison.referenceMs;
   const quiet = comparison.learnerPeakRms < 0.03;
   const scores = comparison.syllables;
-  const onTarget = scores.filter(s => s.verdict === 'good').length;
-  const judged = scores.filter(s => s.verdict !== 'unsure').length;
+  const flags = scores.filter(s => isFlag(s.verdict));
   const merged = [...new Set(scores.filter(s => s.parts).map(s => s.parts!.map(p => p.thai).join(' + ')))];
-  const hints = scores.filter(s => s.verdict !== 'good' && s.hint).slice(0, 3);
+  const hints = flags.filter(s => s.hint).slice(0, 4);
 
   return (
     <div className={styles.report}>
@@ -946,9 +945,9 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         <strong>
           {scores.length === 0
             ? 'Recorded.'
-            : onTarget === judged && judged === scores.length
-              ? `All ${scores.length} syllables on target.`
-              : `${onTarget} of ${judged} judged syllables on target${judged < scores.length ? `, ${scores.length - judged} not judged` : ''}.`}
+            : flags.length === 0
+              ? 'Nothing flagged.'
+              : `${flags.length} ${flags.length === 1 ? 'syllable' : 'syllables'} to work on.`}
         </strong>
         <span className={styles.refHz}>
           {' '}· {(comparison.learnerMs / 1000).toFixed(1)} s vs {(comparison.referenceMs / 1000).toFixed(1)} s
@@ -961,18 +960,19 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
           {scores.map((score, i) => (
             <span
               key={i}
-              className={`${styles.scoreChip} ${chipClass(score.verdict)}`}
-              title={score.hint || `${score.span.tone} tone — matched the native voice`}
+              className={`${styles.scoreChip} ${isFlag(score.verdict) ? styles.scoreOff : styles.scorePlain}`}
+              title={score.hint || undefined}
             >
               <span className={styles.scoreThai} style={{ color: TONE_COLOR[score.span.tone] }}>{score.span.thai}</span>
-              <span className={styles.scoreLabel}>{SYLLABLE_LABEL[score.verdict]}</span>
+              {isFlag(score.verdict) && <span className={styles.scoreLabel}>{FLAG_LABEL[score.verdict]}</span>}
             </span>
           ))}
         </div>
       )}
-      {merged.length > 0 && (
+      {scores.length > 0 && (
         <p className={styles.paceLine}>
-          {merged.join(', ')} ran together in your take and are judged together.
+          Only clear misses are marked; a plain syllable is not a pass, just nothing the analysis could
+          fault.{merged.length > 0 && ` ${merged.join(', ')} ran together in your take and are judged together.`}
         </p>
       )}
       {hints.length > 0 && (

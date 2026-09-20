@@ -193,7 +193,7 @@
   from { opacity: 0; transform: translateY(6px) scale(0.96); }
   to { opacity: 1; transform: none; }
 }
-.scoreGood { background: #e4f4e6; color: #166534; }
+.scorePlain { background: var(--panel); color: var(--ink-3); padding-bottom: 12px; }
 .scoreOff { background: #fdf1cf; color: #8a5a00; }
 .scoreThai { font-family: var(--thai-font); font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
 .scoreLabel { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
