@@ -710,7 +710,7 @@ function PracticePanel({
               {status === 'listening'
                 ? 'Listen…'
                 : status === 'counting'
-                  ? `Get ready… ${countIn}`
+                  ? 'Get ready…'
                   : status === 'done'
                     ? 'Try again'
                     : heard
@@ -770,11 +770,12 @@ function PracticePanel({
           live={live}
           revision={revision}
           height={280}
+          overlay={status === 'counting' ? <span key={countIn} className={scopeStyles.count}>{countIn}</span> : null}
           tools={
             takeUrl && status === 'done' ? (
               <>
                 <button type="button" className={scopeStyles.tool} onClick={onListenToTake} disabled={busy}>
-                  {playing === 'you' ? 'Playing…' : '▶ My voice'}
+                  {playing === 'you' ? 'Playing…' : '▶ Listen'}
                 </button>
                 <a className={scopeStyles.tool} href={takeUrl} download={`take-${phrase.id}.webm`}>
                   ⤓ Save

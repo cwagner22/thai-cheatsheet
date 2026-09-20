@@ -100,6 +100,7 @@ export function PhraseScope({
   revision,
   height = 300,
   tools,
+  overlay,
 }: {
   data: { current: ScopeData };
   live: boolean;
@@ -108,6 +109,8 @@ export function PhraseScope({
   height?: number;
   /** Controls for this voice, shown in the panel's top-right corner. */
   tools?: ReactNode;
+  /** Shown centred over the panel — the count-in before a take. */
+  overlay?: ReactNode;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const specRef = useRef<HTMLCanvasElement | null>(null);
@@ -155,6 +158,7 @@ export function PhraseScope({
     <div className={styles.scope}>
       <canvas ref={canvasRef} className={styles.canvas} />
       {tools && <div className={styles.tools}>{tools}</div>}
+      {overlay && <div className={styles.overlay}>{overlay}</div>}
     </div>
   );
 }

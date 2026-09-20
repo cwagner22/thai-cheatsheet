@@ -37,6 +37,27 @@
 .tool:not(:disabled):hover { background: rgba(255, 255, 255, 0.26); }
 .tool:disabled { opacity: 0.55; cursor: default; }
 
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  line-height: normal;
+}
+.count {
+  font-size: 7rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+  animation: count-pop 0.7s ease-out both;
+}
+@keyframes count-pop {
+  from { opacity: 0; transform: scale(1.25); }
+  20% { opacity: 1; transform: scale(1); }
+  to { opacity: 0.7; }
+}
+
 /* On a phone the corner shares the width with the panel's label; the
    secondary tool goes, the rest shrink. */
 @media (max-width: 600px) {
