@@ -28,6 +28,11 @@ export interface ScopeData {
   syllables?: SyllableSpan[] | null;
   /** Draw the citation-form tone shape over each syllable slot. */
   showTextbook?: boolean;
+  /** Milliseconds that fit the panel's visible width. When `windowMs` is
+   *  longer the canvas is drawn wider than the viewport, at the same scale,
+   *  and scrolls sideways — a take is never compressed to fit. Defaults to
+   *  `windowMs` (everything visible). */
+  viewMs?: number;
 }
 
 /** The visible pitch range. The native voice spans roughly −7..+4 st around
@@ -127,7 +132,8 @@ export function PhraseScope({
       const parent = canvas.parentElement;
       if (!parent) return;
       const dpr = window.devicePixelRatio || 1;
-      const cssWidth = parent.clientWidth;
+      const { windowMs, viewMs } = data.current;
+      const cssWidth = Math.round(parent.clientWidth * Math.max(1, windowMs / (viewMs ?? windowMs)));
       const cssHeight = height;
       if (canvas.width !== Math.round(cssWidth * dpr) || canvas.height !== Math.round(cssHeight * dpr)) {
         canvas.width = Math.round(cssWidth * dpr);
@@ -156,7 +162,9 @@ export function PhraseScope({
 
   return (
     <div className={styles.scope}>
-      <canvas ref={canvasRef} className={styles.canvas} />
+      <div className={styles.scroller}>
+        <canvas ref={canvasRef} className={styles.canvas} />
+      </div>
       {tools && <div className={styles.tools}>{tools}</div>}
       {overlay && <div className={styles.overlay}>{overlay}</div>}
     </div>

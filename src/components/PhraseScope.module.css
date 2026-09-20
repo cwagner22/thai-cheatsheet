@@ -7,9 +7,17 @@
   line-height: 0;
 }
 
+/* The canvas may be wider than the panel; this is what scrolls. The tools
+   and the overlay stay put on the panel itself. */
+.scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
 .canvas {
   display: block;
-  width: 100%;
 }
 
 .tools {

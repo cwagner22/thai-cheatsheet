@@ -47,7 +47,10 @@ const FIT_TAIL_MS = 250;
  *  sound, so the final particle is not cut off; capped so a noisy room
  *  cannot keep the microphone open. */
 const OVERRUN_LIMIT = 2.5;
-const TRAILING_SILENCE_MS = 260;
+/** Silence this long after the native length ends the take. Long enough for
+ *  a pause between words at a learner's pace; the 1.8x–2.5x cap above is
+ *  what stops a noisy room keeping the microphone open. */
+const TRAILING_SILENCE_MS = 600;
 
 type Status = 'idle' | 'listening' | 'counting' | 'recording' | 'done' | 'denied';
 type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
@@ -423,11 +426,16 @@ export function SpeakingTab() {
       const speech = frames.filter(f => f.rms >= SPEECH_SHARE * peak);
       const start = speech.length ? speech[0].t : 0;
       const end = speech.length ? speech[speech.length - 1].t : frames[frames.length - 1]?.t ?? 0;
+      // Same time scale as the native panel above, so a syllable held twice
+      // as long looks twice as long. A take that runs past the panel's width
+      // is drawn wider and scrolls, never squeezed to fit.
       const originMs = Math.max(0, start - FIT_LEAD_MS);
+      const viewMs = nativeScope.current.windowMs;
       youScope.current = {
         ...youScope.current,
         originMs,
-        windowMs: Math.max(FALLBACK_WINDOW_MS / 2, end + FIT_TAIL_MS - originMs),
+        viewMs,
+        windowMs: Math.max(viewMs, end + FIT_TAIL_MS - originMs),
         spectra: handle.capture.spectra,
         segments: result.learnerSegmentsRaw,
         ghost: result.referenceSegments.map(seg => seg.map(p => ({ ms: result.inverseTime(p.ms), st: p.st }))),
@@ -475,7 +483,7 @@ export function SpeakingTab() {
     // While recording the panel shows the learner's own sound and nothing
     // else — no native line, no slots, no textbook shapes. All of that
     // returns with the scored take, fitted to what was actually said.
-    youScope.current = { ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current), originMs: 0 };
+    youScope.current = { ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current), originMs: 0, viewMs: windowMs };
     redraw();
 
     let stream: MediaStream;
@@ -525,7 +533,7 @@ export function SpeakingTab() {
         recorderRef.current?.start();
         const source = ctx.createMediaStreamSource(stream);
         captureRef.current = startCapture(ctx, source, {
-          onFrame: (_elapsed, capture) => {
+          onFrame: (elapsed, capture) => {
             const voiced = capture.frames.filter(f => f.hz !== null);
             youScope.current = {
               ...youScope.current,
@@ -535,6 +543,9 @@ export function SpeakingTab() {
               // clock, and a marker only invites the learner to chase it.
               elapsedMs: null,
               gain: gainRef.current,
+              // A take running past the native length widens the panel
+              // rather than falling off its right edge.
+              windowMs: Math.max(youScope.current.windowMs, elapsed + FIT_TAIL_MS),
             };
           },
           shouldStop: (elapsed, capture) => {
@@ -718,7 +729,15 @@ function PracticePanel({
       }
     };
     fit();
-    const observer = new ResizeObserver(fit);
+    // Width only: fitting changes the block's height, and reacting to that
+    // would loop the observer.
+    let lastWidth = el.parentElement?.clientWidth ?? 0;
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - lastWidth) < 1) return;
+      lastWidth = width;
+      fit();
+    });
     observer.observe(el.parentElement ?? el);
     return () => observer.disconnect();
   }, [phrase]);
