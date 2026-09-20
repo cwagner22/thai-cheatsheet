@@ -20,6 +20,10 @@ export interface Reference extends Capture {
   syllables: SyllableSpan[] | null;
 }
 
+/** Captured past the end of the clip, so the analyser's smoothing has
+ *  released the last syllable and the tail is captured as silence. */
+export const RUN_ON_MS = 160;
+
 const buffers = new Map<string, Promise<AudioBuffer>>();
 const references = new Map<string, Reference>();
 /** Captures in flight, one per phrase. Two callers asking for the same
@@ -62,7 +66,13 @@ function loadBuffer(ctx: AudioContext, text: string): Promise<AudioBuffer> {
 export function captureReference(
   ctx: AudioContext,
   phrase: Phrase,
-  options: { audible: boolean; onFrame?: (elapsedMs: number, capture: Capture) => void },
+  options: {
+    audible: boolean;
+    onFrame?: (elapsedMs: number, capture: Capture) => void;
+    /** Called as playback starts, with the clip's length; the capture runs
+     *  RUN_ON_MS past it. */
+    onStart?: (clipMs: number) => void;
+  },
 ): { done: Promise<Reference>; handle: Promise<CaptureHandle> } {
   const inFlight = pending.get(phrase.id);
   if (inFlight) return inFlight;
@@ -99,10 +109,9 @@ export function captureReference(
         },
       });
       resolveHandle(capture);
-      // A little run-on after the buffer ends, so the analyser's smoothing
-      // has released the last syllable and the tail is captured as silence.
-      source.onended = () => window.setTimeout(() => capture.stop(), 160);
+      source.onended = () => window.setTimeout(() => capture.stop(), RUN_ON_MS);
       source.start();
+      options.onStart?.(buffer.duration * 1000);
     });
   })();
 

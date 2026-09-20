@@ -152,6 +152,10 @@ const LEVEL_TOL_ST = 1.7;
 /** Below this the native voice is not really moving on a syllable, and no
  *  movement is asked of the learner either. */
 const MOVING_ST = 1.2;
+/** A glide the native voice makes must travel at least this far before a
+ *  learner can be called flat against it; asking for a third of a
+ *  two-semitone drift is asking for tenths, which alignment jitter decides. */
+const MIN_WANT_ST = 2.5;
 /** The learner's movement on a syllable, as a share of the native voice's,
  *  under which it reads as flat. The synthetic voice swings wide at the
  *  start of a sentence; a learner who makes a third of that has audibly
@@ -163,6 +167,14 @@ const FLAT_SHARE = 1 / 3;
  *  swing, not zero: connected speech drifts on every syllable, and the
  *  native voice doing the same thing must always pass. */
 const SWING_ST = 2.5;
+
+/** The first stretch of an utterance does not count towards a swing. A
+ *  voice starts with an onset slide — five semitones over the first 80 ms is
+ *  ordinary, from a glide or a stop release settling into the vowel — that
+ *  no listener hears as a tone, and that read as a mid syllable "falling".
+ *  It still counts towards a glide the tone asks for: an onset cannot fake
+ *  flatness, and a low tone's fall may well begin in it. */
+const ONSET_MS = 80;
 
 /** Fewer native points than this in a slot and its glide is not judged: a
  *  hundred milliseconds of contour shifts by a frame under any alignment
@@ -282,19 +294,33 @@ function scoreSyllables(
     return mean(xs.slice(-third)) - mean(xs.slice(0, third));
   };
   /** How far the pitch travelled down (−1) or up (+1) across the syllable,
-   *  peak of one half to trough of the other. A fall that happens early and
-   *  then holds is a full fall to the ear; averaged by thirds it shrinks. */
+   *  from the high side of one half to the low side of the other. A fall
+   *  that happens early and then holds is a full fall to the ear; averaged
+   *  by thirds it shrinks. The sides are trimmed percentiles rather than
+   *  the extremes, so a stray frame cannot make a swing. */
+  const pct = (xs: number[], q: number) => {
+    const sorted = [...xs].sort((a, b) => a - b);
+    return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
+  };
   const travel = (xs: number[], dir: -1 | 1) => {
     const half = Math.max(1, xs.length >> 1);
     const a = xs.slice(0, half);
     const b = xs.slice(half);
-    return dir < 0 ? Math.max(...a) - Math.min(...b) : Math.max(...b) - Math.min(...a);
+    const high = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.85) : Math.max(...ys));
+    const low = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.15) : Math.min(...ys));
+    return dir < 0 ? high(a) - low(b) : high(b) - low(a);
   };
   const within = (points: TrackPoint[], span: SyllableSpan) =>
     points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs);
 
+  const afterOnset = (points: TrackPoint[]) => {
+    const start = points[0]?.ms ?? 0;
+    return points.filter(p => p.ms - start >= ONSET_MS);
+  };
   const ref = spans.map(span => within(refPoints, span).map(p => p.st));
   const lrnPts = spans.map(span => within(lrnPoints, span));
+  const refSwing = spans.map(span => within(afterOnset(refPoints), span).map(p => p.st));
+  const lrnSwing = spans.map(span => within(afterOnset(lrnPoints), span).map(p => p.st));
   const lrn = lrnPts.map(pts => pts.map(p => p.st));
 
   // One score per group, then one entry per syllable: a group's syllables
@@ -314,6 +340,8 @@ function scoreSyllables(
         : { ...first, thai: parts.map(p => p.thai).join(''), ipa: idx.map(i => spans[i].ipa).join('.'), endMs: last.endMs };
     const refSt = idx.flatMap(i => ref[i]);
     const lrnSt = idx.flatMap(i => lrn[i]);
+    const refSw = idx.flatMap(i => refSwing[i]);
+    const lrnSw = idx.flatMap(i => lrnSwing[i]);
     const same = <T,>(pick: (span: SyllableSpan) => T, fallback: T): T => {
       const values = new Set(idx.map(i => pick(spans[i])));
       return values.size === 1 ? [...values][0] : fallback;
@@ -358,10 +386,13 @@ function scoreSyllables(
     }
 
     const { referenceNet } = base;
-    const up = travel(lrnSt, 1);
-    const down = travel(lrnSt, -1);
-    const refUp = travel(refSt, 1);
-    const refDown = travel(refSt, -1);
+    // Swings are measured past the onset; glides the tone asks for, below,
+    // on the whole slot.
+    const swingable = lrnSw.length >= 3 && refSw.length >= 3;
+    const up = swingable ? travel(lrnSw, 1) : 0;
+    const down = swingable ? travel(lrnSw, -1) : 0;
+    const refUp = swingable ? travel(refSw, 1) : 0;
+    const refDown = swingable ? travel(refSw, -1) : 0;
 
     // A level tone swung well beyond what the native voice does on it is the
     // wrong tone, whatever the average level: a mid syllable said falling.
@@ -373,8 +404,8 @@ function scoreSyllables(
       };
     }
     if (taught !== 0) {
-      const against = travel(lrnSt, taught < 0 ? 1 : -1);
-      const refAgainst = travel(refSt, taught < 0 ? 1 : -1);
+      const against = swingable ? travel(lrnSw, taught < 0 ? 1 : -1) : 0;
+      const refAgainst = swingable ? travel(refSw, taught < 0 ? 1 : -1) : 0;
       const withIt = travel(lrnSt, taught);
       const way = taught < 0 ? 'down' : 'up';
       if (against - refAgainst >= SWING_ST && against > withIt) {
@@ -387,7 +418,7 @@ function scoreSyllables(
         refSt.length >= MIN_GLIDE_POINTS && Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST;
       if (nativeShowsIt) {
         const want = travel(refSt, taught);
-        if (withIt < FLAT_SHARE * want) {
+        if (want >= MIN_WANT_ST && withIt < FLAT_SHARE * want) {
           return {
             ...base, levelSt, verdict: 'flat' as const,
             hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${withIt.toFixed(1)} st${cue(span)}`,

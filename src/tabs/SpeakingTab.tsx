@@ -24,7 +24,7 @@ import {
   type Comparison,
   type SyllableVerdict,
 } from '../lib/contour';
-import { cachedReference, captureReference, playReference, type Playback, type Reference } from '../lib/reference';
+import { cachedReference, captureReference, playReference, RUN_ON_MS, type Playback, type Reference } from '../lib/reference';
 import { PhraseScope, type ScopeData } from '../components/PhraseScope';
 import scopeStyles from '../components/PhraseScope.module.css';
 import { speakThai } from '../lib/speak';
@@ -238,7 +238,8 @@ export function SpeakingTab() {
   /** Shows a finished reference on the top panel and widens both axes to it. */
   const showReference = useCallback((reference: Reference) => {
     setMismatches(reference.syllables ? textbookMismatches(reference.frames, reference.syllables) : []);
-    const windowMs = windowFor(reference);
+    // Kept from onStart when the clip was just captured, so nothing rescales.
+    const windowMs = nativeScope.current.spectra === reference.spectra ? nativeScope.current.windowMs : windowFor(reference);
     nativeScope.current = {
       windowMs,
       spectra: reference.spectra,
@@ -309,6 +310,14 @@ export function SpeakingTab() {
       try {
         const { done, handle } = captureReference(ctx, phrase, {
           audible,
+          // The axis is set from the clip's length before the first frame,
+          // so the picture is drawn at its final scale from the start
+          // instead of being redrawn narrower when the clip ends.
+          onStart: clipMs => {
+            const windowMs = clipMs + RUN_ON_MS + WINDOW_TAIL_MS;
+            nativeScope.current = { ...nativeScope.current, windowMs };
+            youScope.current = { ...youScope.current, windowMs, viewMs: windowMs };
+          },
           onFrame: (elapsed, capture) => {
             const voiced = capture.frames.filter(f => f.hz !== null);
             nativeScope.current = {
@@ -729,17 +738,23 @@ function PracticePanel({
       }
     };
     fit();
-    // Width only: fitting changes the block's height, and reacting to that
-    // would loop the observer.
+    // Width only, and on the next frame: fitting changes the block's size,
+    // and resizing an observed element inside its own callback loops the
+    // observer.
     let lastWidth = el.parentElement?.clientWidth ?? 0;
+    let frame = 0;
     const observer = new ResizeObserver(entries => {
       const width = entries[0]?.contentRect.width ?? 0;
       if (Math.abs(width - lastWidth) < 1) return;
       lastWidth = width;
-      fit();
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fit);
     });
     observer.observe(el.parentElement ?? el);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [phrase]);
 
   return (
