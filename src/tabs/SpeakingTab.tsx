@@ -248,7 +248,9 @@ export function SpeakingTab() {
       syllables: reference.syllables,
       showTextbook: textbookRef.current,
     };
-    youScope.current = { ...youScope.current, windowMs, syllables: reference.syllables, showTextbook: textbookRef.current };
+    // The learner's panel stays bare until there is a take: the native
+    // voice's slots and the textbook shapes mean nothing laid over silence.
+    youScope.current = { ...youScope.current, windowMs };
     redraw();
   }, []);
 
@@ -438,6 +440,7 @@ export function SpeakingTab() {
           : null,
         elapsedMs: null,
         prompter: false,
+        showTextbook: textbookRef.current,
       };
     } else if (handle) {
       const voiced = frames.filter(f => f.hz !== null);
@@ -476,7 +479,9 @@ export function SpeakingTab() {
       ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current),
       originMs: 0,
       syllables: target?.syllables ?? null,
-      showTextbook: textbookRef.current,
+      // While speaking: the sentence and the native line, nothing else. The
+      // textbook shapes return with the scored take, next to what was said.
+      showTextbook: false,
       // The native pitch and the sentence are on the panel before the first
       // sound: both time axes start at zero, so the reference's own timing
       // is this panel's timing until the take is fitted afterwards.
