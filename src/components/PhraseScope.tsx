@@ -28,10 +28,6 @@ export interface ScopeData {
   syllables?: SyllableSpan[] | null;
   /** Draw the citation-form tone shape over each syllable slot. */
   showTextbook?: boolean;
-  /** Show the sentence to say inside the panel, each syllable large above
-   *  its slot, while the learner is counted in and recording — when the eye
-   *  is on the panel and not on the page header. */
-  prompter?: boolean;
 }
 
 /** The visible pitch range. The native voice spans roughly −7..+4 st around
@@ -51,10 +47,6 @@ const PAD_B = 10;
 const PITCH_INSET = 0.09;
 
 const FAINT = 'rgba(226, 232, 240, 0.16)';
-/** Prompter type size, in px: as large as the narrowest slot allows. */
-const PROMPT_MAX_PX = 40;
-const PROMPT_MIN_PX = 16;
-
 /** Half-height of a textbook band, in semitones. */
 const BAND_HALF_ST = 1.7;
 const OWN_LINE = '#ffffff';
@@ -295,39 +287,14 @@ function draw(
     }
 
     ctx.textAlign = 'center';
-    if (data.prompter) {
-      // Large, over the slot, sized down until the widest syllable fits its
-      // slot; a dark casing keeps it legible over bright formants.
-      const slots = data.syllables.map(syl => ({ syl, cx: (x(syl.startMs) + x(syl.endMs)) / 2, w: x(syl.endMs) - x(syl.startMs) }));
-      let size = PROMPT_MAX_PX;
-      for (; size > PROMPT_MIN_PX; size -= 2) {
-        ctx.font = `700 ${size}px "Noto Serif Thai", serif`;
-        if (slots.every(({ syl, w }) => ctx.measureText(syl.thai).width <= w * 1.15)) break;
-      }
-      ctx.font = `700 ${size}px "Noto Serif Thai", serif`;
-      ctx.textBaseline = 'alphabetic';
-      ctx.lineJoin = 'round';
-      // The sentence is a thing to read at one's own pace, not a karaoke
-      // line: the slots come from the native voice's timing and the take is
-      // scored on its own, so nothing here follows the playhead.
-      const baseline = top + size + 10;
-      for (const { syl, cx } of slots) {
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = 'rgba(5,7,13,0.9)';
-        ctx.strokeText(syl.thai, cx, baseline);
-        ctx.fillStyle = TONE_COLOR[syl.tone];
-        ctx.fillText(syl.thai, cx, baseline);
-      }
-    } else {
-      ctx.font = '600 14px "Noto Serif Thai", serif';
-      for (const syl of data.syllables) {
-        const cx = (x(syl.startMs) + x(syl.endMs)) / 2;
-        const tw = ctx.measureText(syl.thai).width;
-        ctx.fillStyle = 'rgba(5,7,13,0.72)';
-        ctx.fillRect(cx - tw / 2 - 5, top + plotH - 26, tw + 10, 20);
-        ctx.fillStyle = TONE_COLOR[syl.tone];
-        ctx.fillText(syl.thai, cx, top + plotH - 16);
-      }
+    ctx.font = '600 14px "Noto Serif Thai", serif';
+    for (const syl of data.syllables) {
+      const cx = (x(syl.startMs) + x(syl.endMs)) / 2;
+      const tw = ctx.measureText(syl.thai).width;
+      ctx.fillStyle = 'rgba(5,7,13,0.72)';
+      ctx.fillRect(cx - tw / 2 - 5, top + plotH - 26, tw + 10, 20);
+      ctx.fillStyle = TONE_COLOR[syl.tone];
+      ctx.fillText(syl.thai, cx, top + plotH - 16);
     }
     ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
   }
@@ -374,10 +341,8 @@ function draw(
   if (ghost) trace(ghost, GHOST_LINE, 2.2, [6, 4]);
   trace(segments, OWN_LINE, 2.5, []);
 
-  // --- playhead: only over sound being played back. While recording the
-  // spectrogram filling in is the progress, and a marker running on the
-  // native voice's timing would invite the learner to chase it. ---
-  if (elapsedMs !== null && !data.prompter) {
+  // --- playhead ---
+  if (elapsedMs !== null) {
     const px = Math.round(x(Math.min(elapsedMs, origin + windowMs))) + 0.5;
     ctx.strokeStyle = 'rgba(248,250,252,0.85)';
     ctx.lineWidth = 1.5;

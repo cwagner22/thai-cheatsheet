@@ -1,14 +1,13 @@
 /* ===== PRACTICE PANEL ===== */
 .panel { margin-bottom: 26px; }
 
+/* Between the two panels: read here, hear the original here, record here. */
 .poster {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px 32px;
+  gap: 12px 32px;
   align-items: end;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 22px;
+  padding: 14px 6px 10px;
 }
 .posterText { min-width: 0; }
 .sentence {
@@ -22,14 +21,6 @@
   font-weight: 700;
   line-height: 1.15;
 }
-/* While the learner is listening, counted in or recording, the sentence is
-   read inside the panel; up here it shrinks to a caption so it is not shown
-   twice at size. */
-.posterLive { align-items: center; padding-bottom: 12px; margin-bottom: 12px; }
-.posterLive .sentence { font-size: 1.2rem !important; margin: 0; display: inline-flex; gap: 0 0.2em; }
-.posterLive .posterText { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; }
-.posterLive .posterIpa { display: none; }
-.posterLive .keys { display: none; }
 .wordBtn {
   border: 0;
   background: none;
@@ -78,6 +69,21 @@
 }
 
 .act { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.actRow { display: flex; align-items: center; gap: 10px; }
+.listenBtn {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.listenBtn:not(:disabled):hover { background: var(--panel); }
+.listenBtn:disabled { opacity: 0.5; cursor: default; }
 .recBtn {
   display: inline-flex;
   align-items: center;

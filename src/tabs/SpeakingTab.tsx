@@ -439,7 +439,6 @@ export function SpeakingTab() {
             }))
           : null,
         elapsedMs: null,
-        prompter: false,
         showTextbook: textbookRef.current,
       };
     } else if (handle) {
@@ -448,7 +447,6 @@ export function SpeakingTab() {
         ...youScope.current,
         segments: voiced.length >= 8 ? buildSegments(frames, registerHz(frames)) : [],
         elapsedMs: null,
-        prompter: false,
       };
     }
     redraw();
@@ -474,20 +472,10 @@ export function SpeakingTab() {
       if (referenceRef.current?.phraseId !== reference.phraseId) return;
     }
     const windowMs = windowFor(referenceRef.current);
-    const target = referenceRef.current;
-    youScope.current = {
-      ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current),
-      originMs: 0,
-      syllables: target?.syllables ?? null,
-      // While speaking: the sentence and the native line, nothing else. The
-      // textbook shapes return with the scored take, next to what was said.
-      showTextbook: false,
-      // The native pitch and the sentence are on the panel before the first
-      // sound: both time axes start at zero, so the reference's own timing
-      // is this panel's timing until the take is fitted afterwards.
-      ghost: target ? buildSegments(target.frames, registerHz(target.frames)) : null,
-      prompter: !!target?.syllables,
-    };
+    // While recording the panel shows the learner's own sound and nothing
+    // else — no native line, no slots, no textbook shapes. All of that
+    // returns with the scored take, fitted to what was actually said.
+    youScope.current = { ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current), originMs: 0 };
     redraw();
 
     let stream: MediaStream;
@@ -537,13 +525,15 @@ export function SpeakingTab() {
         recorderRef.current?.start();
         const source = ctx.createMediaStreamSource(stream);
         captureRef.current = startCapture(ctx, source, {
-          onFrame: (elapsed, capture) => {
+          onFrame: (_elapsed, capture) => {
             const voiced = capture.frames.filter(f => f.hz !== null);
             youScope.current = {
               ...youScope.current,
               spectra: capture.spectra,
               segments: voiced.length >= 8 ? buildSegments(capture.frames, registerHz(capture.frames)) : [],
-              elapsedMs: elapsed,
+              // No playhead while recording: the take is scored on its own
+              // clock, and a marker only invites the learner to chase it.
+              elapsedMs: null,
               gain: gainRef.current,
             };
           },
@@ -712,19 +702,14 @@ function PracticePanel({
   showTextbook: boolean;
   onToggleTextbook: () => void;
 }) {
-  const speaking = status === 'listening' || status === 'counting' || status === 'recording';
   const sentenceRef = useRef<HTMLParagraphElement | null>(null);
   // The sentence is one line however long it is: the type is scaled down
   // from its full size until it fits the column. Re-run on resize and when
-  // the sentence or the layout mode changes.
+  // the sentence changes.
   useLayoutEffect(() => {
     const el = sentenceRef.current;
     if (!el) return;
     const fit = () => {
-      if (speaking) {
-        el.style.fontSize = '';
-        return;
-      }
       el.style.fontSize = `${SENTENCE_MAX_REM}rem`;
       const available = el.clientWidth;
       const needed = el.scrollWidth;
@@ -736,55 +721,10 @@ function PracticePanel({
     const observer = new ResizeObserver(fit);
     observer.observe(el.parentElement ?? el);
     return () => observer.disconnect();
-  }, [phrase, speaking]);
+  }, [phrase]);
 
   return (
     <div className={styles.panel}>
-      <header className={`${styles.poster} ${speaking ? styles.posterLive : ''}`}>
-        <div className={styles.posterText}>
-          <p className={styles.sentence} ref={sentenceRef}>
-            {phrase.words.map((word, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`${styles.wordBtn} ${spokenWord === i ? styles.wordSpeaking : ''}`}
-                onClick={() => speakThai(thaiOfWord(word))}
-                data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
-                aria-label={`${thaiOfWord(word)} — play`}
-              >
-                {word.syllables.map((syl, j) => (
-                  <span key={j} style={{ color: TONE_COLOR[syllableTone(syl)] }}>{syl.thai}</span>
-                ))}
-              </button>
-            ))}
-          </p>
-          {ipaOf(phrase).trim() && <p className={styles.posterIpa}>/{ipaOf(phrase)}/</p>}
-          <p className={styles.gloss}>{phrase.meaning}</p>
-        </div>
-        <div className={styles.act}>
-          {status === 'recording' ? (
-            <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
-              <span className={styles.recDot} />Stop
-            </button>
-          ) : (
-            <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
-              <span className={styles.recDot} />
-              {status === 'listening'
-                ? 'Listen…'
-                : status === 'counting'
-                  ? 'Get ready…'
-                  : status === 'done'
-                    ? 'Try again'
-                    : heard
-                      ? 'Record'
-                      : 'Listen, then record'}
-            </button>
-          )}
-          <span className={styles.keys}>
-            <kbd>Space</kbd> records · <kbd>L</kbd> native voice · <kbd>←</kbd> <kbd>→</kbd> sentences
-          </span>
-        </div>
-      </header>
 
       <details className={styles.method}>
         <summary>How to practise a tone — the throat first, the lines second</summary>
@@ -808,25 +748,67 @@ function PracticePanel({
           revision={revision}
           height={280}
           tools={
-            <>
-              <button type="button" className={scopeStyles.tool} onClick={onListen} disabled={busy}>
-                {refStatus === 'loading'
-                  ? 'Fetching…'
-                  : refStatus === 'playing' || playing === 'native'
-                    ? 'Playing…'
-                    : '▶ Listen'}
-              </button>
-              <button
-                type="button"
-                className={`${scopeStyles.tool} ${scopeStyles.secondary}`}
-                onClick={() => speakThai(phrase.words.map(thaiOfWord), onSpokenWord)}
-                disabled={busy}
-              >
-                Word by word
-              </button>
-            </>
+            <button
+              type="button"
+              className={scopeStyles.tool}
+              onClick={() => speakThai(phrase.words.map(thaiOfWord), onSpokenWord)}
+              disabled={busy}
+            >
+              Word by word
+            </button>
           }
         />
+      <header className={styles.poster}>
+        <div className={styles.posterText}>
+          <p className={styles.sentence} ref={sentenceRef}>
+            {phrase.words.map((word, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`${styles.wordBtn} ${spokenWord === i ? styles.wordSpeaking : ''}`}
+                onClick={() => speakThai(thaiOfWord(word))}
+                data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
+                aria-label={`${thaiOfWord(word)} — play`}
+              >
+                {word.syllables.map((syl, j) => (
+                  <span key={j} style={{ color: TONE_COLOR[syllableTone(syl)] }}>{syl.thai}</span>
+                ))}
+              </button>
+            ))}
+          </p>
+          {ipaOf(phrase).trim() && <p className={styles.posterIpa}>/{ipaOf(phrase)}/</p>}
+          <p className={styles.gloss}>{phrase.meaning}</p>
+        </div>
+        <div className={styles.act}>
+          <div className={styles.actRow}>
+          <button type="button" className={styles.listenBtn} onClick={onListen} disabled={busy}>
+            {refStatus === 'loading' ? 'Fetching…' : refStatus === 'playing' || playing === 'native' ? 'Playing…' : '▶ Listen'}
+          </button>
+          {status === 'recording' ? (
+            <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
+              <span className={styles.recDot} />Stop
+            </button>
+          ) : (
+            <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
+              <span className={styles.recDot} />
+              {status === 'listening'
+                ? 'Listen…'
+                : status === 'counting'
+                  ? 'Get ready…'
+                  : status === 'done'
+                    ? 'Try again'
+                    : heard
+                      ? 'Record'
+                      : 'Listen, then record'}
+            </button>
+          )}
+          </div>
+          <span className={styles.keys}>
+            <kbd>Space</kbd> records · <kbd>L</kbd> native voice · <kbd>←</kbd> <kbd>→</kbd> sentences
+          </span>
+        </div>
+      </header>
+
         <PhraseScope
           data={youScope}
           live={live}
