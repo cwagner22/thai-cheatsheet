@@ -50,6 +50,12 @@ export interface VoicingGate {
    *  under it through as a "quiet voice"; speech sits 20–40 dB above the
    *  room, noise by definition does not. 4× is 12 dB. */
   aboveNoise: number;
+  /** A voiced run whose median share of energy above SPEECH_BAND_HZ is under
+   *  this is not a voice. Vowels put 45–90% of their energy in the formant
+   *  band; a fan, a compressor, a low hum — clean, periodic, gliding, and
+   *  louder than the room — puts about 15% there. Level and periodicity
+   *  cannot tell those from a quiet voice; the spectrum can. */
+  minHighShare: number;
 }
 
 export const VOICING: VoicingGate = {
@@ -62,6 +68,7 @@ export const VOICING: VoicingGate = {
   maxGap: 2,
   minDynamicRange: 12,
   aboveNoise: 4,
+  minHighShare: 0.25,
 };
 
 /** Returns the frames with `hz` nulled wherever the gate rejects the frame.
@@ -131,6 +138,17 @@ export function gateVoicing(frames: readonly Frame[], gate: VoicingGate = VOICIN
   };
   grow(1, 1);
   grow(n - 2, -1);
+
+  // Drop runs whose spectrum is not a voice's. Judged per run on the median,
+  // so one dull frame inside a vowel does not break it.
+  for (let i = 0; i < n; ) {
+    if (!voiced[i]) { i++; continue; }
+    let j = i;
+    while (j < n && voiced[j]) j++;
+    const shares = frames.slice(i, j).map(f => f.highShare).filter((v): v is number => v !== undefined).sort((a, b) => a - b);
+    if (shares.length && shares[shares.length >> 1] < gate.minHighShare) for (let k = i; k < j; k++) voiced[k] = 0;
+    i = j;
+  }
 
   return frames.map((f, i) => (voiced[i] || f.hz === null ? f : { ...f, hz: null }));
 }

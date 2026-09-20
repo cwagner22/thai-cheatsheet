@@ -18,6 +18,10 @@ export interface Frame {
   /** The detector's 0..1 periodicity for the frame; 0 with no candidate.
    *  Kept so the voicing gate can be re-run over a whole take. */
   clarity: number;
+  /** Share of the frame's spectral energy above SPEECH_BAND_HZ, 0..1 — the
+   *  vowel formants of a voice against the low harmonics of a hum. Absent
+   *  when the frames came without a spectrum. */
+  highShare?: number;
 }
 
 export interface SpectrumColumn {
@@ -35,6 +39,27 @@ export interface Capture {
  *  default. The scope labels its axis from this and the capture slices the
  *  analyser's bins to it. */
 export const SPEC_MAX_HZ = 3500;
+
+/** Above this a voice carries its formants; a machine hum or a low rumble
+ *  keeps nearly all its energy below it. */
+export const SPEECH_BAND_HZ = 300;
+
+/** The analyser's byte scale is decibels from minDecibels (−100) to
+ *  maxDecibels (−30); back to linear amplitude so the band shares are
+ *  shares of energy, not of a log scale. */
+const byteToAmplitude = (b: number) => 10 ** ((b / 255) * 70 / 20 - 5);
+
+export function highBandShare(bytes: Uint8Array, binHz: number): number {
+  const lo = Math.max(1, Math.round(SPEECH_BAND_HZ / binHz));
+  let low = 0;
+  let high = 0;
+  for (let k = 1; k < bytes.length; k++) {
+    const a = byteToAmplitude(bytes[k]);
+    if (k < lo) low += a;
+    else high += a;
+  }
+  return high / (low + high || 1);
+}
 
 export interface CaptureHandle {
   /** Grows while the capture runs; the same object throughout, so a caller
@@ -132,9 +157,16 @@ export function startCapture(
 
     const level = rms(window);
     const pitch = level > gate.silence ? detectPitch(window, ctx.sampleRate) : null;
-    candidates.push({ t: elapsed, hz: pitch?.hz ?? null, rms: level, clarity: pitch?.clarity ?? 0 });
+    const spectrum = freqBuf.slice(0, specBins);
+    candidates.push({
+      t: elapsed,
+      hz: pitch?.hz ?? null,
+      rms: level,
+      clarity: pitch?.clarity ?? 0,
+      highShare: highBandShare(spectrum, ctx.sampleRate / analyser.fftSize),
+    });
     capture.frames = gateVoicing(candidates, gate);
-    capture.spectra.push({ ms: elapsed, data: freqBuf.slice(0, specBins) });
+    capture.spectra.push({ ms: elapsed, data: spectrum });
 
     options.onFrame?.(elapsed, capture);
     if (options.shouldStop?.(elapsed, capture)) stop();
