@@ -1,0 +1,95 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Speaking tab — control layout options</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--blue:#2563eb;--red:#dc2626;--ink:#1f2937;--mute:#64748b;--line:#e5e7eb}
+  body{font-family:Inter,system-ui,sans-serif;background:#f6f7f9;color:var(--ink);margin:0;padding:28px 32px}
+  h1{font-size:1.1rem;margin:0 0 4px}
+  p.sub{margin:0 0 22px;color:var(--mute);font-size:.86rem;max-width:760px;line-height:1.5}
+  .opt{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:26px;max-width:860px}
+  .opt h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin:0 0 4px}
+  .opt p.why{margin:0 0 14px;font-size:.84rem;color:#475569;line-height:1.5}
+  .th{font-family:'Noto Serif Thai',serif;font-weight:700}
+  .sentence{display:flex;gap:10px;align-items:baseline;margin:0 0 12px}
+  .sentence .th{font-size:1.5rem}
+  .sentence small{color:var(--mute);font-size:.8rem}
+  /* fake panels */
+  .panel{position:relative;background:#05070d;border-radius:10px;height:110px;margin-bottom:8px;overflow:hidden;
+    background-image:linear-gradient(90deg,transparent 0 12%,#f97316 12% 22%,transparent 22% 30%,#fbbf24 30% 44%,transparent 44% 52%,#f97316 52% 66%,transparent 66% 70%,#fbbf24 70% 80%,transparent 80%);background-size:100% 60%;background-repeat:no-repeat;background-position:0 40%}
+  .panel::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d 0,transparent 40%,transparent 60%,#05070d 100%);opacity:.75}
+  .panel .lbl{position:absolute;left:12px;top:8px;color:#e2e8f0;font-size:.72rem;font-weight:600;z-index:2}
+  .panel .tools{position:absolute;right:8px;top:6px;display:flex;gap:6px;z-index:2}
+  .panel .tools .ib{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:4px 9px;font-size:.72rem;font-weight:600}
+  /* buttons */
+  .btn{font-family:inherit;font-weight:700;font-size:.84rem;padding:8px 16px;border-radius:8px;border:2px solid transparent;background:#fff;cursor:default}
+  .b-primary{border-color:var(--blue);background:#eff6ff;color:var(--blue)}
+  .b-quiet{border-color:#ddd;color:#555}
+  .b-rec{border-color:var(--red);background:#fef2f2;color:#b91c1c}
+  .b-big{font-size:1rem;padding:12px 26px;border-radius:12px}
+  .b-huge{font-size:1.05rem;padding:14px 34px;border-radius:999px;background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 6px 18px rgba(220,38,38,.25)}
+  .b-icon{width:36px;height:36px;padding:0;display:inline-grid;place-items:center;border-radius:50%}
+  .dim{opacity:.45}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .group{display:flex;align-items:center;gap:6px;padding:4px 6px;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+  .group .cap{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);padding:0 4px 0 6px}
+  .settings{display:flex;align-items:center;gap:10px;font-size:.76rem;color:var(--mute);margin-top:8px}
+  .slider{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--blue) 40%,#dbe3ee 40%);position:relative}
+  .slider::after{content:"";position:absolute;left:40%;top:-5px;width:16px;height:16px;border-radius:50%;background:var(--blue);transform:translateX(-50%)}
+  .toggle{display:inline-flex;align-items:center;gap:6px}
+  .toggle i{width:28px;height:16px;border-radius:8px;background:var(--blue);position:relative;display:inline-block}
+  .toggle i::after{content:"";position:absolute;right:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff}
+  .kbd{font-family:ui-monospace,monospace;font-size:.7rem;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#fff;color:#475569}
+  .center{display:flex;justify-content:center;align-items:center;gap:14px;margin:6px 0 10px}
+  .note{font-size:.76rem;color:var(--mute)}
+  .chips{display:flex;gap:8px;margin-top:10px}
+  .chip{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:70px;padding:7px 10px 6px;border-radius:10px;border:2px solid #16a34a;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;text-transform:uppercase}
+  .chip .th{font-size:1.2rem;text-transform:none}
+  .chip.off{border-color:#f59e0b;background:#fef3c7;color:#92400e}
+  .disclosure{font-size:.78rem;color:var(--mute);margin-top:10px}
+  .disclosure b{color:#475569;font-weight:600}
+</style>
+
+<h1>Speaking tab — where the buttons live</h1>
+<p class="sub">Seven controls today, all in one row, all the same weight. They fall into four jobs that are pressed at very different rates: <b>record / try again</b> (every take) · <b>the native voice</b> (Listen, Word by word — a few times per sentence) · <b>my take</b> (Listen to my voice, Download — after a take, sometimes) · <b>the picture</b> (Sensitivity, textbook tones — once, if ever). Each option below places them by that. All show the state after a take.</p>
+
+<!-- ================= A ================= -->
+<section class="opt">
+  <h2>A — each voice carries its own controls</h2>
+  <p class="why">The native panel gets Listen and Word by word in its corner; your panel gets Listen to my voice and Download in its corner (empty until there is a take). The one big action sits between the sentence and the panels. Picture settings shrink to a footer line. Nothing to hunt for: a control is on the thing it acts on.</p>
+  <div class="sentence"><span class="th">สวัสดี<span style="color:#16a34a">ครับ</span></span><small>/sà.wàt.diː kʰráp/ · Hello.</small></div>
+  <div class="center"><button class="btn b-rec b-big">● Try again</button><span class="note">or <span class="kbd">Space</span></span></div>
+  <div class="panel"><span class="lbl">Native · Google Translate</span><span class="tools"><span class="ib">▶ Listen</span><span class="ib">Word by word</span></span></div>
+  <div class="panel"><span class="lbl">You</span><span class="tools"><span class="ib">▶ My voice</span><span class="ib">⤓ Save</span></span></div>
+  <div class="settings"><span>SENSITIVITY</span><span class="slider"></span><span>1.8×</span><span style="margin-left:14px" class="toggle"><i></i>textbook tones</span></div>
+  <div class="chips"><span class="chip"><span class="th" style="color:#dc2626">ส</span>✓ on target</span><span class="chip"><span class="th" style="color:#dc2626">วัส</span>✓ on target</span><span class="chip"><span class="th" style="color:#2563eb">ดี</span>✓ on target</span><span class="chip off"><span class="th" style="color:#16a34a">ครับ</span>↑ too high</span></div>
+</section>
+
+<!-- ================= B ================= -->
+<section class="opt">
+  <h2>B — one command bar, grouped and labelled</h2>
+  <p class="why">Everything stays in one bar under the sentence, but in three labelled groups so the eye reads jobs, not seven equal buttons. Record is first and biggest; "my take" is greyed until there is one; picture settings live behind a single small button that opens a row. Closest to today's layout, least to relearn.</p>
+  <div class="sentence"><span class="th">สวัสดี<span style="color:#16a34a">ครับ</span></span><small>/sà.wàt.diː kʰráp/ · Hello.</small></div>
+  <div class="row" style="margin-bottom:10px">
+    <button class="btn b-rec b-big">● Try again</button>
+    <span class="group"><span class="cap">native</span><button class="btn b-primary">▶ Listen</button><button class="btn b-quiet">Word by word</button></span>
+    <span class="group"><span class="cap">my take</span><button class="btn b-primary">▶ Listen</button><button class="btn b-quiet">⤓ Save</button></span>
+    <button class="btn b-quiet" style="margin-left:auto">⚙ Picture</button>
+  </div>
+  <div class="panel"><span class="lbl">Native · Google Translate</span></div>
+  <div class="panel"><span class="lbl">You</span></div>
+  <div class="chips"><span class="chip"><span class="th" style="color:#dc2626">ส</span>✓ on target</span><span class="chip"><span class="th" style="color:#dc2626">วัส</span>✓ on target</span><span class="chip"><span class="th" style="color:#2563eb">ดี</span>✓ on target</span><span class="chip off"><span class="th" style="color:#16a34a">ครับ</span>↑ too high</span></div>
+</section>
+
+<!-- ================= C ================= -->
+<section class="opt">
+  <h2>C — one button, the rest are icons on the panels</h2>
+  <p class="why">A single round record button, always in the same place, is the whole interface for the loop you repeat. Play icons sit on each panel (native on top, yours below), so "play" always means "play this". Word by word, Save and the picture settings fold into a small <b>More</b> line — present, out of the way. Best for phones, and for the keyboard: Space records, L plays the native voice, M plays yours.</p>
+  <div class="sentence"><span class="th">สวัสดี<span style="color:#16a34a">ครับ</span></span><small>/sà.wàt.diː kʰráp/ · Hello.</small></div>
+  <div class="panel"><span class="lbl">Native · Google Translate</span><span class="tools"><button class="btn b-icon" style="background:#fff;color:#111">▶</button></span></div>
+  <div class="panel"><span class="lbl">You</span><span class="tools"><button class="btn b-icon" style="background:#fff;color:#111">▶</button></span></div>
+  <div class="center" style="margin-top:12px"><button class="btn b-huge">● Try again</button></div>
+  <div class="center" style="margin-top:-2px"><span class="note"><span class="kbd">Space</span> record · <span class="kbd">L</span> native · <span class="kbd">M</span> my voice</span></div>
+  <div class="chips" style="justify-content:center"><span class="chip"><span class="th" style="color:#dc2626">ส</span>✓ on target</span><span class="chip"><span class="th" style="color:#dc2626">วัส</span>✓ on target</span><span class="chip"><span class="th" style="color:#2563eb">ดี</span>✓ on target</span><span class="chip off"><span class="th" style="color:#16a34a">ครับ</span>↑ too high</span></div>
+  <p class="disclosure">▸ <b>More</b> — Word by word · Save my take · Sensitivity · Textbook tones</p>
+</section>

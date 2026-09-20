@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Speaking tab — design directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Serif+Thai:wght@400;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" />
+<style>
+/* ===== switcher chrome — neutral, not part of any direction ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,sans-serif;background:#0f1116;padding-top:64px}
+.switcher{position:fixed;inset:0 0 auto 0;z-index:100;background:#0f1116;border-bottom:1px solid #23262f;
+  padding:9px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.sw-brand{font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#636b7a;white-space:nowrap}
+.sw-opts{display:flex;gap:5px;flex-wrap:wrap}
+.sw-btn{font-family:inherit;font-size:.78rem;font-weight:600;padding:6px 13px;border-radius:7px;cursor:pointer;
+  background:#191c24;color:#98a1b0;border:1px solid #2b303b;display:inline-flex;align-items:baseline;gap:7px}
+.sw-btn:hover{color:#e8ebf0;border-color:#3d4453}
+.sw-btn.on{background:#e8ebf0;color:#0f1116;border-color:#e8ebf0}
+.sw-btn kbd{font-family:'IBM Plex Mono',monospace;font-size:.64rem;opacity:.5}
+.sw-note{font-size:.76rem;color:#767e8d;line-height:1.5;flex:1 1 300px}
+.sw-note b{color:#c3c9d4;font-weight:600}
+
+/* =========================================================
+   SHARED SKELETON — the information architecture of the file
+   you sent: target on the left, instrument on the right, a
+   reading underneath it. Every direction styles this markup.
+   ========================================================= */
+.stage{min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 22px 60px}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.mark{width:42px;height:42px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif Thai',serif;font-size:1.45rem;line-height:1}
+.hdr-t{display:flex;flex-direction:column;gap:2px}
+.hdr-title{font-size:1.12rem;font-weight:700;letter-spacing:-.01em}
+.hdr-sub{font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.hdr-tools{display:flex;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;font-size:.72rem;font-weight:600;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:.05em}
+.led{width:7px;height:7px;border-radius:50%;flex:none}
+
+.grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
+
+.panel{overflow:hidden}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px}
+.panel-title{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  font-family:'IBM Plex Mono',monospace;display:inline-flex;align-items:center;gap:8px}
+.panel-meta{font-size:.66rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em}
+.panel-bd{padding:13px}
+.panel-bd.tight{padding:9px}
+
+/* target */
+.field{width:100%;font-family:inherit;font-size:.82rem;padding:8px 10px;cursor:pointer}
+.phrase{margin:11px 0 0;padding:12px;display:flex;flex-direction:column;gap:3px}
+.phrase-thai{font-family:'Noto Serif Thai',serif;font-size:2.05rem;font-weight:700;line-height:1.25}
+.phrase-ipa{font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+.phrase-gloss{font-size:.82rem}
+.syls{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.syl{display:flex;flex-direction:column;align-items:center;gap:0;padding:4px 8px;min-width:46px}
+.syl-th{font-family:'Noto Serif Thai',serif;font-size:1.02rem;font-weight:700;line-height:1.3}
+.syl-tn{font-size:.56rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.note{margin-top:11px;padding:10px 11px;font-size:.76rem;line-height:1.55}
+.note b{display:block;font-size:.64rem;letter-spacing:.11em;text-transform:uppercase;
+  font-family:'IBM Plex Mono',monospace;margin-bottom:4px;font-weight:700}
+
+/* controls */
+.btn{font-family:inherit;font-size:.8rem;font-weight:600;padding:9px 14px;cursor:pointer;border:0;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.full{width:100%}
+.btn-row{display:flex;gap:7px;margin-top:8px}
+.btn-row .btn{flex:1;padding:8px 9px;font-size:.75rem}
+.ctl{margin-top:13px}
+.ctl-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.ctl-name{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
+.ctl-val{font-size:.72rem;font-family:'IBM Plex Mono',monospace;font-weight:600}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;border-radius:2px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;cursor:pointer}
+.switch-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;font-size:.76rem}
+
+/* scope */
+.scope-stack{position:relative;line-height:0}
+.scope{display:block;width:100%;height:352px}
+.scope-ax{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dbbar{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:.62rem;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:.06em}
+.dbbar-grad{flex:1;height:7px;border-radius:4px}
+.legend{display:flex;gap:14px;font-size:.64rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* reading */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.metric{padding:11px 12px;display:flex;flex-direction:column;gap:6px}
+.metric-k{font-size:.63rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;align-items:center}
+.metric-v{font-size:1.72rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
+  display:flex;align-items:baseline;gap:5px}
+.metric-v s{font-size:.72rem;font-weight:600;text-decoration:none;font-family:'IBM Plex Mono',monospace}
+.bar{height:3px;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{display:inline-flex;align-items:baseline;gap:6px;padding:5px 10px;font-size:.78rem}
+.chip b{font-family:'Noto Serif Thai',serif;font-size:1.04rem;font-weight:700}
+.coach{display:flex;gap:11px;margin-top:12px;padding:11px 12px}
+.coach-ic{width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.coach-tx{font-size:.8rem;line-height:1.6}
+.coach-tx b{font-weight:700}
+
+@media(max-width:940px){
+  .grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  body{padding-top:0}
+  .switcher{position:static}
+  .wrap{padding:16px 14px 40px}
+  .scope{height:290px}
+}
+</style>
+<style>
+/* =========================================================
+   A — CONSOLE.  Your file's density, on a light workstation
+   surface. Hairline modules, mono for every value, one live
+   accent, and the scope as the single dark screen.
+   ========================================================= */
+body[data-d="console"] .stage{background:#e9ecf1;color:#1a2030;
+  background-image:linear-gradient(rgba(40,70,120,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(40,70,120,.035) 1px,transparent 1px);
+  background-size:28px 28px}
+body[data-d="console"] .mark{background:#fff;border:1px solid #1d6fe0;border-radius:7px;color:#1d6fe0}
+body[data-d="console"] .hdr-sub{color:#75809a}
+body[data-d="console"] .pill{background:#fff;border:1px solid #ccd4e2;border-radius:99px;color:#5b6883}
+body[data-d="console"] .panel{background:#fff;border:1px solid #ccd4e2;border-radius:8px;box-shadow:0 1px 2px rgba(20,40,80,.05)}
+body[data-d="console"] .panel-hd{background:#f4f6fa;border-bottom:1px solid #e1e7f0}
+body[data-d="console"] .panel-title{color:#3c4a66}
+body[data-d="console"] .panel-meta{color:#8a95ab}
+body[data-d="console"] .field{background:#fff;border:1px solid #ccd4e2;border-radius:6px;color:#1a2030}
+body[data-d="console"] .phrase{background:#f7f9fc;border:1px solid #e1e7f0;border-radius:7px}
+body[data-d="console"] .phrase-ipa{color:#1d6fe0}
+body[data-d="console"] .phrase-gloss{color:#5b6883}
+body[data-d="console"] .syl{background:#fff;border:1px solid #dde4ee;border-radius:5px}
+body[data-d="console"] .note{background:#f7f9fc;border-left:2px solid #1d6fe0;border-radius:0 6px 6px 0;color:#48566f}
+body[data-d="console"] .note b{color:#1d6fe0}
+body[data-d="console"] .btn{border-radius:6px;background:#fff;border:1px solid #ccd4e2;color:#3c4a66}
+body[data-d="console"] .btn:hover{background:#f4f8fd;border-color:#a8b8d4}
+body[data-d="console"] .btn.primary{background:#1d6fe0;border-color:#1d6fe0;color:#fff}
+body[data-d="console"] .btn.rec{background:#fff;border-color:#d0463c;color:#c0392b}
+body[data-d="console"] .ctl-name{color:#75809a}
+body[data-d="console"] .ctl-val{color:#1d6fe0}
+body[data-d="console"] input[type=range]{background:#dde4ee;accent-color:#1d6fe0}
+body[data-d="console"] input[type=range]::-webkit-slider-thumb{background:#1d6fe0;box-shadow:0 0 0 3px rgba(29,111,224,.15)}
+body[data-d="console"] .switch-row{border-top:1px solid #e1e7f0;color:#5b6883}
+body[data-d="console"] .dbbar,body[data-d="console"] .legend{color:#8a95ab}
+body[data-d="console"] .metric{background:#f7f9fc;border:1px solid #e1e7f0;border-radius:7px}
+body[data-d="console"] .metric-k{color:#75809a}
+body[data-d="console"] .bar{background:#dde4ee}
+body[data-d="console"] .chip{background:#fff;border:1px solid #dde4ee;border-radius:6px}
+body[data-d="console"] .coach{background:#f2f7fe;border:1px solid #d5e4f9;border-radius:7px}
+body[data-d="console"] .coach-ic{background:#1d6fe0;color:#fff;border-radius:6px}
+body[data-d="console"] .coach-tx{color:#3c4a66}
+
+/* =========================================================
+   B — SHEET.  Same information, half the furniture. Rules
+   instead of boxes, air instead of fills, and the spectrogram
+   printed in ink on white the way phonetics has always
+   printed it — no dark rectangle anywhere on the page.
+   ========================================================= */
+body[data-d="sheet"] .stage{background:#fcfbf8;color:#1e1c19;font-family:Inter,sans-serif}
+body[data-d="sheet"] .wrap{max-width:1120px}
+body[data-d="sheet"] .hdr{border-bottom:1.5px solid #1e1c19;padding-bottom:13px;margin-bottom:22px}
+body[data-d="sheet"] .mark{color:#24486b;font-size:1.9rem;width:auto}
+body[data-d="sheet"] .hdr-title{font-family:Spectral,serif;font-weight:600;font-size:1.35rem}
+body[data-d="sheet"] .hdr-sub{color:#8d857a}
+body[data-d="sheet"] .pill{color:#6b6459;border:1px solid #ddd6c9;border-radius:99px;background:#fff}
+body[data-d="sheet"] .grid{gap:26px;grid-template-columns:300px 1fr}
+body[data-d="sheet"] .panel{background:none}
+body[data-d="sheet"] .panel-hd{padding:0 0 6px;border-bottom:1px solid #1e1c19;margin-bottom:12px}
+body[data-d="sheet"] .panel-title{color:#1e1c19}
+body[data-d="sheet"] .panel-meta{color:#8d857a}
+body[data-d="sheet"] .panel-bd{padding:0}
+body[data-d="sheet"] .field{background:#fff;border:1px solid #ddd6c9;border-radius:3px;color:#1e1c19}
+body[data-d="sheet"] .phrase{padding:0;margin-top:14px}
+body[data-d="sheet"] .phrase-thai{font-size:2.35rem}
+body[data-d="sheet"] .phrase-ipa{color:#24486b}
+body[data-d="sheet"] .phrase-gloss{color:#6b6459;font-style:italic}
+body[data-d="sheet"] .syl{border:1px solid #e5ded1;border-radius:3px;background:#fff}
+body[data-d="sheet"] .note{background:none;padding:11px 0 0;border-top:1px solid #e5ded1;color:#6b6459}
+body[data-d="sheet"] .note b{color:#8d857a}
+body[data-d="sheet"] .btn{border:1px solid #1e1c19;background:none;color:#1e1c19;border-radius:3px;
+  font-size:.72rem;letter-spacing:.09em;text-transform:uppercase}
+body[data-d="sheet"] .btn:hover{background:#1e1c19;color:#fcfbf8}
+body[data-d="sheet"] .btn.primary{background:#24486b;border-color:#24486b;color:#fff}
+body[data-d="sheet"] .btn.rec{border-color:#a3402f;color:#a3402f}
+body[data-d="sheet"] .btn.rec:hover{background:#a3402f;color:#fff}
+body[data-d="sheet"] .ctl-name{color:#8d857a}
+body[data-d="sheet"] .ctl-val{color:#24486b}
+body[data-d="sheet"] input[type=range]{background:#e5ded1;accent-color:#24486b}
+body[data-d="sheet"] input[type=range]::-webkit-slider-thumb{background:#24486b}
+body[data-d="sheet"] .switch-row{border-top:1px solid #e5ded1;color:#6b6459}
+body[data-d="sheet"] .scope{height:368px}
+body[data-d="sheet"] .panel-bd.tight{padding:0;border:1px solid #1e1c19}
+body[data-d="sheet"] .dbbar,body[data-d="sheet"] .legend{color:#8d857a}
+body[data-d="sheet"] .metrics{gap:0;border-top:1px solid #e5ded1;border-bottom:1px solid #e5ded1}
+body[data-d="sheet"] .metric{padding:14px 16px}
+body[data-d="sheet"] .metric+.metric{border-left:1px solid #e5ded1}
+body[data-d="sheet"] .metric-k{color:#8d857a}
+body[data-d="sheet"] .metric-v{font-size:2rem;font-weight:400;font-family:Spectral,serif}
+body[data-d="sheet"] .bar{background:#e5ded1;height:2px}
+body[data-d="sheet"] .chip{border:1px solid #ddd6c9;border-radius:3px;background:#fff}
+body[data-d="sheet"] .coach{padding:12px 0 0;border-top:1px solid #e5ded1}
+body[data-d="sheet"] .coach-ic{background:none;color:#24486b;border:1px solid #cdd7e3;border-radius:3px}
+body[data-d="sheet"] .coach-tx{color:#4a453d}
+
+/* =========================================================
+   C — RIG.  Hard-edged and high contrast: ink borders, solid
+   header bars, offset shadows, one hot accent. Reads as a
+   piece of equipment rather than a web page, and the numbers
+   are the loudest thing on screen.
+   ========================================================= */
+body[data-d="rig"] .stage{background:#f1eee7;color:#171613;font-family:Inter,sans-serif}
+body[data-d="rig"] .hdr-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-.02em}
+body[data-d="rig"] .mark{background:#171613;color:#f1eee7;border-radius:0}
+body[data-d="rig"] .hdr-sub{color:#7d7669}
+body[data-d="rig"] .pill{background:#fff;border:2px solid #171613;border-radius:0;color:#171613}
+body[data-d="rig"] .panel{background:#fff;border:2px solid #171613;border-radius:0;box-shadow:3px 3px 0 #171613}
+body[data-d="rig"] .panel-hd{background:#171613;padding:7px 12px}
+body[data-d="rig"] .panel-title{color:#f1eee7}
+body[data-d="rig"] .panel-meta{color:#948c7c}
+body[data-d="rig"] .field{background:#fff;border:2px solid #171613;border-radius:0;color:#171613;font-weight:600}
+body[data-d="rig"] .phrase{background:#faf7f0;border:2px solid #171613;border-radius:0}
+body[data-d="rig"] .phrase-thai{font-size:2.15rem}
+body[data-d="rig"] .phrase-ipa{color:#c8451a;font-weight:600}
+body[data-d="rig"] .phrase-gloss{color:#5c554a}
+body[data-d="rig"] .syl{border:1.5px solid #171613;border-radius:0;background:#fff}
+body[data-d="rig"] .note{background:#fdf2d9;border:2px solid #171613;border-radius:0;color:#3d382f}
+body[data-d="rig"] .note b{color:#171613}
+body[data-d="rig"] .btn{border:2px solid #171613;border-radius:0;background:#fff;color:#171613;font-weight:700}
+body[data-d="rig"] .btn:hover{background:#faf7f0}
+body[data-d="rig"] .btn.primary{background:#171613;color:#f1eee7}
+body[data-d="rig"] .btn.rec{background:#c8451a;color:#fff;border-color:#171613}
+body[data-d="rig"] .ctl-name{color:#5c554a}
+body[data-d="rig"] .ctl-val{color:#c8451a;font-weight:700}
+body[data-d="rig"] input[type=range]{background:#ded8cc;accent-color:#c8451a;height:6px;border-radius:0}
+body[data-d="rig"] input[type=range]::-webkit-slider-thumb{background:#c8451a;border-radius:0;width:12px;height:18px;border:2px solid #171613}
+body[data-d="rig"] .switch-row{border-top:2px solid #171613;color:#3d382f;font-weight:600}
+body[data-d="rig"] .dbbar,body[data-d="rig"] .legend{color:#5c554a}
+body[data-d="rig"] .metric{background:#faf7f0;border:2px solid #171613;border-radius:0}
+body[data-d="rig"] .metric-k{color:#5c554a}
+body[data-d="rig"] .metric-v{font-family:'Space Grotesk',sans-serif;font-size:2rem}
+body[data-d="rig"] .bar{background:#ded8cc;height:5px;border-radius:0;border:1.5px solid #171613}
+body[data-d="rig"] .bar i{border-radius:0}
+body[data-d="rig"] .chip{border:2px solid #171613;border-radius:0;background:#fff;font-weight:600}
+body[data-d="rig"] .coach{background:#171613;border-radius:0}
+body[data-d="rig"] .coach-ic{background:#c8451a;color:#fff;border-radius:0}
+body[data-d="rig"] .coach-tx{color:#e8e3d8}
+body[data-d="rig"] .coach-tx b{color:#fff}
+</style>
+</head>
+<body data-d="console">
+
+<div class="switcher">
+  <span class="sw-brand">Direction</span>
+  <div class="sw-opts" id="opts"></div>
+  <p class="sw-note" id="note"></p>
+</div>
+
+<div class="stage"><div class="wrap">
+
+  <header class="hdr">
+    <div class="hdr-brand">
+      <span class="mark">ก</span>
+      <span class="hdr-t">
+        <span class="hdr-title">Thai Cheat Sheet — Speaking</span>
+        <span class="hdr-sub">Pitch · spectrum · per-syllable tone</span>
+      </span>
+    </div>
+    <div class="hdr-tools">
+      <span class="pill"><span class="led" id="led"></span>Mic ready</span>
+      <button class="btn" style="padding:6px 12px;font-size:.74rem">Freeze</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <aside>
+      <section class="panel">
+        <div class="panel-hd"><span class="panel-title">Target phrase</span><span class="panel-meta" id="mSyl">4 syllables</span></div>
+        <div class="panel-bd">
+          <select class="field">
+            <option>Greetings · สวัสดีครับ — Hello</option>
+            <option>Greetings · ขอบคุณมากครับ — Thank you very much</option>
+            <option>Tone workout · คุณปู่ไม่รู้หรือ — Doesn't grandpa know?</option>
+          </select>
+          <div class="phrase">
+            <span class="phrase-thai" id="pThai">สวัสดีครับ</span>
+            <span class="phrase-ipa">/sà.wàt.diː kʰráp/</span>
+            <span class="phrase-gloss">“Hello.”</span>
+          </div>
+          <div class="syls" id="syls"></div>
+          <div class="note">
+            <b>What to aim for</b>
+            Two low syllables that stay down, a level มid on <span style="font-family:'Noto Serif Thai',serif">ดี</span>,
+            then <span style="font-family:'Noto Serif Thai',serif">ครับ</span> climbing to the end. Leave a gap
+            between syllables and each one gets pinned to its own band.
+          </div>
+          <div class="btn-row">
+            <button class="btn primary">Word by word</button>
+            <button class="btn">At speed</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:14px">
+        <div class="panel-hd"><span class="panel-title">Capture</span><span class="panel-meta">48 kHz · 2048</span></div>
+        <div class="panel-bd">
+          <button class="btn rec full"><span class="led" style="background:currentColor"></span>Record my take</button>
+          <div class="ctl">
+            <div class="ctl-hd"><span class="ctl-name">Sensitivity</span><span class="ctl-val">1.8×</span></div>
+            <input type="range" min="0.6" max="4" step="0.1" value="1.8" />
+          </div>
+          <div class="ctl">
+            <div class="ctl-hd"><span class="ctl-name">Frequency ceiling</span><span class="ctl-val">4000 Hz</span></div>
+            <input type="range" min="1500" max="8000" step="250" value="4000" />
+          </div>
+          <div class="ctl">
+            <div class="ctl-hd"><span class="ctl-name">Voicing threshold</span><span class="ctl-val">0.62</span></div>
+            <input type="range" min="0.3" max="0.9" step="0.01" value="0.62" />
+          </div>
+          <div class="switch-row"><span>Show target bands</span><input type="checkbox" checked /></div>
+        </div>
+      </section>
+    </aside>
+
+    <div>
+      <section class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">Pitch &amp; spectrum</span>
+          <span class="legend">
+            <span><i id="lgA"></i>Your voice</span>
+            <span><i id="lgB"></i>Target band</span>
+          </span>
+        </div>
+        <div class="panel-bd tight">
+          <div class="scope-stack"><canvas class="scope" id="scope"></canvas><canvas class="scope-ax" id="axes"></canvas></div>
+          <div class="dbbar"><span>−95 dB</span><span class="dbbar-grad" id="dbgrad"></span><span>−35 dB</span></div>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-top:14px">
+        <div class="panel-hd"><span class="panel-title">Reading</span><span class="panel-meta">take 3</span></div>
+        <div class="panel-bd">
+          <div class="metrics">
+            <div class="metric">
+              <span class="metric-k">On tone <span>◈</span></span>
+              <span class="metric-v" id="m1">3<s>/ 4 syllables</s></span>
+              <span class="bar"><i id="b1" style="width:75%"></i></span>
+            </div>
+            <div class="metric">
+              <span class="metric-k">Your register <span>◉</span></span>
+              <span class="metric-v">120<s>Hz median</s></span>
+              <span class="bar"><i id="b2" style="width:46%"></i></span>
+            </div>
+            <div class="metric">
+              <span class="metric-k">Pace <span>◐</span></span>
+              <span class="metric-v">0.94<s>× of target</s></span>
+              <span class="bar"><i id="b3" style="width:62%"></i></span>
+            </div>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="coach">
+            <span class="coach-ic">◆</span>
+            <span class="coach-tx" id="coach"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+</div></div>
+<script>
+/* The three directions differ only in the light chrome around the scope.
+   The scope itself is the same in all of them — it is your renderer, and
+   swapping its palette per direction is exactly the reinvention that made
+   it worse than the original. */
+const D = {
+  console: {
+    label:'Console',
+    note:'<b>Your file\'s density, on a light workstation surface.</b> Hairline modules with mono labels, '+
+         'one live accent, numbers in tabular figures. The scope is your renderer, untouched.',
+    accent:'#1d6fe0', good:'#17845c', warn:'#b5761a', bad:'#c0392b',
+    tone:{Mid:'#1d6fe0',Low:'#c0392b',Falling:'#7c3aed',High:'#17845c',Rising:'#c2367f'},
+    scopeTone:{Mid:'#4aa8e8',Low:'#ff9a5a',Falling:'#b49bfa',High:'#3ddba7',Rising:'#ff7ac0'},
+  },
+  sheet: {
+    label:'Sheet',
+    note:'<b>Same information, half the furniture.</b> Rules instead of boxes, air instead of fills, serif '+
+         'numerals. The dark scope sits in it as the one instrument on an otherwise printed page.',
+    accent:'#24486b', good:'#2f6b40', warn:'#8a6420', bad:'#a3402f',
+    tone:{Mid:'#24486b',Low:'#a3402f',Falling:'#5b3a86',High:'#2f6b40',Rising:'#8d3a6b'},
+    scopeTone:{Mid:'#6db4ea',Low:'#ff9a5a',Falling:'#b49bfa',High:'#5fd08a',Rising:'#ef85bb'},
+  },
+  rig: {
+    label:'Rig',
+    note:'<b>Hard-edged and high contrast.</b> Ink borders, solid header bars, offset shadows, one hot accent, '+
+         'and the numbers the loudest thing on the page. The most opinionated, the easiest to overdo.',
+    accent:'#c8451a', good:'#3f7a2e', warn:'#a8751a', bad:'#c8451a',
+    tone:{Mid:'#1c4f8a',Low:'#c8451a',Falling:'#6b3a8f',High:'#3f7a2e',Rising:'#a8206b'},
+    scopeTone:{Mid:'#5aa8ea',Low:'#ff8a4a',Falling:'#b48bfa',High:'#7ad45a',Rising:'#f070b0'},
+  },
+};
+
+/* =====================================================================
+   SPECTROGRAM — ported verbatim from thai_phonetic_spectrogram_pitch_
+   visualizer.html. The waterfall mechanics, the inferno ramp, the 1.8x
+   sensitivity, the >10 cutoff, the 2px slice and the #05070d ground are
+   that file's, unchanged. Only what is drawn ON TOP of it is new.
+   ===================================================================== */
+const SLICE = 2;              // px the waterfall scrolls per frame
+const SENSITIVITY = 1.8;      // their gain slider's default
+const MAX_FREQ = 3500;        // their frequency-ceiling default
+const FFT_BINS = 1024;        // analyserNode.frequencyBinCount at fftSize 2048
+const NYQUIST = 24000;        // 48 kHz
+const BIN_COUNT = Math.floor((MAX_FREQ / NYQUIST) * FFT_BINS);
+
+/* their getInfernoColor, unchanged */
+function getInfernoColor(val) {
+  const norm = val / 255;
+  let r, g, b;
+  if (norm < 0.25) {
+    r = Math.floor(norm * 4 * 120); g = 0; b = Math.floor(norm * 4 * 180);
+  } else if (norm < 0.5) {
+    r = Math.floor(120 + (norm - 0.25) * 4 * 135);
+    g = Math.floor((norm - 0.25) * 4 * 80);
+    b = Math.floor(180 - (norm - 0.25) * 4 * 180);
+  } else if (norm < 0.75) {
+    r = 255; g = Math.floor(80 + (norm - 0.5) * 4 * 120); b = 0;
+  } else {
+    r = 255; g = Math.floor(200 + (norm - 0.75) * 4 * 55); b = Math.floor((norm - 0.75) * 4 * 255);
+  }
+  return `rgb(${r},${g},${b})`;
+}
+
+/* ---------- the phrase, and a take that drifts high on ดี ---------- */
+const CHAO={Mid:[3,3,3,3,2],Low:[2,1,1,1,1],Falling:[5,5,1],High:[4,5],Rising:[2,1,4]};
+const ST=l=>(l-3)*2.2;
+const SYLS=[
+  {thai:'ส',   tone:'Low', dur:230,f1:720,f2:1240,f3:2600,fric:true },
+  {thai:'วัส', tone:'Low', dur:190,f1:700,f2:1200,f3:2550,fric:true },
+  {thai:'ดี',  tone:'Mid', dur:340,f1:300,f2:2350,f3:3050,fric:false},
+  {thai:'ครับ',tone:'High',dur:250,f1:700,f2:1300,f3:2600,fric:true },
+];
+const GAP=110, REST=900;
+const SEQ=(()=>{let t=0;const o=[];SYLS.forEach((s,i)=>{o.push({...s,start:t,end:t+s.dur});t+=s.dur+(i<SYLS.length-1?GAP:0)});return{syls:o,total:t+REST}})();
+function contourAt(c,p){const x=Math.min(Math.max(p,0),1)*(c.length-1);const i=Math.min(Math.floor(x),c.length-2);return ST(c[i]+(c[i+1]-c[i])*(x-i))}
+function learnerAt(s,p){return contourAt(CHAO[s.tone],p)+(s.thai==='ดี'?2.1:0)+Math.sin(p*7.1+s.start)*.3}
+
+/* A synthetic getByteFrequencyData: harmonics of the syllable's own F0
+   shaped by three formants, in the same -95..-35 dB window the app now sets
+   on its analyser, so the bytes handed to the renderer above are the shape
+   a real microphone would hand it. */
+const MIN_DB=-95, MAX_DB=-35, BIN_HZ=NYQUIST/FFT_BINS, PEAK=0.74;
+function byteSpectrum(syl,pos){
+  const out=new Uint8Array(BIN_COUNT);
+  if(!syl)return out;
+  const f0=118*Math.pow(2,learnerAt(syl,pos)/12);
+  const lin=new Float32Array(BIN_COUNT);
+  const res=(f,c,bw)=>1/(1+Math.pow((f-c)/bw,2));
+  for(let h=1;h*f0<MAX_FREQ;h++){
+    const f=h*f0;
+    const amp=(1/Math.pow(h,.82))*(.3+.95*(res(f,syl.f1,95)+.8*res(f,syl.f2,150)+.45*res(f,syl.f3,260)));
+    const b=f/BIN_HZ;
+    for(let d=-3;d<=3;d++){const i=Math.round(b)+d;if(i>=0&&i<BIN_COUNT)lin[i]+=amp*Math.exp(-(d*d)/2.2)}
+  }
+  if(syl.fric){
+    const burst=Math.max(0,1-Math.abs(pos-.06)/.14);
+    for(let i=0;i<BIN_COUNT;i++){const f=i*BIN_HZ;if(f>2300)lin[i]+=burst*.9*(.45+.55*Math.random())*((f-2300)/1200)}
+  }
+  const env=Math.min(1,pos/.06)*Math.min(1,(1-pos)/.08);
+  for(let i=0;i<BIN_COUNT;i++){
+    /* Held 64 dB under the window's ceiling so the loudest bin arrives at
+       roughly byte 130 — about where a real voice lands. Feeding the
+       renderer bytes that already sit at 255 makes its 1.8x gain saturate
+       every formant to flat white, which is a fault in this stand-in, not
+       in the renderer. */
+    const db=20*Math.log10(Math.max(lin[i]*env,1e-6)/PEAK)-64;
+    out[i]=Math.max(0,Math.min(255,Math.round(255*(db-MIN_DB)/(MAX_DB-MIN_DB))));
+  }
+  return out;
+}
+
+/* ---------- the overlay: pitch on its own scale, Praat-style ---------- */
+const ST_MIN=-11, ST_MAX=11, TOL=1.7;
+const PITCH_TOP=0.10, PITCH_BOT=0.90;   // share of canvas height the pitch scale uses
+
+let running=null, prevL=null, prevT=null, clock=0, lastSyl=null;
+
+function startScope(){
+  const cv=document.getElementById('scope');
+  const tmp=document.createElement('canvas');
+  const tctx=tmp.getContext('2d');
+  let W=0,H=0;
+  if(running)cancelAnimationFrame(running);
+
+  const fit=()=>{
+    const w=cv.clientWidth,h=cv.clientHeight;
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;tmp.width=w;tmp.height=h;
+      const c=cv.getContext('2d');c.fillStyle='#05070d';c.fillRect(0,0,w,h);prevL=prevT=null}
+    W=cv.width;H=cv.height;
+  };
+
+  const yOf=st=>H*PITCH_BOT-(st-ST_MIN)/(ST_MAX-ST_MIN)*H*(PITCH_BOT-PITCH_TOP);
+
+  const frame=()=>{
+    fit();
+    const c=cv.getContext('2d');
+    const d=D[document.body.dataset.d];
+
+    /* --- their waterfall, verbatim --- */
+    tctx.drawImage(cv,0,0);
+    c.fillStyle='#05070d';
+    c.fillRect(0,0,W,H);
+    c.drawImage(tmp,-SLICE,0);
+
+    clock=(clock+16)%SEQ.total;
+    const syl=SEQ.syls.find(s=>clock>=s.start&&clock<=s.end)||null;
+    const pos=syl?(clock-syl.start)/(syl.end-syl.start):0;
+    const freq=byteSpectrum(syl,pos);
+
+    const x=W-SLICE;
+    const heightFactor=H/BIN_COUNT;
+    for(let i=0;i<BIN_COUNT;i++){
+      const val=Math.min(255,freq[i]*SENSITIVITY);
+      if(val>10){
+        c.fillStyle=getInfernoColor(val);
+        const y=H-(i*heightFactor);
+        c.fillRect(x,y-heightFactor,SLICE,heightFactor+0.5);
+      }
+    }
+
+    /* --- what rides on top: the target band, the learner's pitch, and the
+           syllable it belongs to, all scrolling with the waterfall so they
+           stay attached to the audio that produced them --- */
+    if(syl){
+      const tone=(d.scopeTone||d.tone)[syl.tone];
+      const tSt=contourAt(CHAO[syl.tone],pos), lSt=learnerAt(syl,pos);
+      c.save();
+      c.strokeStyle=tone;c.globalAlpha=.30;c.lineWidth=Math.abs(yOf(0)-yOf(TOL))*2;c.lineCap='butt';
+      c.beginPath();c.moveTo(prevT?x-SLICE:x,prevT??yOf(tSt));c.lineTo(x+SLICE,yOf(tSt));c.stroke();
+      c.globalAlpha=.9;c.lineWidth=2;
+      c.beginPath();c.moveTo(prevT?x-SLICE:x,prevT??yOf(tSt));c.lineTo(x+SLICE,yOf(tSt));c.stroke();
+      c.globalAlpha=1;c.strokeStyle='#ffffff';c.lineWidth=2.6;
+      c.beginPath();c.moveTo(prevL?x-SLICE:x,prevL??yOf(lSt));c.lineTo(x+SLICE,yOf(lSt));c.stroke();
+      c.restore();
+      prevT=yOf(tSt);prevL=yOf(lSt);
+      if(lastSyl!==syl.thai){
+        lastSyl=syl.thai;
+        c.save();c.font='700 17px "Noto Serif Thai",serif';c.fillStyle=tone;
+        c.textAlign='left';c.textBaseline='top';c.fillText(syl.thai,x-1,8);
+        c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1;
+        c.beginPath();c.moveTo(x+.5,0);c.lineTo(x+.5,H);c.stroke();c.restore();
+      }
+    } else { prevL=prevT=null; lastSyl=null; }
+
+    running=requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+/* Static axes live on their own canvas: anything drawn into the scrolling
+   one would be dragged left and smear into a solid band. */
+function drawAxes(){
+  const cv=document.getElementById('axes');
+  const dpr=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  c.clearRect(0,0,w,h);
+  c.font='10px "IBM Plex Mono",monospace';c.textBaseline='middle';
+  c.fillStyle='rgba(190,200,215,.75)';c.textAlign='left';
+  for(const f of [3500,2500,1500,500]){
+    const y=h-(f/MAX_FREQ)*h;
+    c.fillText(f>=1000?(f/1000)+'k':f,6,y);
+  }
+  const yOf=st=>h*PITCH_BOT-(st-ST_MIN)/(ST_MAX-ST_MIN)*h*(PITCH_BOT-PITCH_TOP);
+  c.textAlign='right';
+  for(const st of[-5,0,5]){
+    const y=yOf(st);
+    c.strokeStyle='rgba(255,255,255,.10)';c.lineWidth=1;
+    c.beginPath();c.moveTo(34,Math.round(y)+.5);c.lineTo(w-38,Math.round(y)+.5);c.stroke();
+    c.fillStyle='rgba(255,255,255,.55)';
+    c.fillText(st>0?`+${st}`:`${st}`,w-6,y);
+  }
+  c.fillStyle='rgba(255,255,255,.4)';
+  c.textAlign='left';c.fillText('Hz',6,12);
+  c.textAlign='right';c.fillText('st',w-6,12);
+}
+
+/* ---------- directions: light chrome around an unchanged scope ---------- */
+const VERDICT=[['ส','Low','good','✓'],['วัส','Low','good','✓'],['ดี','Mid','warn','↑'],['ครับ','High','good','✓']];
+function render(k){
+  const d=D[k];document.body.dataset.d=k;
+  document.getElementById('note').innerHTML=d.note;
+  document.querySelectorAll('.sw-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  document.getElementById('pThai').innerHTML=SYLS.map(s=>`<span style="color:${d.tone[s.tone]}">${s.thai}</span>`).join('');
+  document.getElementById('syls').innerHTML=SYLS.map(s=>
+    `<span class="syl"><span class="syl-th" style="color:${d.tone[s.tone]}">${s.thai}</span>
+     <span class="syl-tn" style="color:${d.tone[s.tone]}">${s.tone}</span></span>`).join('');
+  document.getElementById('chips').innerHTML=VERDICT.map(([t,tn,v,m])=>
+    `<span class="chip" style="border-color:${d.tone[tn]}"><b style="color:${d.tone[tn]}">${t}</b>
+     <span style="color:${v==='good'?d.good:d.warn};font-weight:700">${m}</span></span>`).join('');
+  document.getElementById('coach').innerHTML=
+    `Two clean low syllables and a high <span style="font-family:'Noto Serif Thai',serif">ครับ</span>. `+
+    `<b style="color:${d.warn}">ดี</b> sits about 2.1 semitones above its band — a mid tone should sit level, `+
+    `not drift up toward the next syllable.`;
+  document.getElementById('led').style.background=d.good;
+  document.getElementById('lgA').style.background='#ffffff';
+  document.getElementById('lgB').style.background=(d.scopeTone||d.tone).Mid;
+  document.getElementById('b1').style.background=d.good;
+  document.getElementById('b2').style.background=d.accent;
+  document.getElementById('b3').style.background=d.accent;
+  document.getElementById('m1').style.color=d.good;
+  const inferno=[0,.18,.35,.5,.65,.8,1].map(v=>getInfernoColor(v*255));
+  document.getElementById('dbgrad').style.background=
+    'linear-gradient(90deg,'+inferno.map((c,i)=>`${c} ${(i/(inferno.length-1)*100).toFixed(0)}%`).join(',')+')';
+  requestAnimationFrame(drawAxes);
+  try{localStorage.setItem('thai-dir',k)}catch(e){}
+}
+const keys=Object.keys(D);
+document.getElementById('opts').innerHTML=keys.map((k,i)=>`<button class="sw-btn" data-k="${k}">${D[k].label}<kbd>${i+1}</kbd></button>`).join('');
+document.querySelectorAll('.sw-btn').forEach(b=>b.addEventListener('click',()=>render(b.dataset.k)));
+addEventListener('keydown',e=>{const i=+e.key-1;if(keys[i])render(keys[i])});
+addEventListener('resize',()=>{drawAxes()});
+let saved=null;try{saved=localStorage.getItem('thai-dir')}catch(e){}
+render(keys.includes(saved)?saved:'console');
+startScope();
+</script>
+</body>
+</html>

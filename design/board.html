@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thai Cheat Sheet — Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface:#f7f5f0; --panel:#fffdf9; --ink:#141414; --ink-2:#4a4744; --ink-3:#8a857e; --rule:#e6e1d8;
+    --accent:#141414; --record:#c8102e;
+    --low:#dc2626; --mid:#2563eb; --fall:#7c3aed; --high:#16a34a; --rise:#db2777;
+    --thai:'Noto Serif Thai',serif; --ui:'Bricolage Grotesque',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+    --ok-bg:#e4f4e6; --ok:#166534; --off-bg:#fdf1cf; --off:#8a5a00;
+  }
+  /* palettes — switch with the control at the top right */
+  body[data-p="cool"]{--surface:#f4f5f7;--panel:#fff;--ink:#111827;--ink-2:#4b5563;--ink-3:#8b909a;--rule:#e3e6eb;--accent:#111827;--record:#dc2626}
+  body[data-p="white"]{--surface:#fff;--panel:#f8f9fb;--ink:#0f0f10;--ink-2:#44474d;--ink-3:#8a8d94;--rule:#e8e9ec;--accent:#0f0f10;--record:#dc2626}
+  body[data-p="slate"]{--surface:#f6f7f9;--panel:#fff;--ink:#0f172a;--ink-2:#475569;--ink-3:#94a3b8;--rule:#e2e8f0;--accent:#0f172a;--record:#dc2626}
+  body[data-p="slate"] nav.side{background:#0f172a;border-right:0}
+  body[data-p="slate"] nav.side .brand,body[data-p="slate"] nav.side a.on,body[data-p="slate"] nav.side a.on i{color:#fff}
+  body[data-p="slate"] nav.side a,body[data-p="slate"] nav.side a i{color:#94a3b8}
+  body[data-p="slate"] nav.side a:hover{color:#e2e8f0}
+  body[data-p="slate"] nav.side .grp{color:#64748b}
+  body[data-p="slate"] nav.side .marker{background:#38bdf8}
+  body[data-p="slate"] nav.side .seg{background:#1e293b;border-color:#334155}
+  body[data-p="slate"] nav.side .seg button{color:#94a3b8}
+  body[data-p="slate"] nav.side .seg button.on{background:#fff;color:#0f172a}
+  body[data-p="ink"]{--surface:#fff;--panel:#f7f7f7;--ink:#000;--ink-2:#333;--ink-3:#777;--rule:#000;--accent:#000;--record:#000}
+  body[data-p="ink"] .rec{box-shadow:none;border-radius:6px}
+  body[data-p="ink"] .items .marker{width:4px}
+  body[data-p="ink"] .panel,body[data-p="ink"] .chip{border-radius:6px}
+  body[data-p="ink"] .rowline{border-bottom:1px solid #000}
+  .pal{position:fixed;top:12px;right:14px;z-index:9;display:flex;gap:6px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:5px 8px;font-size:.72rem;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+  .pal button{border:0;background:transparent;padding:3px 9px;border-radius:999px;cursor:pointer;font-size:.72rem;color:#555}
+  .pal button.on{background:#111;color:#fff}
+  .pal i{width:12px;height:12px;border-radius:50%;display:inline-block;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.15)}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--surface);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.45}
+  a,button{font-family:inherit}
+  .th{font-family:var(--thai);font-weight:700}
+  .ipa{font-family:var(--mono);color:var(--ink-3);font-size:.82rem}
+  .low{color:var(--low)}.mid{color:var(--mid)}.fall{color:var(--fall)}.high{color:var(--high)}.rise{color:var(--rise)}
+
+  .shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+
+  /* ---- sidebar ---- */
+  nav.side{position:sticky;top:0;height:100vh;padding:26px 18px 22px;border-right:1px solid var(--rule);display:flex;flex-direction:column}
+  .brand{display:flex;align-items:baseline;gap:8px;margin:0 8px 30px;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .th{font-size:1.35rem;color:var(--ink);font-weight:700}
+  .grp{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:0 10px 8px;font-weight:600}
+  .grp+.grp{margin-top:0}
+  .items{position:relative;display:flex;flex-direction:column;gap:2px;margin-bottom:26px}
+  .items a{display:flex;align-items:center;gap:12px;padding:10px 10px;border-radius:8px;text-decoration:none;color:var(--ink-2);font-weight:500;position:relative;transition:color .15s}
+  .items a:hover{color:var(--ink)}
+  .items a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .items.practise a{font-size:1.02rem;font-weight:600;padding:12px 10px}
+  .items.reference a{font-size:.92rem}
+  .items a i{font-style:normal;width:22px;text-align:center;color:var(--ink-3);font-size:1rem}
+  .items.practise a i{font-size:1.1rem}
+  .items a.on{color:var(--ink)}
+  .items a.on i{color:var(--ink)}
+  /* the sliding marker: one element, moved by --y */
+  .items .marker{position:absolute;left:0;top:0;width:3px;height:44px;background:var(--ink);border-radius:2px;transform:translateY(var(--y,0));transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+  .side .foot{margin-top:auto;padding:0 10px}
+  .side .foot .grp{margin:0 0 6px}
+  .seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;padding:2px;background:var(--panel)}
+  .seg button{border:0;background:transparent;padding:5px 11px;border-radius:6px;font-size:.8rem;color:var(--ink-3);cursor:pointer}
+  .seg button.on{background:var(--ink);color:#fff}
+  .seg button .th{font-weight:400}
+
+  /* ---- main ---- */
+  main{padding:34px 44px 80px;max-width:1080px;animation:rise .35s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .crumb{font-size:.78rem;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase;margin:0 0 18px;font-weight:600}
+  .crumb b{color:var(--ink-2);font-weight:600}
+
+  /* poster: the sentence */
+  .poster{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 32px;align-items:end;padding-bottom:22px;border-bottom:1px solid var(--rule);margin-bottom:22px}
+  .poster .sentence{font-size:3.4rem;line-height:1.15;margin:0 0 6px;letter-spacing:.005em}
+  .poster .sentence span{cursor:pointer}
+  .poster .sentence span:hover{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:8px}
+  .poster .under{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+  .poster .under .ipa{font-size:.95rem;color:var(--ink-2)}
+  .poster .under .gloss{color:var(--ink-3);font-size:.95rem}
+  .poster .act{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .rec{display:inline-flex;align-items:center;gap:10px;background:var(--record);color:#fff;border:0;border-radius:999px;padding:14px 26px;font-size:1.02rem;font-weight:600;cursor:pointer;box-shadow:0 10px 24px -12px rgba(200,16,46,.6);transition:transform .15s,box-shadow .15s}
+  .rec:hover{transform:translateY(-1px);box-shadow:0 14px 28px -12px rgba(200,16,46,.65)}
+  .rec:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .rec .dot{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .hint{font-size:.78rem;color:var(--ink-3)}
+  .kbd{font-family:var(--mono);font-size:.7rem;border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--panel);color:var(--ink-2)}
+
+  /* panels */
+  .panels{display:flex;flex-direction:column;gap:10px}
+  .panel{position:relative;background:#05070d;border-radius:12px;height:230px;overflow:hidden;
+    background-image:linear-gradient(90deg,transparent 0 9%,#f97316 9% 20%,transparent 20% 27%,#fbbf24 27% 42%,transparent 42% 50%,#f97316 50% 63%,transparent 63% 68%,#fbbf24 68% 79%,transparent 79%);background-size:100% 70%;background-repeat:no-repeat;background-position:0 55%}
+  .panel::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d 0,rgba(5,7,13,.2) 35%,rgba(5,7,13,.2) 70%,#05070d 100%)}
+  .panel .lbl{position:absolute;left:14px;top:12px;z-index:2;color:#e8edf5;font-size:.78rem;font-weight:600;letter-spacing:.02em}
+  .panel .tools{position:absolute;right:10px;top:9px;z-index:2;display:flex;gap:6px}
+  .panel .tools button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:7px;padding:5px 11px;font-size:.76rem;font-weight:600;cursor:pointer}
+  .panel .tools button:hover{background:rgba(255,255,255,.24)}
+  .panel .line{position:absolute;z-index:2;left:14%;right:22%;top:44%;height:3px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.6);transform:rotate(-4deg)}
+  .panel .ghost{position:absolute;z-index:2;left:12%;right:24%;top:52%;height:0;border-top:3px dashed #fbbf24;transform:rotate(-3deg)}
+  .panel .syl{position:absolute;bottom:10px;z-index:2;font-family:var(--thai);font-weight:700;font-size:.85rem;background:rgba(0,0,0,.55);padding:1px 6px;border-radius:4px}
+
+  .tools-row{display:flex;align-items:center;gap:16px;margin:10px 0 0;font-size:.78rem;color:var(--ink-3);white-space:nowrap}
+  .tools-row .slider{width:120px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--ink) 40%,var(--rule) 40%);position:relative}
+  .tools-row .slider::after{content:"";position:absolute;left:40%;top:-5px;width:14px;height:14px;border-radius:50%;background:var(--ink);transform:translateX(-50%)}
+  .tools-row .sw{display:inline-flex;align-items:center;gap:6px}
+  .tools-row .sw i{width:26px;height:15px;border-radius:8px;background:var(--ink);position:relative;display:inline-block}
+  .tools-row .sw i::after{content:"";position:absolute;right:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff}
+  .tools-row .leg{margin-left:auto;display:flex;gap:14px}
+  .tools-row .leg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+  /* verdict */
+  .verdict{margin-top:28px}
+  .verdict h2{font-size:1.25rem;margin:0 0 14px;letter-spacing:-.01em;font-weight:600}
+  .verdict h2 small{font-family:var(--mono);font-weight:400;color:var(--ink-3);font-size:.8rem;margin-left:12px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:96px;padding:12px 16px 10px;border-radius:12px;background:var(--ok-bg);color:var(--ok);font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;animation:pop .35s cubic-bezier(.2,.8,.2,1) both}
+  .chip .th{font-size:1.6rem;line-height:1.2;text-transform:none;letter-spacing:0}
+  .chip.off{background:var(--off-bg);color:var(--off)}
+  .chip:nth-child(2){animation-delay:.06s}.chip:nth-child(3){animation-delay:.12s}.chip:nth-child(4){animation-delay:.18s}
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+  .why{margin:14px 0 0;padding-left:0;list-style:none;font-size:.92rem;color:var(--ink-2);line-height:1.6}
+  .why li::before{content:"—";color:var(--ink-3);margin-right:10px}
+
+  /* library */
+  .lib{margin-top:44px}
+  .lib h2{font-size:1.25rem;margin:0 0 4px;letter-spacing:-.01em;font-weight:600}
+  .lib p.lead{margin:0 0 18px;color:var(--ink-3);font-size:.9rem}
+  .lib h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-3);margin:22px 0 6px;font-weight:600}
+  .rowline{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:18px;align-items:center;padding:12px 6px;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit;border-radius:6px}
+  .rowline:hover{background:var(--panel)}
+  .rowline .th{font-size:1.5rem}
+  .rowline .m{color:var(--ink-2)}
+  .rowline .dots i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
+  .rowline .go{font-size:.8rem;color:var(--ink-3)}
+  .rowline.on .go{color:var(--ink);font-weight:600}
+
+  /* ---- reference page mock ---- */
+  .refpage{margin-top:70px;border-top:2px solid var(--rule);padding-top:26px}
+  .tabsub{display:flex;gap:18px;border-bottom:1px solid var(--rule);margin:0 0 22px;font-size:.92rem}
+  .tabsub span{padding:8px 0;color:var(--ink-3)}
+  .tabsub span.on{color:var(--ink);font-weight:600;box-shadow:inset 0 -2px var(--ink)}
+  .cls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 14px}
+  .let{display:grid;grid-template-columns:auto 1fr;gap:0 12px;align-items:center;padding:8px 6px;border-radius:8px}
+  .let:hover{background:var(--panel)}
+  .let .g{font-size:2.1rem;line-height:1}
+  .let .n{font-size:.95rem}
+  .let .n .ipa{display:block;font-size:.74rem}
+
+  @media (max-width:820px){
+    .shell{grid-template-columns:1fr}
+    nav.side{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;padding:8px 10px;border-right:0;border-top:1px solid var(--rule);background:var(--surface);z-index:5}
+    .brand,.grp,.side .foot,.items.reference,.marker{display:none}
+    .items.practise{flex-direction:row;margin:0;flex:1;justify-content:space-around}
+    main{padding:22px 18px 110px}
+    .poster{grid-template-columns:1fr}.poster .act{align-items:flex-start}
+    .poster .sentence{font-size:2.4rem}
+  }
+</style>
+<body data-p="warm">
+<div class="pal" role="group" aria-label="Palette">
+  <button class="on" data-p="warm"><i style="background:#f7f5f0"></i>Warm</button>
+  <button data-p="cool"><i style="background:#f4f5f7"></i>Cool grey</button>
+  <button data-p="white"><i style="background:#fff"></i>White</button>
+  <button data-p="slate"><i style="background:#0f172a"></i>Dark nav</button>
+  <button data-p="ink"><i style="background:#000"></i>Ink</button>
+</div>
+<script>
+  document.querySelector('.pal').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.body.dataset.p = b.dataset.p;
+    document.querySelectorAll('.pal button').forEach(x => x.classList.toggle('on', x === b));
+  });
+</script>
+<div class="shell">
+  <nav class="side" aria-label="Sections">
+    <div class="brand"><span class="th">ก</span>Thai Cheat Sheet</div>
+    <div class="grp">Practise</div>
+    <div class="items practise" style="--y:0px"><span class="marker" aria-hidden="true"></span>
+      <a href="#" class="on"><i>◎</i>Speaking</a>
+      <a href="#"><i>⌨</i>Typing</a>
+      <a href="#"><i>✎</i>Writing</a>
+    </div>
+    <div class="grp">Reference</div>
+    <div class="items reference">
+      <a href="#"><i class="th">ก</i>Consonants</a>
+      <a href="#"><i class="th">อา</i>Vowels</a>
+      <a href="#"><i>♪</i>Tones</a>
+      <a href="#"><i>▤</i>Reading</a>
+      <a href="#"><i>ɪ</i>IPA</a>
+    </div>
+    <div class="foot">
+      <div class="grp">Thai letters</div>
+      <div class="seg"><button class="on"><span class="th">ก</span> Serif</button><button><span class="th" style="font-family:'Noto Sans Thai',sans-serif">ก</span> Sans</button></div>
+    </div>
+  </nav>
+
+  <main>
+    <p class="crumb">Practise · <b>Speaking</b></p>
+
+    <header class="poster">
+      <div>
+        <p class="sentence th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></p>
+        <div class="under"><span class="ipa">/sà.wàt.diː kʰráp/</span><span class="gloss">Hello.</span><span class="gloss" style="font-size:.82rem">· tap a word to hear it</span></div>
+      </div>
+      <div class="act"><button class="rec"><span class="dot"></span>Try again</button><span class="hint"><span class="kbd">Space</span> records · <span class="kbd">L</span> plays the native voice</span></div>
+    </header>
+
+    <section class="panels" aria-label="Spectrograms">
+      <div class="panel"><span class="lbl">Native · Google Translate</span><span class="tools"><button>▶ Listen</button><button>Word by word</button></span><span class="line" style="top:38%"></span>
+        <span class="syl low" style="left:16%">ส</span><span class="syl low" style="left:30%">วัส</span><span class="syl mid" style="left:50%">ดี</span><span class="syl high" style="left:68%">ครับ</span></div>
+      <div class="panel"><span class="lbl">You</span><span class="tools"><button>▶ My voice</button><button>⤓ Save</button></span><span class="ghost"></span><span class="line" style="top:47%;left:16%;right:20%"></span>
+        <span class="syl low" style="left:17%">ส</span><span class="syl low" style="left:31%">วัส</span><span class="syl mid" style="left:52%">ดี</span><span class="syl high" style="left:70%">ครับ</span></div>
+    </section>
+    <div class="tools-row"><span>Sensitivity</span><span class="slider"></span><span>1.8×</span><span class="sw"><i></i>textbook tones</span><span class="leg"><span><i style="background:#fff;box-shadow:0 0 0 1px #999"></i>your pitch</span><span><i style="background:#fbbf24"></i>native (dashed)</span><span><i style="background:var(--fall)"></i>textbook</span></span></div>
+
+    <section class="verdict" aria-label="Result">
+      <h2>3 of 4 syllables on target <small>1.2 s vs 1.1 s</small></h2>
+      <div class="chips">
+        <span class="chip"><span class="th low">ส</span>✓ on target</span>
+        <span class="chip"><span class="th low">วัส</span>✓ on target</span>
+        <span class="chip"><span class="th mid">ดี</span>✓ on target</span>
+        <span class="chip off"><span class="th high">ครับ</span>↑ too high</span>
+      </div>
+      <ul class="why"><li><span class="th high">ครับ</span> — your pitch sits about 2.3 st higher than the native voice; start it lower</li></ul>
+    </section>
+
+    <section class="lib" aria-label="Sentences">
+      <h2>Sentences</h2>
+      <p class="lead">Pick one; the native voice loads on its own.</p>
+      <h3>Greetings &amp; courtesy</h3>
+      <a class="rowline on" href="#"><span class="th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span><span class="m">Hello.</span><span class="dots"><i style="background:var(--low)"></i><i style="background:var(--low)"></i><i style="background:var(--mid)"></i><i style="background:var(--high)"></i></span><span class="go">Practising</span></a>
+      <a class="rowline" href="#"><span class="th"><span class="low">ขอบ</span><span class="mid">คุณ</span><span class="fall">มาก</span><span class="high">ครับ</span></span><span class="m">Thank you very much.</span><span class="dots"><i style="background:var(--low)"></i><i style="background:var(--mid)"></i><i style="background:var(--fall)"></i><i style="background:var(--high)"></i></span><span class="go">Practise →</span></a>
+      <a class="rowline" href="#"><span class="th"><span class="low">ขอ</span><span class="fall">โทษ</span><span class="high">ครับ</span></span><span class="m">Sorry. / Excuse me.</span><span class="dots"><i style="background:var(--low)"></i><i style="background:var(--fall)"></i><i style="background:var(--high)"></i></span><span class="go">Practise →</span></a>
+      <h3>Everyday sentences</h3>
+      <a class="rowline" href="#"><span class="th"><span class="mid">คุณ</span><span class="low">ปู่</span><span class="fall">ไม่</span><span class="fall">รู้</span><span class="rise">หรือ</span></span><span class="m">Doesn't grandfather know?</span><span class="dots"><i style="background:var(--mid)"></i><i style="background:var(--low)"></i><i style="background:var(--fall)"></i><i style="background:var(--fall)"></i><i style="background:var(--rise)"></i></span><span class="go">Practise →</span></a>
+    </section>
+
+    <!-- how a reference page reads in the same shell -->
+    <section class="refpage" aria-label="Reference page example">
+      <p class="crumb">Reference · <b>Consonants</b> — how a reference page looks in the same shell</p>
+      <div class="tabsub"><span class="on">By class</span><span>By sound</span><span>Alphabet poem</span></div>
+      <h3 style="font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mid);margin:0 0 10px;font-weight:600">Mid class · อักษรกลาง · 9 letters</h3>
+      <div class="cls">
+        <div class="let"><span class="g th mid">ก</span><span class="n"><span class="th">กอ ไก่</span><span class="ipa">/kɔː kàj/</span></span></div>
+        <div class="let"><span class="g th mid">จ</span><span class="n"><span class="th">จอ จาน</span><span class="ipa">/tɕɔː tɕaːn/</span></span></div>
+        <div class="let"><span class="g th mid">ด</span><span class="n"><span class="th">ดอ เด็ก</span><span class="ipa">/dɔː dèk/</span></span></div>
+        <div class="let"><span class="g th mid">ต</span><span class="n"><span class="th">ตอ เต่า</span><span class="ipa">/tɔː tàw/</span></span></div>
+        <div class="let"><span class="g th mid">บ</span><span class="n"><span class="th">บอ ใบไม้</span><span class="ipa">/bɔː baj.máj/</span></span></div>
+        <div class="let"><span class="g th mid">ป</span><span class="n"><span class="th">ปอ ปลา</span><span class="ipa">/pɔː plaː/</span></span></div>
+        <div class="let"><span class="g th mid">อ</span><span class="n"><span class="th">ออ อ่าง</span><span class="ipa">/ʔɔː ʔàːŋ/</span></span></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

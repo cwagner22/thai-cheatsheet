@@ -1,0 +1,154 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Thai Cheat Sheet — global redesign options</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;700&family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#e9ebef;font-family:Inter,system-ui,sans-serif;color:#1f2937;padding:28px 32px}
+  h1{font-size:1.1rem;margin:0 0 4px}
+  p.sub{margin:0 0 22px;color:#64748b;font-size:.86rem;max-width:820px;line-height:1.5}
+  .opt{margin-bottom:34px}
+  .opt h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 6px}
+  .opt p.why{margin:0 0 12px;font-size:.84rem;color:#475569;line-height:1.5;max-width:820px}
+  .screen{border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.10);max-width:960px}
+  .th{font-family:'Noto Serif Thai',serif;font-weight:700}
+  .low{color:#dc2626}.mid{color:#2563eb}.high{color:#16a34a}.fall{color:#7c3aed}.rise{color:#db2777}
+  .spec{background:#05070d;border-radius:8px;height:88px;position:relative;overflow:hidden;
+    background-image:linear-gradient(90deg,transparent 0 10%,#f97316 10% 22%,transparent 22% 30%,#fbbf24 30% 46%,transparent 46% 54%,#f97316 54% 68%,transparent 68%);background-size:100% 55%;background-repeat:no-repeat;background-position:0 45%}
+  .spec::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d,transparent 40%,transparent 60%,#05070d);opacity:.7}
+  .spec span{position:absolute;left:10px;top:7px;color:#e2e8f0;font-size:.66rem;font-weight:600;z-index:1}
+
+  /* ---------- A · Notebook ---------- */
+  .A{background:#faf7f2;color:#2b2622;padding:26px 34px 30px}
+  .A .top{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #d9d2c5;padding-bottom:12px;margin-bottom:6px}
+  .A h3{font-family:Fraunces,serif;font-weight:700;font-size:1.7rem;margin:0;letter-spacing:-.01em}
+  .A h3 small{font-family:Inter;font-weight:500;font-size:.78rem;color:#8a8175;margin-left:12px;letter-spacing:.02em}
+  .A .fontsw{font-size:.74rem;color:#8a8175}.A .fontsw b{color:#2b2622;font-weight:600;border-bottom:2px solid #2b2622;padding-bottom:1px}
+  .A nav{display:flex;gap:22px;margin:0 0 22px;font-size:.86rem;color:#8a8175}
+  .A nav span{padding:8px 0}.A nav span.on{color:#2b2622;font-weight:600;box-shadow:inset 0 -2px #2b2622}
+  .A .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:22px}
+  .A .card{background:#fffdf9;border:1px solid #e6dfd3;border-radius:6px;padding:14px 16px}
+  .A .card h4{font-family:Fraunces,serif;font-weight:500;font-size:1.05rem;margin:0 0 8px}
+  .A table{width:100%;border-collapse:collapse;font-size:.82rem}
+  .A td{padding:6px 4px;border-bottom:1px solid #eee7db}.A td.l{font-size:1.5rem;width:40px}
+  .A .ipa{font-family:'IBM Plex Mono',monospace;color:#6b6259;font-size:.78rem}
+  .A .btn{display:inline-block;border:1.5px solid #2b2622;border-radius:4px;padding:7px 16px;font-size:.82rem;font-weight:600;background:transparent}
+  .A .btn.rec{background:#b91c1c;border-color:#b91c1c;color:#fff}
+
+  /* ---------- B · Console ---------- */
+  .B{background:#f1f5f9;color:#0f172a;padding:0 0 26px}
+  .B .bar{background:#0f172a;color:#e2e8f0;display:flex;align-items:center;gap:22px;padding:12px 26px}
+  .B .bar h3{font-size:1rem;margin:0;font-weight:700;letter-spacing:.01em}
+  .B .bar h3 i{color:#38bdf8;font-style:normal;font-family:'Noto Serif Thai',serif;margin-right:8px}
+  .B .seg{display:flex;background:#1e293b;border-radius:8px;padding:3px;gap:2px;margin-left:auto}
+  .B .seg span{padding:5px 12px;border-radius:6px;font-size:.76rem;color:#94a3b8;font-weight:600}.B .seg span.on{background:#334155;color:#fff}
+  .B .fontsw{font-size:.72rem;color:#94a3b8;font-family:'IBM Plex Mono',monospace}
+  .B .body{padding:18px 26px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .B .card{background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:14px 16px}
+  .B .card h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 10px;font-weight:700}
+  .B table{width:100%;border-collapse:collapse;font-size:.8rem}
+  .B td{padding:5px 4px;border-bottom:1px solid #eef2f7}.B td.l{font-size:1.45rem;width:40px}
+  .B .ipa{font-family:'IBM Plex Mono',monospace;color:#475569;font-size:.78rem}
+  .B .btn{display:inline-block;border-radius:6px;padding:7px 14px;font-size:.78rem;font-weight:700;background:#e2e8f0;color:#0f172a}
+  .B .btn.rec{background:#dc2626;color:#fff}
+  .B .kbd{font-family:'IBM Plex Mono',monospace;font-size:.68rem;border:1px solid #cbd5e1;border-radius:4px;padding:0 5px;color:#475569;background:#fff}
+
+  /* ---------- C · Board ---------- */
+  .C{background:#f6f7fb;color:#111827;display:grid;grid-template-columns:200px 1fr;min-height:380px}
+  .C aside{background:#fff;border-right:1px solid #e5e7eb;padding:18px 14px}
+  .C aside h3{font-size:.98rem;margin:0 8px 16px;font-weight:800;letter-spacing:-.01em}
+  .C aside h3 i{font-style:normal;font-family:'Noto Serif Thai',serif;color:#2563eb;margin-right:6px}
+  .C aside a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:.84rem;color:#4b5563;font-weight:500}
+  .C aside a i{width:22px;text-align:center;font-style:normal;font-size:.9rem}
+  .C aside a.on{background:#eef2ff;color:#1d4ed8;font-weight:700}
+  .C aside .fontsw{margin:18px 10px 0;font-size:.7rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em}
+  .C aside .fontsw b{display:block;margin-top:6px;color:#111827;font-size:.78rem;text-transform:none;letter-spacing:0;font-weight:600}
+  .C main{padding:22px 26px}
+  .C main h4{font-size:1.25rem;margin:0 0 2px;font-weight:800;letter-spacing:-.01em}
+  .C main p.lead{margin:0 0 16px;color:#6b7280;font-size:.84rem}
+  .C .card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px -12px rgba(0,0,0,.12)}
+  .C .row{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+  .C .row .th{font-size:2rem}
+  .C .ipa{font-family:'IBM Plex Mono',monospace;color:#6b7280;font-size:.8rem}
+  .C .btn{display:inline-block;border-radius:999px;padding:9px 20px;font-size:.84rem;font-weight:700;background:#dc2626;color:#fff;margin-left:auto}
+  .C .chips{display:flex;gap:8px;margin-top:12px}
+  .C .chip{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:66px;padding:6px 10px;border-radius:10px;border:2px solid #16a34a;background:#dcfce7;color:#166534;font-size:.62rem;font-weight:700;text-transform:uppercase}
+  .C .chip .th{font-size:1.1rem;text-transform:none}
+</style>
+
+<h1>Thai Cheat Sheet — three directions for the whole app</h1>
+<p class="sub">What stays in all three: tone colours (red low · blue mid · purple falling · green high · pink rising — they carry meaning on every tab), the Serif/Sans Thai font switch, IPA in a monospace face, the dark spectrogram panels. What changes: the frame around the content — type, colour, how you move between the eight tabs, and how dense it is.</p>
+
+<!-- ============ A ============ -->
+<section class="opt">
+  <h2>A — Notebook</h2>
+  <p class="why">Warm paper, a serif for headings (Fraunces), thin rules instead of boxes, tabs as a plain text row with an underline. Reads like a well-set reference book; quiet enough that the coloured Thai letters and the spectrograms are the only strong colour on the page. Best for the long reading tabs (Consonants, Reading, IPA).</p>
+  <div class="screen A">
+    <div class="top"><h3>Thai Cheat Sheet <small>consonants · vowels · tones · reading · ipa · speaking · typing · writing</small></h3><span class="fontsw">Thai: <b>Serif</b> · Sans</span></div>
+    <nav><span>Consonants</span><span>Vowels</span><span>Tones</span><span>Reading</span><span>IPA</span><span class="on">Speaking</span><span>Typing</span><span>Writing</span></nav>
+    <div class="grid">
+      <div class="card">
+        <h4><span class="th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span> <span class="ipa">/sà.wàt.diː kʰráp/</span></h4>
+        <div class="spec" style="margin-bottom:8px"><span>Native · Google Translate</span></div>
+        <div class="spec"><span>You</span></div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center"><span class="btn rec">● Try again</span><span class="btn">▶ Listen</span></div>
+      </div>
+      <div class="card">
+        <h4>Mid class — อักษรกลาง</h4>
+        <table>
+          <tr><td class="l th mid">ก</td><td><span class="th">กอ ไก่</span><br><span class="ipa">/kɔː kàj/</span></td><td class="ipa">k · k</td></tr>
+          <tr><td class="l th mid">จ</td><td><span class="th">จอ จาน</span><br><span class="ipa">/tɕɔː tɕaːn/</span></td><td class="ipa">tɕ · t</td></tr>
+          <tr><td class="l th mid">ด</td><td><span class="th">ดอ เด็ก</span><br><span class="ipa">/dɔː dèk/</span></td><td class="ipa">d · t</td></tr>
+          <tr><td class="l th mid">ต</td><td><span class="th">ตอ เต่า</span><br><span class="ipa">/tɔː tàw/</span></td><td class="ipa">t · t</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ B ============ -->
+<section class="opt">
+  <h2>B — Console</h2>
+  <p class="why">A dark top bar holds the title, a segmented tab control and the font switch; the page below is cool grey with white cards and uppercase section labels. Tighter, more tool-like — fits the Speaking and Typing tabs, where you press buttons and read numbers. Keyboard hints become part of the language.</p>
+  <div class="screen B">
+    <div class="bar"><h3><i>ก</i>Thai Cheat Sheet</h3><div class="seg"><span>Consonants</span><span>Vowels</span><span>Tones</span><span>Reading</span><span>IPA</span><span class="on">Speaking</span><span>Typing</span><span>Writing</span></div><span class="fontsw">serif ◉ / sans ○</span></div>
+    <div class="body">
+      <div class="card">
+        <h4>Practice · <span class="th" style="text-transform:none;font-size:.95rem"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span> <span class="ipa" style="text-transform:none">/sà.wàt.diː kʰráp/</span></h4>
+        <div class="spec" style="margin-bottom:8px"><span>Native · Google Translate</span></div>
+        <div class="spec"><span>You</span></div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center"><span class="btn rec">● Try again</span><span class="kbd">Space</span><span class="btn" style="margin-left:auto">▶ Listen</span><span class="kbd">L</span></div>
+      </div>
+      <div class="card">
+        <h4>Mid class · อักษรกลาง · 9 letters</h4>
+        <table>
+          <tr><td class="l th mid">ก</td><td><span class="th">กอ ไก่</span></td><td class="ipa">/kɔː kàj/</td><td class="ipa">k · k</td></tr>
+          <tr><td class="l th mid">จ</td><td><span class="th">จอ จาน</span></td><td class="ipa">/tɕɔː tɕaːn/</td><td class="ipa">tɕ · t</td></tr>
+          <tr><td class="l th mid">ด</td><td><span class="th">ดอ เด็ก</span></td><td class="ipa">/dɔː dèk/</td><td class="ipa">d · t</td></tr>
+          <tr><td class="l th mid">ต</td><td><span class="th">ตอ เต่า</span></td><td class="ipa">/tɔː tàw/</td><td class="ipa">t · t</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ C ============ -->
+<section class="opt">
+  <h2>C — Board</h2>
+  <p class="why">A left sidebar for the eight tabs (icons + names, always visible on a laptop; a bottom bar on a phone), a wider content column, soft floating cards, big Thai type. The most app-like of the three and the one that scales best as tabs are added; the font switch lives at the foot of the sidebar instead of floating over the page.</p>
+  <div class="screen C">
+    <aside>
+      <h3><i>ก</i>Thai Cheat Sheet</h3>
+      <a><i class="th">ก</i>Consonants</a><a><i class="th">อา</i>Vowels</a><a><i>♪</i>Tones</a><a><i>▤</i>Reading</a><a><i>ɪ</i>IPA</a><a class="on"><i>●</i>Speaking</a><a><i>⌨</i>Typing</a><a><i>✎</i>Writing</a>
+      <div class="fontsw">Thai font<b>Serif · <span style="color:#9ca3af;font-weight:500">Sans</span></b></div>
+    </aside>
+    <main>
+      <h4>Speaking</h4><p class="lead">Say it after the native voice; see both.</p>
+      <div class="card">
+        <div class="row"><span class="th"><span class="low">สวัส</span><span class="mid">ดี</span><span class="high">ครับ</span></span><span class="ipa">/sà.wàt.diː kʰráp/ · Hello.</span><span class="btn">● Try again</span></div>
+        <div class="spec" style="margin-bottom:8px"><span>Native · Google Translate</span></div>
+        <div class="spec"><span>You</span></div>
+        <div class="chips"><span class="chip"><span class="th low">ส</span>✓ on target</span><span class="chip"><span class="th low">วัส</span>✓ on target</span><span class="chip"><span class="th mid">ดี</span>✓ on target</span><span class="chip"><span class="th high">ครับ</span>✓ on target</span></div>
+      </div>
+    </main>
+  </div>
+</section>
