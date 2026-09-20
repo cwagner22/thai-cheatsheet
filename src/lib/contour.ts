@@ -140,6 +140,10 @@ export interface Comparison {
 
 /** Not enough voiced audio to say anything honest about. */
 const MIN_VOICED_FRAMES = 8;
+/** A take whose speech lasts less than this share of the native's is not a
+ *  reading of the sentence — a word, a cough, a click — and is not scored;
+ *  the alignment would stretch whatever it is across every slot. */
+const MIN_SPEECH_SHARE = 0.3;
 /** Within this the learner sits at the native voice's level on a syllable. */
 const LEVEL_TOL_ST = 1.7;
 /** Below this the native voice is not really moving on a syllable, and no
@@ -399,6 +403,7 @@ export function compareToReference(
   const rv = reference.filter(f => f.hz !== null);
   const lv = learner.filter(f => f.hz !== null);
   if (rv.length < MIN_VOICED_FRAMES || lv.length < MIN_VOICED_FRAMES) return null;
+  if (speechSpanMs(learner) < MIN_SPEECH_SHARE * speechSpanMs(reference)) return null;
 
   const referenceHz = registerHz(reference);
   const learnerHz = registerHz(learner);

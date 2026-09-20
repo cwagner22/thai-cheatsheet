@@ -867,7 +867,11 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
     return <p className={styles.hintLine}>Recorded. Without the native reference there is nothing to compare it to.</p>;
   }
   if (!comparison) {
-    return <p className={styles.hintLine}>No voice came through. Try again a little closer to the microphone.</p>;
+    return (
+      <p className={styles.hintLine}>
+        Not enough voice to compare — say the whole sentence, a little closer to the microphone.
+      </p>
+    );
   }
   const pace = comparison.learnerMs / comparison.referenceMs;
   const quiet = comparison.learnerPeakRms < 0.03;

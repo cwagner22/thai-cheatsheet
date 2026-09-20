@@ -44,6 +44,12 @@ export interface VoicingGate {
    *  so without this a silent room is analysed as a quiet voice and its
    *  noise-suppression residue drawn as pitch. 12× is 22 dB. */
   minDynamicRange: number;
+  /** A voiced frame must also be at least this many times louder than the
+   *  take's quietest tenth. The share-of-peak floor above is defeated by a
+   *  single click or breath, which becomes the peak and lets the room noise
+   *  under it through as a "quiet voice"; speech sits 20–40 dB above the
+   *  room, noise by definition does not. 4× is 12 dB. */
+  aboveNoise: number;
 }
 
 export const VOICING: VoicingGate = {
@@ -55,6 +61,7 @@ export const VOICING: VoicingGate = {
   minRun: 3,
   maxGap: 2,
   minDynamicRange: 12,
+  aboveNoise: 4,
 };
 
 /** Returns the frames with `hz` nulled wherever the gate rejects the frame.
@@ -68,7 +75,7 @@ export function gateVoicing(frames: readonly Frame[], gate: VoicingGate = VOICIN
   if (peak < gate.minDynamicRange * quiet || peak <= gate.silence) {
     return frames.map(f => (f.hz === null ? f : { ...f, hz: null }));
   }
-  const floor = gate.levelShare * peak;
+  const floor = Math.max(gate.levelShare * peak, gate.aboveNoise * quiet);
   const audible = (f: Frame) => f.hz !== null && f.rms >= floor;
 
   const voiced = new Uint8Array(n);
