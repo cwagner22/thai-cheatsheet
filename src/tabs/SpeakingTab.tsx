@@ -43,6 +43,7 @@ type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
 type Playing = 'native' | 'you' | null;
 
 const ALL_PHRASES = PHRASE_GROUPS.flatMap(g => g.phrases);
+const LAST_PHRASE_KEY = 'speaking.phrase';
 
 const NATIVE_LABEL = 'Native · Google Translate';
 const YOU_LABEL = 'You';
@@ -53,10 +54,26 @@ function emptyScope(windowMs: number, label: string, emptyText: string, gain: nu
 
 export function SpeakingTab() {
   const [phrase, setPhrase] = useState<Phrase>(() => {
-    const wanted = readRoute().sub;
+    let wanted = readRoute().sub;
+    if (!wanted) {
+      try {
+        wanted = window.localStorage.getItem(LAST_PHRASE_KEY) ?? undefined;
+      } catch {
+        wanted = undefined;
+      }
+    }
     return ALL_PHRASES.find(p => p.id === wanted) ?? ALL_PHRASES[0];
   });
-  useEffect(() => writeRoute('speaking', phrase.id), [phrase]);
+  // The address carries the tab only; the sentence is remembered here so a
+  // reload lands on it without a URL to trim.
+  useEffect(() => {
+    writeRoute('speaking');
+    try {
+      window.localStorage.setItem(LAST_PHRASE_KEY, phrase.id);
+    } catch {
+      // Storage may be unavailable; the sentence is simply not remembered.
+    }
+  }, [phrase]);
   const pick = useCallback((id: string) => {
     const next = ALL_PHRASES.find(p => p.id === id);
     if (next) setPhrase(current => (current.id === next.id ? current : next));
@@ -859,8 +876,8 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
   const quiet = comparison.learnerPeakRms < 0.03;
   const scores = comparison.syllables;
   const onTarget = scores.filter(s => s.verdict === 'good').length;
-  const merged = scores.filter(s => s.parts);
-  const hints = scores.filter(s => s.verdict !== 'good').slice(0, 3);
+  const merged = [...new Set(scores.filter(s => s.parts).map(s => s.parts!.map(p => p.thai).join(' + ')))];
+  const hints = scores.filter(s => s.verdict !== 'good' && s.hint).slice(0, 3);
 
   return (
     <div className={styles.report}>
@@ -886,11 +903,7 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
               className={`${styles.scoreChip} ${chipClass(score.verdict)}`}
               title={score.hint || `${score.span.tone} tone — matched the native voice`}
             >
-              <span className={styles.scoreThai}>
-                {(score.parts ?? [{ thai: score.span.thai, tone: score.span.tone }]).map((part, j) => (
-                  <span key={j} style={{ color: TONE_COLOR[part.tone] }}>{part.thai}</span>
-                ))}
-              </span>
+              <span className={styles.scoreThai} style={{ color: TONE_COLOR[score.span.tone] }}>{score.span.thai}</span>
               <span className={styles.scoreLabel}>{SYLLABLE_LABEL[score.verdict]}</span>
             </span>
           ))}
@@ -898,7 +911,7 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
       )}
       {merged.length > 0 && (
         <p className={styles.paceLine}>
-          {merged.map(s => s.parts!.map(p => p.thai).join(' + ')).join(', ')} ran together in your take and are marked as one.
+          {merged.join(', ')} ran together in your take and are judged together.
         </p>
       )}
       {hints.length > 0 && (

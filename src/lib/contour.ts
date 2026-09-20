@@ -103,9 +103,8 @@ export interface SyllableScore {
   /** The native syllable scored — or, when the learner ran several
    *  together, one span covering all of them with their spellings joined. */
   span: SyllableSpan;
-  /** The syllables `span` covers, when there is more than one, each with
-   *  its own tone — a merged chip still colours every syllable by its own
-   *  tone, not by the first one's. */
+  /** The syllables scored together with this one, when the learner ran
+   *  several into one run; each entry of the group carries the same list. */
   parts?: { thai: string; tone: ToneName }[];
   verdict: SyllableVerdict;
   /** Mean semitones above (+) or below (−) the native voice on this syllable. */
@@ -154,6 +153,10 @@ const FLAT_SHARE = 1 / 3;
 /** Learner voiced points in a slot relative to the native's, above which the
  *  slot holds a neighbour's material as well as its own. */
 const SURPLUS_RATIO = 1.5;
+/** A learner voiced point this close to the boundary of an empty slot means
+ *  the neighbouring run starts or ends right at it — the empty syllable was
+ *  spoken inside that run. */
+const ABUT_MS = 45;
 
 /** Which way each tone moves in citation form: −1 falls, +1 rises, 0 level.
  *  The native voice also drifts the other way on a syllable — a low tone
@@ -215,25 +218,28 @@ interface SlotGroup {
 }
 
 /** Which native slots are scored together. Two syllables spoken as one
- *  voiced run have no energy boundary for the alignment to find, and the
- *  native's quiet second syllable gets matched to the learner's next pause
- *  instead. The signature is a slot with too few learner points beside one
- *  holding well over its native share; those are scored as one. */
-function groupSlots(spans: SyllableSpan[], ref: number[][], lrn: number[][]): SlotGroup[] {
+ *  voiced run have no energy boundary for the alignment to find; the run
+ *  lands in one slot and the other is left empty. The signature is an empty
+ *  slot beside one that either holds well over its native share or whose
+ *  voice starts or ends right at the shared boundary; those are scored as
+ *  one and reported on each of their syllables. */
+function groupSlots(spans: SyllableSpan[], ref: number[][], lrn: TrackPoint[][]): SlotGroup[] {
   const surplus = (idx: number[]) => {
     const l = idx.reduce((sum, i) => sum + lrn[i].length, 0);
     const r = idx.reduce((sum, i) => sum + ref[i].length, 0);
     return r > 0 && l / r > SURPLUS_RATIO;
   };
+  const abuts = (i: number, ms: number) => lrn[i].some(p => Math.abs(p.ms - ms) <= ABUT_MS);
   const groups: SlotGroup[] = [];
   for (let k = 0; k < spans.length; k++) {
     const prev = groups[groups.length - 1];
     // A minor syllable is meant to be brief; it is never short of points.
     const brief = !spans[k].minor && lrn[k].length < 3 && ref[k].length >= 3;
-    if (brief && prev && surplus(prev.idx)) {
+    const last = prev ? prev.idx[prev.idx.length - 1] : -1;
+    if (brief && prev && (surplus(prev.idx) || abuts(last, spans[k].startMs))) {
       prev.idx.push(k);
       prev.ran = true;
-    } else if (brief && k + 1 < spans.length && surplus([k + 1])) {
+    } else if (brief && k + 1 < spans.length && (surplus([k + 1]) || abuts(k + 1, spans[k].endMs))) {
       groups.push({ idx: [k, k + 1], ran: true });
       k++;
     } else {
@@ -265,12 +271,20 @@ function scoreSyllables(
     return dir < 0 ? Math.max(...a) - Math.min(...b) : Math.max(...b) - Math.min(...a);
   };
   const within = (points: TrackPoint[], span: SyllableSpan) =>
-    points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs).map(p => p.st);
+    points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs);
 
-  const ref = spans.map(span => within(refPoints, span));
-  const lrn = spans.map(span => within(lrnPoints, span));
+  const ref = spans.map(span => within(refPoints, span).map(p => p.st));
+  const lrnPts = spans.map(span => within(lrnPoints, span));
+  const lrn = lrnPts.map(pts => pts.map(p => p.st));
 
-  return groupSlots(spans, ref, lrn).map(({ idx, ran }) => {
+  // One score per group, then one entry per syllable: a group's syllables
+  // share its verdict, and the chips keep the native voice's split.
+  return groupSlots(spans, ref, lrnPts).flatMap(({ idx, ran }) => {
+    const score = scoreGroup(idx, ran);
+    return idx.map((i, j) => ({ ...score, span: spans[i], hint: j === 0 ? score.hint : '' }));
+  });
+
+  function scoreGroup(idx: number[], ran: boolean): SyllableScore {
     const first = spans[idx[0]];
     const last = spans[idx[idx.length - 1]];
     const parts = idx.map(i => ({ thai: spans[i].thai, tone: spans[i].tone }));
@@ -343,7 +357,7 @@ function scoreSyllables(
       }
     }
     return { ...base, levelSt, verdict: 'good' as const, hint: '' };
-  });
+  }
 }
 
 /** Native syllables on which the native voice moves against its own tone's
