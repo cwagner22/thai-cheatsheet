@@ -51,32 +51,6 @@
   pointer-events: none;
   line-height: normal;
 }
-.count {
-  position: absolute;
-  top: 8px;
-  right: 40px;
-  display: grid;
-  justify-items: end;
-  line-height: 1;
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #fff;
-  text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
-  animation: count-pop 0.7s ease-out both;
-}
-.count::before {
-  content: 'ready';
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #cbd5e1;
-}
-@keyframes count-pop {
-  from { opacity: 0; transform: scale(1.25); }
-  20% { opacity: 1; transform: scale(1); }
-  to { opacity: 0.7; }
-}
 
 /* On a phone the corner shares the width with the panel's label; the
    secondary tool goes, the rest shrink. */

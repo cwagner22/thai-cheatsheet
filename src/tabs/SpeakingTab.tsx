@@ -723,6 +723,14 @@ function PracticePanel({
   onToggleTextbook: () => void;
 }) {
   const sentenceRef = useRef<HTMLParagraphElement | null>(null);
+  // Clear misses, by syllable index in the sentence, underlined in place.
+  const flagged = new Map<number, string>();
+  if (status === 'done') {
+    comparison?.syllables.forEach((score, i) => {
+      if (isFlag(score.verdict)) flagged.set(i, `${FLAG_LABEL[score.verdict]}${score.hint ? ` — ${score.hint}` : ''}`);
+    });
+  }
+  let syllableIndex = 0;
   // The sentence is one line however long it is: the type is scaled down
   // from its full size until it fits the column. Re-run on resize and when
   // the sentence changes.
@@ -792,7 +800,31 @@ function PracticePanel({
             </button>
           }
         />
+
+        <PhraseScope
+          data={youScope}
+          live={live}
+          revision={revision}
+          height={280}
+          tools={
+            takeUrl && status === 'done' ? (
+              <>
+                <button type="button" className={scopeStyles.tool} onClick={onListenToTake} disabled={busy}>
+                  {playing === 'you' ? 'Playing…' : '▶ Listen'}
+                </button>
+                <a className={scopeStyles.tool} href={takeUrl} download={`take-${phrase.id}.webm`}>
+                  ⤓ Save
+                </a>
+              </>
+            ) : null
+          }
+        />
+      </div>
+
       <header className={styles.poster}>
+        <div className={styles.countCell} aria-live="polite">
+          {status === 'counting' && <span key={countIn} className={styles.count}>{countIn}</span>}
+        </div>
         <div className={styles.posterText}>
           <p className={styles.sentence} ref={sentenceRef}>
             {phrase.words.map((word, i) => (
@@ -804,9 +836,20 @@ function PracticePanel({
                 data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
                 aria-label={`${thaiOfWord(word)} — play`}
               >
-                {word.syllables.map((syl, j) => (
-                  <span key={j} style={{ color: TONE_COLOR[syllableTone(syl)] }}>{syl.thai}</span>
-                ))}
+                {word.syllables.map((syl, j) => {
+                  const index = syllableIndex++;
+                  const flag = flagged.get(index);
+                  return (
+                    <span
+                      key={j}
+                      className={flag ? styles.sylFlag : undefined}
+                      style={{ color: TONE_COLOR[syllableTone(syl)] }}
+                      title={flag}
+                    >
+                      {syl.thai}
+                    </span>
+                  );
+                })}
               </button>
             ))}
           </p>
@@ -842,27 +885,6 @@ function PracticePanel({
           </span>
         </div>
       </header>
-
-        <PhraseScope
-          data={youScope}
-          live={live}
-          revision={revision}
-          height={280}
-          overlay={status === 'counting' ? <span key={countIn} className={scopeStyles.count}>{countIn}</span> : null}
-          tools={
-            takeUrl && status === 'done' ? (
-              <>
-                <button type="button" className={scopeStyles.tool} onClick={onListenToTake} disabled={busy}>
-                  {playing === 'you' ? 'Playing…' : '▶ Listen'}
-                </button>
-                <a className={scopeStyles.tool} href={takeUrl} download={`take-${phrase.id}.webm`}>
-                  ⤓ Save
-                </a>
-              </>
-            ) : null
-          }
-        />
-      </div>
 
       <div className={styles.scopeTools}>
         <label className={styles.gainLabel} htmlFor="spec-gain">Sensitivity</label>
@@ -977,23 +999,9 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         </span>
       </p>
       {scores.length > 0 && (
-        <div className={styles.scoreRow}>
-          {scores.map((score, i) => (
-            <span
-              key={i}
-              className={`${styles.scoreChip} ${isFlag(score.verdict) ? styles.scoreOff : styles.scorePlain}`}
-              title={score.hint || undefined}
-            >
-              <span className={styles.scoreThai} style={{ color: TONE_COLOR[score.span.tone] }}>{score.span.thai}</span>
-              {isFlag(score.verdict) && <span className={styles.scoreLabel}>{FLAG_LABEL[score.verdict]}</span>}
-            </span>
-          ))}
-        </div>
-      )}
-      {scores.length > 0 && (
         <p className={styles.paceLine}>
-          Only clear misses are marked; a plain syllable is not a pass, just nothing the analysis could
-          fault.{merged.length > 0 && ` ${merged.join(', ')} ran together in your take and are judged together.`}
+          Underlined syllables are clear misses; an unmarked syllable is not a pass, just nothing the
+          analysis could fault.{merged.length > 0 && ` ${merged.join(', ')} ran together in your take and are judged together.`}
         </p>
       )}
       {hints.length > 0 && (
