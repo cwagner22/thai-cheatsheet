@@ -1,0 +1,46 @@
+.scope {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0d1424;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  line-height: 0;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+}
+
+.tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  line-height: normal;
+}
+
+.tool {
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tool:not(:disabled):hover { background: rgba(255, 255, 255, 0.26); }
+.tool:disabled { opacity: 0.55; cursor: default; }
+
+/* On a phone the corner shares the width with the panel's label; the
+   secondary tool goes, the rest shrink. */
+@media (max-width: 600px) {
+  .tools { top: 6px; right: 6px; gap: 4px; }
+  .tool { font-size: 0.68rem; padding: 4px 8px; }
+  .secondary { display: none; }
+}
