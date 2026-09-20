@@ -164,6 +164,12 @@ const FLAT_SHARE = 1 / 3;
  *  native voice doing the same thing must always pass. */
 const SWING_ST = 2.5;
 
+/** Fewer native points than this in a slot and its glide is not judged: a
+ *  hundred milliseconds of contour shifts by a frame under any alignment
+ *  jitter, and the same clip played back through the microphone path was
+ *  called flat on such a slot. */
+const MIN_GLIDE_POINTS = 6;
+
 /** Learner voiced points in a slot relative to the native's, above which the
  *  slot holds a neighbour's material as well as its own. */
 const SURPLUS_RATIO = 1.5;
@@ -377,7 +383,8 @@ function scoreSyllables(
           hint: `${span.thai} goes ${way}; yours goes the other way by about ${against.toFixed(0)} st${cue(span)}`,
         };
       }
-      const nativeShowsIt = Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST;
+      const nativeShowsIt =
+        refSt.length >= MIN_GLIDE_POINTS && Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST;
       if (nativeShowsIt) {
         const want = travel(refSt, taught);
         if (withIt < FLAT_SHARE * want) {

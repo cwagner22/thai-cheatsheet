@@ -66,6 +66,7 @@ const MIN_SYLLABLE_MS = 70;
  *  length; otherwise a boundary slides onto the fade-out before a silence
  *  and two boundaries pile up around one gap. */
 const MIN_SHARE_OF_EXPECTED = 0.5;
+
 /** Pull toward the expected position: a boundary an eighth of the phrase
  *  from where it belongs costs more than a full-depth energy dip saves. */
 const PROPORTION_WEIGHT = 25;
@@ -85,7 +86,14 @@ const FADE_MS = 60;
  *  have — on eight syllables in 2.5 s they alone land every slot half a
  *  syllable early, on the transition into the next one. One object so a
  *  harness can re-weight it. */
-export const SEGMENT_WEIGHTS = { tone: 0.3 };
+export const SEGMENT_WEIGHTS = {
+  tone: 0.3,
+  /** A syllable may not run longer than this share of its expected length.
+   *  Without a ceiling the tone term stretches one syllable across its
+   *  neighbours to capture a glide that suits it, leaving them a few frames
+   *  each. */
+  maxShare: 1.5,
+};
 /** A glide this size in the tone's direction is a full tone; less is
  *  penalised in proportion. Level tones may drift this much unpenalised. */
 const TONE_GLIDE_ST = 1.5;
@@ -124,6 +132,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
   /** Shortest the k-th syllable (0-based) is allowed to be. */
   const minLen = (k: number) =>
     Math.max(MIN_SYLLABLE_MS, (MIN_SHARE_OF_EXPECTED * span * specs[k].weight) / total);
+  const maxLen = (k: number) => (SEGMENT_WEIGHTS.maxShare * span * specs[k].weight) / total;
   /** Shortest the syllables from k onward can take together. */
   const minTail = (k: number) => specs.slice(k).reduce((acc, _, i) => acc + minLen(k + i), 0);
   const minHead = (k: number) => specs.slice(0, k).reduce((acc, _, i) => acc + minLen(i), 0);
@@ -193,6 +202,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
       const own = cost(i, k);
       if (own === INF) continue;
       if (k === 1) {
+        if (frames[i].t - t0 > maxLen(0)) continue;
         best[0][i] = own + toneCost(0, i0, i);
         continue;
       }
@@ -201,6 +211,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
       for (let j = i0; j < i; j++) {
         // Syllable k-1 runs from boundary j to boundary i.
         if (frames[i].t - frames[j].t < minLen(k - 1)) break;
+        if (frames[i].t - frames[j].t > maxLen(k - 1)) continue;
         if (best[k - 2][j] === INF) continue;
         const total = best[k - 2][j] + toneCost(k - 1, j, i);
         if (total < bestPrev) {
@@ -219,6 +230,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
   let endCost = INF;
   for (let i = i0; i <= i1; i++) {
     if (best[n - 2][i] === INF) continue;
+    if (t1 - frames[i].t > maxLen(n - 1)) continue;
     const total = best[n - 2][i] + toneCost(n - 1, i, i1);
     if (total < endCost) {
       endCost = total;
