@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase } from '../data/phrases';
-import { TONE_COLOR } from '../data/tones';
+import { TONE_COLOR, TONE_FEEL } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
 import { SPEECH_SHARE } from '../lib/align';
 import {
@@ -681,6 +681,14 @@ function PracticePanel({
             <span className={styles.gloss}>{phrase.meaning}</span>
             <span className={styles.tap}>· tap a word to hear it</span>
           </div>
+          <p className={styles.cues}>
+            {[...new Set(phrase.words.flatMap(w => w.syllables.map(s => toneOf(s.ipa))))].map((tone, i) => (
+              <span key={tone} className={styles.cue}>
+                {i > 0 && <span className={styles.cueSep}> · </span>}
+                <b style={{ color: TONE_COLOR[tone] }}>{tone.toLowerCase()}</b> {TONE_FEEL[tone]}
+              </span>
+            ))}
+          </p>
         </div>
         <div className={styles.act}>
           {status === 'recording' ? (

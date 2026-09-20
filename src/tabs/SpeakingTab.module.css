@@ -72,6 +72,10 @@
 .gloss { color: var(--ink-3); font-size: 0.95rem; }
 .tap { color: var(--ink-3); font-size: 0.82rem; }
 
+.cues { margin: 8px 0 0; font-size: 0.82rem; color: var(--ink-3); line-height: 1.6; max-width: 70ch; }
+.cue b { font-weight: 600; }
+.cueSep { color: var(--rule); }
+
 .act { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .recBtn {
   display: inline-flex;

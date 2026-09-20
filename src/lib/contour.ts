@@ -9,7 +9,7 @@ import type { Frame } from './capture';
 import { foldOctave, hzToSemitones, registerHz as registerHzOf } from './pitch';
 import { dtwAlign, SPEECH_SHARE } from './align';
 import type { SyllableSpan } from './segment';
-import { THAI_TONES } from '../data/tones';
+import { TONE_FEEL } from '../data/tones';
 
 /** Keyed by combining diacritic; the IPA is decomposed first because some
  *  vowels have a precomposed form (à) and some do not (ɯ̌). */
@@ -182,11 +182,8 @@ const TONE_SIDE: Record<ToneName, -1 | 0 | 1> = {
   Rising: 1,
 };
 
-/** The throat cue for each tone, from the Tones tab's cards, so a hint ends
- *  with something the learner can do rather than only what was measured. */
-const TONE_FEEL = Object.fromEntries(
-  THAI_TONES.map(t => [t.nameEn as ToneName, t.feel ?? '']),
-) as Record<ToneName, string>;
+/** A hint ends with the tone's throat cue: something to do, not only what
+ *  was measured. */
 const cue = (span: SyllableSpan) => (TONE_FEEL[span.tone] ? ` · ${span.tone.toLowerCase()} tone: ${TONE_FEEL[span.tone]}` : '');
 
 /** Learner speech frames landing in each slot, relative to the native

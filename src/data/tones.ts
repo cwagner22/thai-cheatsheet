@@ -193,6 +193,11 @@ export const NORTHERN_TONE_BOX: ToneBoxRow[] = [
  *  on the Tones tab and the target bands on the Speaking tab. Matches the
  *  `color` on the THAI_TONES entries above; kept as its own lookup because
  *  those are keyed by Thai name while every consumer has an English one. */
+/** The throat cue of each Standard Thai tone, keyed like TONE_COLOR. */
+export const TONE_FEEL: Record<ToneName, string> = Object.fromEntries(
+  THAI_TONES.map(t => [t.nameEn as ToneName, t.feel ?? '']),
+) as Record<ToneName, string>;
+
 export const TONE_COLOR: Record<ToneName, string> = {
   Mid: '#2563eb',     // blue
   Low: '#dc2626',     // red

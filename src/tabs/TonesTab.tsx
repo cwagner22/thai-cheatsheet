@@ -1,5 +1,5 @@
 import { useState, useMemo, type ReactNode } from 'react';
-import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, TONE_COLOR, type ToneBoxOutcome } from '../data/tones';
+import { THAI_TONES, NORTHERN_TONES, NORTHERN_TONE_BOX, TONE_COLOR, type ToneBoxOutcome, TONE_FEEL } from '../data/tones';
 import { CONSONANTS, byClass, groupByInitial, TONE_PAIRS, type ConsonantClass, type Consonant, type TonePair } from '../data/consonants';
 import { ToneCard } from '../components/ToneCard';
 import { analyzeSyllable, type ToneMark } from '../lib/analyzeSyllable';
@@ -526,7 +526,10 @@ function PracticeSentence() {
               <tr key={tone}>
                 <td className={styles.cueTone} style={{ color: TONE_COLOR[tone] }}>{tone}</td>
                 <td>{cue}</td>
-                <td style={{ color: '#666' }}>{comment}</td>
+                <td style={{ color: '#666' }}>
+                  {comment !== '—' && <div>{comment}</div>}
+                  <div className="tone-feel">{TONE_FEEL[tone]}</div>
+                </td>
                 <td
                   className={`${styles.cueThaiWord} ${styles.label}`}
                   style={{ cursor: 'pointer' }}
@@ -1531,17 +1534,6 @@ export function TonesTab() {
           <strong>high tone</strong><br />
           → <strong style={{ color: '#dc2626' }}>Low</strong> class + long vowel →{' '}
           <strong>falling tone</strong>
-        </div>
-
-        <div className="tone-feel" aria-label="What each tone feels like">
-          <p className="tone-feel-title">In the throat</p>
-          <ul>
-            {THAI_TONES.filter(t => t.feel).map(t => (
-              <li key={t.name}>
-                <strong style={{ color: t.color }}>{t.nameEn}</strong> {t.feel}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
