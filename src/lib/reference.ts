@@ -20,8 +20,13 @@ export interface Reference extends Capture {
   syllables: SyllableSpan[] | null;
 }
 
-const buffers = new Map<string, AudioBuffer>();
+const buffers = new Map<string, Promise<AudioBuffer>>();
 const references = new Map<string, Reference>();
+/** Captures in flight, one per phrase. Two callers asking for the same
+ *  phrase at once — a mount effect run twice, Listen pressed during the
+ *  automatic load — share one capture; two racing captures of the same
+ *  audio would each paint the panel with their own frames. */
+const pending = new Map<string, { done: Promise<Reference>; handle: Promise<CaptureHandle> }>();
 
 /** translate_tts serves audio without CORS headers, so a page can play it
  *  but not read its samples. In development Vite proxies it at /tts (see
@@ -39,14 +44,17 @@ export function ttsFetchUrl(text: string): string {
 export const cachedReference = (phraseId: string): Reference | null =>
   references.get(phraseId) ?? null;
 
-async function loadBuffer(ctx: AudioContext, text: string): Promise<AudioBuffer> {
+function loadBuffer(ctx: AudioContext, text: string): Promise<AudioBuffer> {
   const hit = buffers.get(text);
   if (hit) return hit;
-  const response = await fetch(ttsFetchUrl(text));
-  if (!response.ok) throw new Error(`TTS fetch failed: ${response.status}`);
-  const buffer = await ctx.decodeAudioData(await response.arrayBuffer());
-  buffers.set(text, buffer);
-  return buffer;
+  const loading = (async () => {
+    const response = await fetch(ttsFetchUrl(text));
+    if (!response.ok) throw new Error(`TTS fetch failed: ${response.status}`);
+    return ctx.decodeAudioData(await response.arrayBuffer());
+  })();
+  buffers.set(text, loading);
+  loading.catch(() => buffers.delete(text));
+  return loading;
 }
 
 /** Plays the phrase's native rendition (silently, if asked) and captures it
@@ -56,6 +64,9 @@ export function captureReference(
   phrase: Phrase,
   options: { audible: boolean; onFrame?: (elapsedMs: number, capture: Capture) => void },
 ): { done: Promise<Reference>; handle: Promise<CaptureHandle> } {
+  const inFlight = pending.get(phrase.id);
+  if (inFlight) return inFlight;
+
   let resolveHandle!: (h: CaptureHandle) => void;
   const handle = new Promise<CaptureHandle>(r => (resolveHandle = r));
 
@@ -95,7 +106,10 @@ export function captureReference(
     });
   })();
 
-  return { done, handle };
+  const entry = { done, handle };
+  pending.set(phrase.id, entry);
+  done.finally(() => pending.delete(phrase.id)).catch(() => undefined);
+  return entry;
 }
 
 export interface Playback {
