@@ -13,7 +13,7 @@ export default defineConfig({
       // it same-origin, which is what lets the Speaking tab run the native
       // voice through the same analyser as the microphone. It also 404s any
       // request carrying a Referer from outside google.com, hence the strip.
-      // Dev server only: the deployed site has no proxy.
+      // Dev server only: the deployed site uses the relay in worker/tts-proxy.
       '/tts': {
         target: 'https://translate.google.com',
         changeOrigin: true,

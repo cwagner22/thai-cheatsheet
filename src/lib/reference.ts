@@ -25,12 +25,15 @@ const references = new Map<string, Reference>();
 
 /** translate_tts serves audio without CORS headers, so a page can play it
  *  but not read its samples. In development Vite proxies it at /tts (see
- *  vite.config.ts); the deployed site has no proxy and the fetch fails. */
+ *  vite.config.ts); the deployed site goes through the relay Worker in
+ *  worker/tts-proxy, whose URL is VITE_TTS_PROXY at build time. With neither,
+ *  the fetch fails and the tab runs without a native voice. */
 export function ttsFetchUrl(text: string): string {
-  const query = `ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(text)}`;
-  return import.meta.env.DEV
-    ? `/tts?${query}`
-    : `https://translate.google.com/translate_tts?${query}`;
+  if (import.meta.env.DEV) return `/tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(text)}`;
+  const relay = (import.meta.env.VITE_TTS_PROXY as string | undefined)?.replace(/\/$/, '');
+  return relay
+    ? `${relay}/?q=${encodeURIComponent(text)}`
+    : `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(text)}`;
 }
 
 export const cachedReference = (phraseId: string): Reference | null =>

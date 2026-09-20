@@ -32,6 +32,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
+        env:
+          VITE_TTS_PROXY: ${{ vars.VITE_TTS_PROXY }}
 
       - uses: actions/configure-pages@v5
 

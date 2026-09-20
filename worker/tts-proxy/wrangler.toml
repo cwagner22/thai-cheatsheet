@@ -1,0 +1,8 @@
+name = "thai-tts"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Browsers on these origins may read the audio. Anything else still gets the
+# bytes but no Access-Control-Allow-Origin header, so its page cannot use them.
+[vars]
+ALLOWED_ORIGINS = "https://cwagner22.github.io,http://localhost:5173"

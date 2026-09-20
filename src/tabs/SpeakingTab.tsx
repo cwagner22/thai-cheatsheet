@@ -825,9 +825,9 @@ function PracticePanel({
 
       {refStatus === 'failed' && (
         <p className={styles.denied}>
-          The native voice can't be fetched here: Google serves it without cross-origin headers, so
-          only the development server (which proxies it) can read the audio. You can still record;
-          there is just nothing to lay your take against.
+          The native voice can't be fetched here — this build has no TTS relay configured (see
+          worker/tts-proxy/README.md). You can still record; there is just nothing to lay your take
+          against.
         </p>
       )}
       {status === 'denied' && (
