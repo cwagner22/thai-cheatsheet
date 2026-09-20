@@ -163,6 +163,7 @@ export function SpeakingTab() {
    *  straight to the count-in. */
   const [heard, setHeard] = useState(false);
   const [mismatches, setMismatches] = useState<string[]>([]);
+  const hiddenRef = useRef<ReadonlySet<number>>(new Set());
   const heardRef = useRef<Set<string>>(new Set());
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -237,7 +238,9 @@ export function SpeakingTab() {
 
   /** Shows a finished reference on the top panel and widens both axes to it. */
   const showReference = useCallback((reference: Reference) => {
-    setMismatches(reference.syllables ? textbookMismatches(reference.frames, reference.syllables) : []);
+    const hidden = new Set(reference.syllables ? textbookMismatches(reference.frames, reference.syllables) : []);
+    hiddenRef.current = hidden;
+    setMismatches(reference.syllables ? reference.syllables.filter((_, i) => hidden.has(i)).map(s => s.thai) : []);
     // Kept from onStart when the clip was just captured, so nothing rescales.
     const windowMs = nativeScope.current.spectra === reference.spectra ? nativeScope.current.windowMs : windowFor(reference);
     nativeScope.current = {
@@ -251,6 +254,7 @@ export function SpeakingTab() {
       emptyText: '',
       syllables: reference.syllables,
       showTextbook: textbookRef.current,
+      textbookHidden: hidden,
     };
     // The learner's panel stays bare until there is a take: the native
     // voice's slots and the textbook shapes mean nothing laid over silence.
@@ -457,6 +461,7 @@ export function SpeakingTab() {
           : null,
         elapsedMs: null,
         showTextbook: textbookRef.current,
+        textbookHidden: hiddenRef.current,
       };
     } else if (handle) {
       const voiced = frames.filter(f => f.hz !== null);
@@ -918,7 +923,7 @@ function PracticePanel({
         {mismatches.length > 0 && (
           <>
             {' '}On <span className={styles.hintThai}>{mismatches.join(' ')}</span> the native voice does not make
-            the textbook shape — connected speech cuts the glide short — so follow the amber line there.
+            the textbook glide — it cuts it short — so no band is drawn there; the line is the target.
           </>
         )}
       </p>

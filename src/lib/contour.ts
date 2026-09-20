@@ -437,25 +437,25 @@ function scoreSyllables(
   }
 }
 
-/** Native syllables on which the native voice moves against its own tone's
- *  direction — a rising tone realised as a fall, a falling tone whose drop
- *  lands in creak after a rising onset. Connected speech does this often,
- *  and on those syllables the textbook band and the native line disagree
- *  on screen; the read-out names them so the learner knows which to follow. */
-export function textbookMismatches(reference: Frame[], syllables: SyllableSpan[]): string[] {
+/** Indices of native syllables on which the native voice does not make its
+ *  tone's glide — a rising tone realised as a fall, a falling tone whose
+ *  drop lands in a glottal stop after a high onset. Connected speech does
+ *  this often. On those syllables the textbook band and the native line
+ *  would disagree on screen, so the band is not drawn there and the
+ *  read-out names them. */
+export function textbookMismatches(reference: Frame[], syllables: SyllableSpan[]): number[] {
   const points = buildSegments(reference, registerHz(reference)).flat();
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  return syllables
-    .filter(span => {
-      const taught = TONE_DIRECTION[span.tone];
-      if (taught === 0) return false;
-      const st = points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs).map(p => p.st);
-      if (st.length < 3) return false;
-      const third = Math.max(1, Math.round(st.length / 3));
-      const net = mean(st.slice(-third)) - mean(st.slice(0, third));
-      return Math.abs(net) >= MOVING_ST && Math.sign(net) !== taught;
-    })
-    .map(span => span.thai);
+  return syllables.flatMap((span, i) => {
+    const taught = TONE_DIRECTION[span.tone];
+    if (taught === 0) return [];
+    const st = points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs).map(p => p.st);
+    if (st.length < 3) return [];
+    const third = Math.max(1, Math.round(st.length / 3));
+    const net = mean(st.slice(-third)) - mean(st.slice(0, third));
+    // Against the tone, or not gliding at all where the tone glides.
+    return Math.sign(net) !== taught || Math.abs(net) < MOVING_ST ? [i] : [];
+  });
 }
 
 /** First to last frame at least SPEECH_SHARE of the take's loudest. */

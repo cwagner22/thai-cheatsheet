@@ -28,6 +28,10 @@ export interface ScopeData {
   syllables?: SyllableSpan[] | null;
   /** Draw the citation-form tone shape over each syllable slot. */
   showTextbook?: boolean;
+  /** Slots (by index) whose textbook shape the native voice does not make;
+   *  no band is drawn there, so the picture never shows two targets that
+   *  disagree. */
+  textbookHidden?: ReadonlySet<number>;
   /** Milliseconds that fit the panel's visible width. When `windowMs` is
    *  longer the canvas is drawn wider than the viewport, at the same scale,
    *  and scrolls sideways — a take is never compressed to fit. Defaults to
@@ -267,7 +271,8 @@ function draw(
 
     if (data.showTextbook) {
       const bandPx = Math.abs(y(0) - y(BAND_HALF_ST)) * 2;
-      for (const syl of data.syllables) {
+      for (const [i, syl] of data.syllables.entries()) {
+        if (data.textbookHidden?.has(i)) continue;
         const contour = textbookContour(syl.tone);
         const path = new Path2D();
         for (let i = 0; i <= 24; i++) {
