@@ -124,7 +124,7 @@ h1 { font-size: 1.8rem; margin-bottom: 18px; color: var(--ink); letter-spacing: 
 
 .page {
   padding: 34px 44px 80px;
-  max-width: 1080px;
+  max-width: 1320px;
   width: 100%;
   animation: page-rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Long sentences — where to read them</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Thai:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--low:#dc2626;--mid:#2563eb;--fall:#7c3aed;--high:#16a34a;--rise:#db2777;--thai:'Noto Serif Thai',serif;--ui:'Bricolage Grotesque',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;--ink:#0f0f10;--ink2:#44474d;--ink3:#8a8d94;--rule:#e8e9ec;--panel:#f8f9fb}
+  body{margin:0;background:#eceef1;font-family:var(--ui);color:var(--ink);font-size:15px;padding:28px 32px}
+  h1{font-size:1.1rem;margin:0 0 4px} p.sub{margin:0 0 22px;color:#64748b;font-size:.86rem;max-width:860px;line-height:1.5}
+  .opt{margin-bottom:38px} .opt h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:0 0 6px}
+  .opt p.why{margin:0 0 12px;font-size:.84rem;color:#475569;line-height:1.5;max-width:860px}
+  .th{font-family:var(--thai);font-weight:700}
+  .low{color:var(--low)}.mid{color:var(--mid)}.fall{color:var(--fall)}.high{color:var(--high)}.rise{color:var(--rise)}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1240px}
+  .cap{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin:0 0 6px;font-weight:600}
+  .screen{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.08);display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:0 16px}
+  .rail{border-left:1px solid var(--rule);padding-left:12px;font-size:.66rem;color:var(--ink3)}
+  .rail b{display:block;color:var(--ink);font-size:.78rem;margin-bottom:6px}
+  .rail i{display:block;font-family:var(--thai);font-style:normal;font-weight:700;font-size:.9rem;color:var(--ink2);padding:5px 6px;border-radius:5px}
+  .rail i.on{background:var(--panel);box-shadow:inset 2px 0 var(--ink)}
+  .poster{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:end;padding-bottom:12px;border-bottom:1px solid var(--rule);margin-bottom:10px}
+  .sentence{font-family:var(--thai);font-weight:700;line-height:1.15;margin:0 0 4px}
+  .under{font-size:.78rem;color:var(--ink3)}.under .ipa{font-family:var(--mono);color:var(--ink2)}
+  .rec{display:inline-flex;align-items:center;gap:8px;background:#dc2626;color:#fff;border:0;border-radius:999px;padding:9px 16px;font:inherit;font-weight:600;font-size:.85rem;white-space:nowrap}
+  .rec i{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .panel{position:relative;background:#05070d;border-radius:10px;height:190px;overflow:hidden;font-family:var(--mono);color:#94a3b8;font-size:.58rem;margin-bottom:8px}
+  .panel .grid{position:absolute;left:34px;right:26px;top:10px;bottom:22px;border:1px solid rgba(226,232,240,.2)}
+  .panel .grid i{position:absolute;left:0;right:0;border-top:1px solid rgba(255,255,255,.08)}
+  .lbl{position:absolute;left:44px;top:14px;color:#e8edf5;font-family:var(--ui);font-size:.7rem;font-weight:600}
+  .band{position:absolute;height:16px;border-radius:8px;opacity:.5}
+  .band.low{background:var(--low)}.band.mid{background:var(--mid)}.band.fall{background:var(--fall)}.band.high{background:var(--high)}.band.rise{background:var(--rise)}
+  .ghost{position:absolute;height:0;border-top:2px dashed #fbbf24}
+  .slot{position:absolute;bottom:26px;background:rgba(0,0,0,.55);padding:0 4px;border-radius:3px;font-family:var(--thai);font-weight:700;font-size:.72rem}
+  .syl{position:absolute;top:34px;font-family:var(--thai);font-weight:700;font-size:1.55rem;line-height:1;text-shadow:0 2px 10px rgba(0,0,0,.95);transform:translateX(-50%)}
+  .syl.now{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:7px}
+  .syl.done{opacity:.45}
+  .count{position:absolute;right:30px;top:12px;font-family:var(--ui);font-weight:800;font-size:1.8rem;color:#fff;text-shadow:0 0 14px rgba(0,0,0,.8);line-height:1}
+  .count small{display:block;font-size:.55rem;font-weight:600;color:#cbd5e1;letter-spacing:.08em;text-transform:uppercase;text-align:right}
+  .spec{position:absolute;left:34px;right:26px;top:10px;bottom:22px;background-image:linear-gradient(90deg,transparent 0 8%,#f97316 8% 16%,transparent 16% 22%,#fbbf24 22% 34%,transparent 34%);background-size:100% 55%;background-repeat:no-repeat;background-position:0 62%;opacity:.85}
+  .spec::after{content:"";position:absolute;inset:0;background:linear-gradient(#05070d,transparent 40%,transparent 60%,#05070d);opacity:.7}
+  .head{position:absolute;top:10px;bottom:22px;border-left:2px solid rgba(248,250,252,.9)}
+  .caption{font-size:.95rem;color:var(--ink2);margin:0 0 4px}
+  .caption .th{font-size:1.15rem}
+</style>
+<body>
+<h1>Long sentences — where the eye reads them</h1>
+<p class="sub">The problem, in one sentence: <span class="th">ผมพูดภาษาไทยได้นิดหน่อย</span> wraps to three lines at the top, and during the count-in you cannot read the top and watch the panel at once. Three answers, each shown idle (left) and mid-take (right), with the rail in place. All three also widen the page on large screens (1080 → 1320 px) so the panels get more time per pixel.</p>
+
+<!-- A -->
+<section class="opt">
+  <h2>A — the panel takes over during the take</h2>
+  <p class="why">Idle: the sentence is big at the top, fitted to <em>one line</em> (the type scales down for long sentences instead of wrapping). Count-in and recording: the top line drops to a small caption and the You panel shows the syllables large over their slots, with the native dashed line under them; the syllable at the playhead lights up. One reading place at a time, never two.</p>
+  <div class="pair">
+    <div><p class="cap">idle</p>
+      <div class="screen"><div>
+        <div class="poster"><div><p class="sentence" style="font-size:2rem"><span class="rise">ผม</span> <span class="fall">พูด</span> <span class="mid">ภา</span><span class="rise">ษา</span><span class="mid">ไทย</span> <span class="fall">ได้</span> <span class="high">นิด</span><span class="low">หน่อย</span></p><div class="under"><span class="ipa">/pʰǒm pʰûːt pʰaː.sǎː.tʰaj dâj nít.nɔ̀j/</span> · I speak a little Thai.</div></div><button class="rec"><i></i>Record</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span>
+          <span class="band rise" style="left:10%;width:9%;top:110px;transform:rotate(-30deg)"></span><span class="band fall" style="left:20%;width:9%;top:90px;transform:rotate(40deg)"></span><span class="band mid" style="left:30%;width:8%;top:96px"></span><span class="band rise" style="left:39%;width:8%;top:112px;transform:rotate(-28deg)"></span><span class="band mid" style="left:48%;width:9%;top:96px"></span><span class="band fall" style="left:58%;width:8%;top:92px;transform:rotate(42deg)"></span><span class="band high" style="left:67%;width:9%;top:80px;transform:rotate(-12deg)"></span><span class="band low" style="left:77%;width:10%;top:118px;transform:rotate(-8deg)"></span>
+          <span class="slot rise" style="left:12%">ผม</span><span class="slot fall" style="left:22%">พูด</span><span class="slot mid" style="left:32%">ภา</span><span class="slot rise" style="left:41%">ษา</span><span class="slot mid" style="left:50%">ไทย</span><span class="slot fall" style="left:60%">ได้</span><span class="slot high" style="left:69%">นิด</span><span class="slot low" style="left:78%">หน่อย</span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+    <div><p class="cap">count-in / recording</p>
+      <div class="screen"><div>
+        <div class="poster"><div><p class="caption"><span class="th"><span class="rise">ผม</span><span class="fall">พูด</span><span class="mid">ภา</span><span class="rise">ษา</span><span class="mid">ไทย</span><span class="fall">ได้</span><span class="high">นิด</span><span class="low">หน่อย</span></span> · I speak a little Thai.</p></div><button class="rec" style="background:var(--ink)"><i style="border-radius:2px;box-shadow:none"></i>Stop</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span><span class="spec" style="right:60%"></span>
+          <span class="ghost" style="left:10%;width:9%;top:118px;transform:rotate(-30deg)"></span><span class="ghost" style="left:20%;width:9%;top:98px;transform:rotate(40deg)"></span><span class="ghost" style="left:30%;width:8%;top:104px"></span><span class="ghost" style="left:39%;width:8%;top:120px;transform:rotate(-28deg)"></span><span class="ghost" style="left:48%;width:9%;top:104px"></span><span class="ghost" style="left:58%;width:8%;top:100px;transform:rotate(42deg)"></span><span class="ghost" style="left:67%;width:9%;top:88px;transform:rotate(-12deg)"></span><span class="ghost" style="left:77%;width:10%;top:126px;transform:rotate(-8deg)"></span>
+          <span class="syl done rise" style="left:14.5%">ผม</span><span class="syl done fall" style="left:24.5%">พูด</span><span class="syl now mid" style="left:34%">ภา</span><span class="syl rise" style="left:43%">ษา</span><span class="syl mid" style="left:52.5%">ไทย</span><span class="syl fall" style="left:62%">ได้</span><span class="syl high" style="left:71.5%">นิด</span><span class="syl low" style="left:82%">หน่อย</span>
+          <span class="head" style="left:36%"></span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+  </div>
+</section>
+
+<!-- B -->
+<section class="opt">
+  <h2>B — the sentence lives in the panel, always</h2>
+  <p class="why">The top keeps only the IPA, the meaning and the button — no big sentence there at all. The You panel carries the syllables over their slots at all times: before the take as the thing to read (with the native dashed line as the target), during it lit by the playhead, after it above your spectrogram. The sentence appears exactly once, next to the glides it describes. The native panel keeps its small labels.</p>
+  <div class="pair">
+    <div><p class="cap">idle</p>
+      <div class="screen"><div>
+        <div class="poster"><div><div class="under" style="font-size:.95rem;color:var(--ink)">I speak a little Thai.</div><div class="under"><span class="ipa">/pʰǒm pʰûːt pʰaː.sǎː.tʰaj dâj nít.nɔ̀j/</span> · tap a syllable in the panel to hear it</div></div><button class="rec"><i></i>Record</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel" style="height:220px"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span>
+          <span class="syl rise" style="left:14.5%;font-size:1.8rem">ผม</span><span class="syl fall" style="left:24.5%;font-size:1.8rem">พูด</span><span class="syl mid" style="left:34%;font-size:1.8rem">ภา</span><span class="syl rise" style="left:43%;font-size:1.8rem">ษา</span><span class="syl mid" style="left:52.5%;font-size:1.8rem">ไทย</span><span class="syl fall" style="left:62%;font-size:1.8rem">ได้</span><span class="syl high" style="left:71.5%;font-size:1.8rem">นิด</span><span class="syl low" style="left:82%;font-size:1.8rem">หน่อย</span>
+          <span class="ghost" style="left:10%;width:9%;top:138px;transform:rotate(-30deg)"></span><span class="ghost" style="left:20%;width:9%;top:118px;transform:rotate(40deg)"></span><span class="ghost" style="left:30%;width:8%;top:124px"></span><span class="ghost" style="left:39%;width:8%;top:140px;transform:rotate(-28deg)"></span><span class="ghost" style="left:48%;width:9%;top:124px"></span><span class="ghost" style="left:58%;width:8%;top:120px;transform:rotate(42deg)"></span><span class="ghost" style="left:67%;width:9%;top:108px;transform:rotate(-12deg)"></span><span class="ghost" style="left:77%;width:10%;top:146px;transform:rotate(-8deg)"></span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+    <div><p class="cap">count-in / recording</p>
+      <div class="screen"><div>
+        <div class="poster"><div><div class="under" style="font-size:.95rem;color:var(--ink)">I speak a little Thai.</div><div class="under"><span class="ipa">/pʰǒm pʰûːt pʰaː.sǎː.tʰaj dâj nít.nɔ̀j/</span></div></div><button class="rec" style="background:var(--ink)"><i style="border-radius:2px;box-shadow:none"></i>Stop</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel" style="height:220px"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span><span class="spec" style="right:60%;top:60px"></span>
+          <span class="syl done rise" style="left:14.5%;font-size:1.8rem">ผม</span><span class="syl done fall" style="left:24.5%;font-size:1.8rem">พูด</span><span class="syl now mid" style="left:34%;font-size:1.8rem">ภา</span><span class="syl rise" style="left:43%;font-size:1.8rem">ษา</span><span class="syl mid" style="left:52.5%;font-size:1.8rem">ไทย</span><span class="syl fall" style="left:62%;font-size:1.8rem">ได้</span><span class="syl high" style="left:71.5%;font-size:1.8rem">นิด</span><span class="syl low" style="left:82%;font-size:1.8rem">หน่อย</span>
+          <span class="ghost" style="left:10%;width:9%;top:138px;transform:rotate(-30deg)"></span><span class="ghost" style="left:20%;width:9%;top:118px;transform:rotate(40deg)"></span><span class="ghost" style="left:30%;width:8%;top:124px"></span><span class="ghost" style="left:39%;width:8%;top:140px;transform:rotate(-28deg)"></span><span class="ghost" style="left:48%;width:9%;top:124px"></span><span class="ghost" style="left:58%;width:8%;top:120px;transform:rotate(42deg)"></span><span class="ghost" style="left:67%;width:9%;top:108px;transform:rotate(-12deg)"></span><span class="ghost" style="left:77%;width:10%;top:146px;transform:rotate(-8deg)"></span>
+          <span class="head" style="left:36%"></span><span class="count"><small>ready</small>2</span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+  </div>
+</section>
+
+<!-- C -->
+<section class="opt">
+  <h2>C — keep both, make the top fit one line</h2>
+  <p class="why">Smallest change: the sentence stays at the top but scales to a single line (the long one becomes about 2 rem instead of 3.4); the page widens on large screens; the You panel adds the native dashed line and a small count in its corner. Nothing moves during the take, so the eye still travels between the top line and the panel — shorter travel than today, not none.</p>
+  <div class="pair">
+    <div><p class="cap">idle</p>
+      <div class="screen"><div>
+        <div class="poster"><div><p class="sentence" style="font-size:2rem"><span class="rise">ผม</span> <span class="fall">พูด</span> <span class="mid">ภา</span><span class="rise">ษา</span><span class="mid">ไทย</span> <span class="fall">ได้</span> <span class="high">นิด</span><span class="low">หน่อย</span></p><div class="under"><span class="ipa">/pʰǒm pʰûːt pʰaː.sǎː.tʰaj dâj nít.nɔ̀j/</span> · I speak a little Thai.</div></div><button class="rec"><i></i>Record</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span>
+          <span class="ghost" style="left:10%;width:9%;top:118px;transform:rotate(-30deg)"></span><span class="ghost" style="left:20%;width:9%;top:98px;transform:rotate(40deg)"></span><span class="ghost" style="left:30%;width:8%;top:104px"></span><span class="ghost" style="left:39%;width:8%;top:120px;transform:rotate(-28deg)"></span><span class="ghost" style="left:48%;width:9%;top:104px"></span><span class="ghost" style="left:58%;width:8%;top:100px;transform:rotate(42deg)"></span><span class="ghost" style="left:67%;width:9%;top:88px;transform:rotate(-12deg)"></span><span class="ghost" style="left:77%;width:10%;top:126px;transform:rotate(-8deg)"></span>
+          <span class="slot rise" style="left:12%">ผม</span><span class="slot fall" style="left:22%">พูด</span><span class="slot mid" style="left:32%">ภา</span><span class="slot rise" style="left:41%">ษา</span><span class="slot mid" style="left:50%">ไทย</span><span class="slot fall" style="left:60%">ได้</span><span class="slot high" style="left:69%">นิด</span><span class="slot low" style="left:78%">หน่อย</span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+    <div><p class="cap">count-in / recording</p>
+      <div class="screen"><div>
+        <div class="poster"><div><p class="sentence" style="font-size:2rem"><span class="rise">ผม</span> <span class="fall">พูด</span> <span class="mid">ภา</span><span class="rise">ษา</span><span class="mid">ไทย</span> <span class="fall">ได้</span> <span class="high">นิด</span><span class="low">หน่อย</span></p><div class="under"><span class="ipa">/pʰǒm pʰûːt pʰaː.sǎː.tʰaj dâj nít.nɔ̀j/</span> · I speak a little Thai.</div></div><button class="rec" style="background:var(--ink)"><i style="border-radius:2px;box-shadow:none"></i>Stop</button></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">Native · Google Translate</span><span class="spec"></span></div>
+        <div class="panel"><div class="grid"><i style="top:33%"></i><i style="top:66%"></i></div><span class="lbl">You</span><span class="spec" style="right:60%"></span>
+          <span class="ghost" style="left:10%;width:9%;top:118px;transform:rotate(-30deg)"></span><span class="ghost" style="left:20%;width:9%;top:98px;transform:rotate(40deg)"></span><span class="ghost" style="left:30%;width:8%;top:104px"></span><span class="ghost" style="left:39%;width:8%;top:120px;transform:rotate(-28deg)"></span><span class="ghost" style="left:48%;width:9%;top:104px"></span><span class="ghost" style="left:58%;width:8%;top:100px;transform:rotate(42deg)"></span><span class="ghost" style="left:67%;width:9%;top:88px;transform:rotate(-12deg)"></span><span class="ghost" style="left:77%;width:10%;top:126px;transform:rotate(-8deg)"></span>
+          <span class="slot rise" style="left:12%">ผม</span><span class="slot fall" style="left:22%">พูด</span><span class="slot mid" style="left:32%">ภา</span><span class="slot rise" style="left:41%">ษา</span><span class="slot mid" style="left:50%">ไทย</span><span class="slot fall" style="left:60%">ได้</span><span class="slot high" style="left:69%">นิด</span><span class="slot low" style="left:78%">หน่อย</span>
+          <span class="head" style="left:36%"></span><span class="count"><small>ready</small>2</span></div>
+      </div><div class="rail"><b>Sentences</b><i>สวัสดีครับ</i><i>ขอบคุณมากครับ</i><i class="on">ผมพูดภาษาไทย…</i><i>ไม่เป็นไร</i></div></div></div>
+  </div>
+</section>
+</body></html>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase, type PhraseGroup } from '../data/phrases';
 import {
   CUSTOM_GROUP,
@@ -55,6 +55,10 @@ type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
 type Playing = 'native' | 'you' | null;
 
 const BUILT_IN = PHRASE_GROUPS.flatMap(g => g.phrases);
+/** The sentence's type size at the top of the page, in rem: full size for a
+ *  short sentence, scaled down as far as this to keep a long one on one line. */
+const SENTENCE_MAX_REM = 3.4;
+const SENTENCE_MIN_REM = 1.5;
 const TONE_CYCLE: ToneName[] = ['Mid', 'Low', 'Falling', 'High', 'Rising'];
 const LAST_PHRASE_KEY = 'speaking.phrase';
 
@@ -433,6 +437,7 @@ export function SpeakingTab() {
             }))
           : null,
         elapsedMs: null,
+        prompter: false,
       };
     } else if (handle) {
       const voiced = frames.filter(f => f.hz !== null);
@@ -440,6 +445,7 @@ export function SpeakingTab() {
         ...youScope.current,
         segments: voiced.length >= 8 ? buildSegments(frames, registerHz(frames)) : [],
         elapsedMs: null,
+        prompter: false,
       };
     }
     redraw();
@@ -465,11 +471,17 @@ export function SpeakingTab() {
       if (referenceRef.current?.phraseId !== reference.phraseId) return;
     }
     const windowMs = windowFor(referenceRef.current);
+    const target = referenceRef.current;
     youScope.current = {
       ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current),
       originMs: 0,
-      syllables: referenceRef.current?.syllables ?? null,
+      syllables: target?.syllables ?? null,
       showTextbook: textbookRef.current,
+      // The native pitch and the sentence are on the panel before the first
+      // sound: both time axes start at zero, so the reference's own timing
+      // is this panel's timing until the take is fitted afterwards.
+      ghost: target ? buildSegments(target.frames, registerHz(target.frames)) : null,
+      prompter: !!target?.syllables,
     };
     redraw();
 
@@ -695,11 +707,37 @@ function PracticePanel({
   showTextbook: boolean;
   onToggleTextbook: () => void;
 }) {
+  const speaking = status === 'listening' || status === 'counting' || status === 'recording';
+  const sentenceRef = useRef<HTMLParagraphElement | null>(null);
+  // The sentence is one line however long it is: the type is scaled down
+  // from its full size until it fits the column. Re-run on resize and when
+  // the sentence or the layout mode changes.
+  useLayoutEffect(() => {
+    const el = sentenceRef.current;
+    if (!el) return;
+    const fit = () => {
+      if (speaking) {
+        el.style.fontSize = '';
+        return;
+      }
+      el.style.fontSize = `${SENTENCE_MAX_REM}rem`;
+      const available = el.clientWidth;
+      const needed = el.scrollWidth;
+      if (needed > available && needed > 0) {
+        el.style.fontSize = `${Math.max(SENTENCE_MIN_REM, (SENTENCE_MAX_REM * available) / needed - 0.05)}rem`;
+      }
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el.parentElement ?? el);
+    return () => observer.disconnect();
+  }, [phrase, speaking]);
+
   return (
     <div className={styles.panel}>
-      <header className={styles.poster}>
-        <div>
-          <p className={styles.sentence}>
+      <header className={`${styles.poster} ${speaking ? styles.posterLive : ''}`}>
+        <div className={styles.posterText}>
+          <p className={styles.sentence} ref={sentenceRef}>
             {phrase.words.map((word, i) => (
               <button
                 key={i}
@@ -717,7 +755,7 @@ function PracticePanel({
           <div className={styles.under}>
             {ipaOf(phrase).trim() && <span className={styles.posterIpa}>/{ipaOf(phrase)}/</span>}
             <span className={styles.gloss}>{phrase.meaning}</span>
-            <span className={styles.tap}>· tap a word to hear it</span>
+            {!speaking && <span className={styles.tap}>· tap a word to hear it</span>}
           </div>
         </div>
         <div className={styles.act}>

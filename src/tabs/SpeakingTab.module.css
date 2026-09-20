@@ -10,9 +10,11 @@
   border-bottom: 1px solid var(--rule);
   margin-bottom: 22px;
 }
+.posterText { min-width: 0; }
 .sentence {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 0 0.3em;
   margin: 0 0 6px;
   font-family: var(--thai-font);
@@ -20,6 +22,15 @@
   font-weight: 700;
   line-height: 1.15;
 }
+/* While the learner is listening, counted in or recording, the sentence is
+   read inside the panel; up here it shrinks to a caption so it is not shown
+   twice at size. */
+.posterLive { align-items: center; padding-bottom: 12px; margin-bottom: 12px; }
+.posterLive .sentence { font-size: 1.2rem !important; margin: 0; display: inline-flex; gap: 0 0.2em; }
+.posterLive .posterText { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; }
+.posterLive .under { display: contents; }
+.posterLive .posterIpa { display: none; }
+.posterLive .keys { display: none; }
 .wordBtn {
   border: 0;
   background: none;
@@ -246,7 +257,7 @@
 @media (max-width: 600px) {
   .poster { grid-template-columns: 1fr; }
   .act { align-items: flex-start; }
-  .sentence { font-size: 2.4rem; }
+  .sentence { flex-wrap: wrap; white-space: normal; font-size: 2.2rem !important; }
 }
 
 /* ===== SCOPE TOOLS ===== */
