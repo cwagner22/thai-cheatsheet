@@ -1,5 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase } from '../data/phrases';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase, type PhraseGroup } from '../data/phrases';
+import {
+  CUSTOM_GROUP,
+  buildCustom,
+  draftOf,
+  draftSyllables,
+  isCustom,
+  loadCustom,
+  saveCustom,
+  toneFromSpelling,
+  type CustomDraft,
+} from '../lib/customPhrases';
+import type { ToneName } from '../lib/toneLookup';
 import { TONE_COLOR } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
 import { SPEECH_SHARE } from '../lib/align';
@@ -7,8 +19,8 @@ import {
   buildSegments,
   compareToReference,
   registerHz,
+  syllableTone,
   textbookMismatches,
-  toneOf,
   type Comparison,
   type SyllableVerdict,
 } from '../lib/contour';
@@ -42,7 +54,8 @@ type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
 /** Which panel a playhead is running across, if any. */
 type Playing = 'native' | 'you' | null;
 
-const ALL_PHRASES = PHRASE_GROUPS.flatMap(g => g.phrases);
+const BUILT_IN = PHRASE_GROUPS.flatMap(g => g.phrases);
+const TONE_CYCLE: ToneName[] = ['Mid', 'Low', 'Falling', 'High', 'Rising'];
 const LAST_PHRASE_KEY = 'speaking.phrase';
 
 const NATIVE_LABEL = 'Native · Google Translate';
@@ -53,7 +66,11 @@ function emptyScope(windowMs: number, label: string, emptyText: string, gain: nu
 }
 
 export function SpeakingTab() {
+  const [custom, setCustom] = useState<Phrase[]>(() => loadCustom());
+  const all = useMemo(() => [...BUILT_IN, ...custom], [custom]);
+  const [editing, setEditing] = useState<{ id: string | null; draft: CustomDraft } | null>(null);
   const [phrase, setPhrase] = useState<Phrase>(() => {
+    const known = [...BUILT_IN, ...loadCustom()];
     let wanted = readRoute().sub;
     if (!wanted) {
       try {
@@ -62,7 +79,7 @@ export function SpeakingTab() {
         wanted = undefined;
       }
     }
-    return ALL_PHRASES.find(p => p.id === wanted) ?? ALL_PHRASES[0];
+    return known.find(p => p.id === wanted) ?? known[0];
   });
   // The address carries the tab only; the sentence is remembered here so a
   // reload lands on it without a URL to trim.
@@ -74,28 +91,56 @@ export function SpeakingTab() {
       // Storage may be unavailable; the sentence is simply not remembered.
     }
   }, [phrase]);
-  const pick = useCallback((id: string) => {
-    const next = ALL_PHRASES.find(p => p.id === id);
-    if (next) setPhrase(current => (current.id === next.id ? current : next));
-  }, []);
+  const pick = useCallback(
+    (id: string) => {
+      const next = all.find(p => p.id === id);
+      if (next) setPhrase(current => (current.id === next.id ? current : next));
+    },
+    [all],
+  );
   /** Moves to the neighbouring sentence, wrapping at the ends. */
   const step = useCallback(
     (delta: number) => {
-      const i = ALL_PHRASES.findIndex(p => p.id === phrase.id);
-      setPhrase(ALL_PHRASES[(i + delta + ALL_PHRASES.length) % ALL_PHRASES.length]);
+      const i = all.findIndex(p => p.id === phrase.id);
+      setPhrase(all[(i + delta + all.length) % all.length]);
     },
-    [phrase],
+    [all, phrase],
   );
+
+  /** Saves the sentence being edited. An edited sentence gets a new id, so
+   *  anything cached under the old one — the native voice, the last take —
+   *  is simply left behind. */
+  const saveEdit = useCallback(
+    (draft: CustomDraft) => {
+      if (!editing) return;
+      const built = buildCustom(draft);
+      if (!built) return;
+      const next = editing.id ? custom.map(p => (p.id === editing.id ? built : p)) : [...custom, built];
+      setCustom(next);
+      saveCustom(next);
+      setEditing(null);
+      setPhrase(built);
+    },
+    [editing, custom],
+  );
+  const deleteEdit = useCallback(() => {
+    if (!editing?.id) return;
+    const next = custom.filter(p => p.id !== editing.id);
+    setCustom(next);
+    saveCustom(next);
+    setEditing(null);
+    if (phrase.id === editing.id) setPhrase(BUILT_IN[0]);
+  }, [editing, custom, phrase]);
   // A hash typed or pasted while the tab is open selects that sentence.
   useEffect(() => {
     const onHash = () => {
       const wanted = readRoute().sub;
-      const next = ALL_PHRASES.find(p => p.id === wanted);
+      const next = all.find(p => p.id === wanted);
       if (next) setPhrase(current => (current.id === next.id ? current : next));
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+  }, [all]);
   const [status, setStatus] = useState<Status>('idle');
   const [refStatus, setRefStatus] = useState<ReferenceStatus>('none');
   const [countIn, setCountIn] = useState(COUNT_IN_STEPS);
@@ -550,7 +595,8 @@ export function SpeakingTab() {
   };
 
   return (
-    <div id="tab-speaking">
+    <div id="tab-speaking" className={styles.page}>
+      <div className={styles.work}>
       <PracticePanel
         phrase={phrase}
         status={status}
@@ -565,8 +611,6 @@ export function SpeakingTab() {
         revision={revision}
         heard={heard}
         mismatches={mismatches}
-        onPick={pick}
-        onStep={step}
         live={live || playing === 'you'}
         nativeLive={refStatus === 'loading' || refStatus === 'playing' || playing === 'native'}
         busy={busy}
@@ -581,18 +625,18 @@ export function SpeakingTab() {
         onToggleTextbook={onToggleTextbook}
       />
 
-      <section className={styles.lib} aria-label="Sentences">
-        <h2 className={styles.libTitle}>Sentences</h2>
-        <p className={styles.libLead}>Pick one; the native voice loads on its own.</p>
-        {PHRASE_GROUPS.map(group => (
-          <div key={group.id}>
-            <h3 className={styles.libGroup} title={group.blurb}>{group.title}</h3>
-            {group.phrases.map(p => (
-              <PhraseRow key={p.id} phrase={p} selected={p.id === phrase.id} onSelect={() => setPhrase(p)} />
-            ))}
-          </div>
-        ))}
-      </section>
+      </div>
+      <SentenceRail
+        groups={[...PHRASE_GROUPS, { ...CUSTOM_GROUP, phrases: custom }]}
+        currentId={phrase.id}
+        editing={editing}
+        onPick={pick}
+        onAdd={() => setEditing({ id: null, draft: { thai: '', meaning: '', ipa: '', tones: {} } })}
+        onEdit={p => setEditing({ id: p.id, draft: draftOf(p) })}
+        onSave={saveEdit}
+        onDelete={deleteEdit}
+        onCancel={() => setEditing(null)}
+      />
     </div>
   );
 }
@@ -615,8 +659,6 @@ function PracticePanel({
   playing,
   heard,
   mismatches,
-  onPick,
-  onStep,
   onListen,
   onListenToTake,
   onRecord,
@@ -644,8 +686,6 @@ function PracticePanel({
   heard: boolean;
   /** Native syllables whose movement contradicts their tone's direction. */
   mismatches: string[];
-  onPick: (id: string) => void;
-  onStep: (delta: number) => void;
   onListen: () => void;
   onListenToTake: () => void;
   onRecord: () => void;
@@ -659,25 +699,6 @@ function PracticePanel({
     <div className={styles.panel}>
       <header className={styles.poster}>
         <div>
-          <div className={styles.switcher}>
-            <button type="button" className={styles.stepBtn} onClick={() => onStep(-1)} disabled={busy} aria-label="Previous sentence">‹</button>
-            <select
-              className={styles.sentenceSelect}
-              value={phrase.id}
-              onChange={e => onPick(e.target.value)}
-              disabled={busy}
-              aria-label="Sentence"
-            >
-              {PHRASE_GROUPS.map(group => (
-                <optgroup key={group.id} label={group.title}>
-                  {group.phrases.map(p => (
-                    <option key={p.id} value={p.id}>{thaiOf(p)} — {p.meaning}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            <button type="button" className={styles.stepBtn} onClick={() => onStep(1)} disabled={busy} aria-label="Next sentence">›</button>
-          </div>
           <p className={styles.sentence}>
             {phrase.words.map((word, i) => (
               <button
@@ -688,13 +709,13 @@ function PracticePanel({
                 title={`/${ipaOfWord(word)}/ · ${word.gloss}`}
               >
                 {word.syllables.map((syl, j) => (
-                  <span key={j} style={{ color: TONE_COLOR[toneOf(syl.ipa)] }}>{syl.thai}</span>
+                  <span key={j} style={{ color: TONE_COLOR[syllableTone(syl)] }}>{syl.thai}</span>
                 ))}
               </button>
             ))}
           </p>
           <div className={styles.under}>
-            <span className={styles.posterIpa}>/{ipaOf(phrase)}/</span>
+            {ipaOf(phrase).trim() && <span className={styles.posterIpa}>/{ipaOf(phrase)}/</span>}
             <span className={styles.gloss}>{phrase.meaning}</span>
             <span className={styles.tap}>· tap a word to hear it</span>
           </div>
@@ -937,18 +958,124 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
   );
 }
 
-function PhraseRow({ phrase, selected, onSelect }: { phrase: Phrase; selected: boolean; onSelect: () => void }) {
+function SentenceRail({
+  groups, currentId, editing, onPick, onAdd, onEdit, onSave, onDelete, onCancel,
+}: {
+  groups: PhraseGroup[];
+  currentId: string;
+  editing: { id: string | null; draft: CustomDraft } | null;
+  onPick: (id: string) => void;
+  onAdd: () => void;
+  onEdit: (phrase: Phrase) => void;
+  onSave: (draft: CustomDraft) => void;
+  onDelete: () => void;
+  onCancel: () => void;
+}) {
   return (
-    <div className={`${styles.row} ${selected ? styles.rowOn : ''}`}>
-      <button type="button" className={styles.rowMain} onClick={onSelect} disabled={selected}>
-        <span className={styles.rowThai}>
-          {phrase.words.flatMap((w, i) => w.syllables.map((s, j) => (
-            <span key={`${i}-${j}`} style={{ color: TONE_COLOR[toneOf(s.ipa)] }}>{s.thai}</span>
-          )))}
-        </span>
-        <span className={styles.rowMeaning}>{phrase.meaning}</span>
-        <span className={styles.rowGo}>{selected ? 'Practising' : 'Practise →'}</span>
-      </button>
-    </div>
+    <aside className={styles.rail} aria-label="Sentences">
+      <div className={styles.railHead}>
+        <b>Sentences</b>
+        <span className={styles.railKeys}><kbd>←</kbd> <kbd>→</kbd></span>
+      </div>
+      {editing && <SentenceEditor key={editing.id ?? 'new'} initial={editing.draft} existing={!!editing.id} onSave={onSave} onDelete={onDelete} onCancel={onCancel} />}
+      {groups.map(group =>
+        group.phrases.length === 0 && group.id !== CUSTOM_GROUP.id ? null : (
+          <div key={group.id}>
+            <h3 className={styles.railGroup} title={group.blurb}>{group.title}</h3>
+            {group.phrases.map(p => (
+              <div key={p.id} className={`${styles.item} ${p.id === currentId ? styles.itemOn : ''}`}>
+                <button type="button" className={styles.itemMain} onClick={() => onPick(p.id)} aria-current={p.id === currentId ? 'true' : undefined}>
+                  <span className={styles.itemThai}>
+                    {p.words.flatMap((w, i) => w.syllables.map((s, j) => (
+                      <span key={`${i}-${j}`} style={{ color: TONE_COLOR[syllableTone(s)] }}>{s.thai}</span>
+                    )))}
+                  </span>
+                  <span className={styles.itemMeaning}>{p.meaning}</span>
+                </button>
+                {isCustom(p) && (
+                  <button type="button" className={styles.itemEdit} onClick={() => onEdit(p)} aria-label={`Edit ${thaiOf(p)}`}>✎</button>
+                )}
+              </div>
+            ))}
+            {group.id === CUSTOM_GROUP.id && !editing && (
+              <button type="button" className={styles.add} onClick={onAdd}>+ Add a sentence</button>
+            )}
+          </div>
+        ),
+      )}
+    </aside>
+  );
+}
+
+/** Thai with a space between syllables and a slash between words; the tone
+ *  of each syllable is read from its spelling and shown in colour, and a
+ *  tap on a syllable cycles it when the reading is wrong. */
+function SentenceEditor({ initial, existing, onSave, onDelete, onCancel }: {
+  initial: CustomDraft;
+  existing: boolean;
+  onSave: (draft: CustomDraft) => void;
+  onDelete: () => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState<CustomDraft>(initial);
+  const words = draftSyllables(draft.thai);
+  const flat = words.flat();
+  const cycle = (i: number) => {
+    const current = draft.tones[i] ?? toneFromSpelling(flat[i]);
+    const next = TONE_CYCLE[(TONE_CYCLE.indexOf(current) + 1) % TONE_CYCLE.length];
+    setDraft({ ...draft, tones: { ...draft.tones, [i]: next } });
+  };
+  let index = 0;
+  return (
+    <form
+      className={styles.editor}
+      onSubmit={e => {
+        e.preventDefault();
+        onSave(draft);
+      }}
+    >
+      <label>
+        Thai — a space between syllables, <code>/</code> between words
+        <input
+          className={styles.editorThai}
+          value={draft.thai}
+          onChange={e => setDraft({ ...draft, thai: e.target.value, tones: {} })}
+          placeholder="ไป ไหน / มา"
+          autoFocus
+          required
+        />
+      </label>
+      {flat.length > 0 && (
+        <p className={styles.preview}>
+          {words.map((word, w) => (
+            <span key={w} className={styles.previewWord}>
+              {word.map(syl => {
+                const i = index++;
+                const tone = draft.tones[i] ?? toneFromSpelling(syl);
+                return (
+                  <button type="button" key={i} className={styles.previewSyl} style={{ color: TONE_COLOR[tone] }} onClick={() => cycle(i)} title={`${tone} tone — tap to change`}>
+                    {syl}
+                  </button>
+                );
+              })}
+            </span>
+          ))}
+          <span className={styles.previewHint}>tap a syllable to change its tone</span>
+        </p>
+      )}
+      <label>
+        Meaning
+        <input value={draft.meaning} onChange={e => setDraft({ ...draft, meaning: e.target.value })} placeholder="Where have you been?" />
+      </label>
+      <label>
+        IPA <span className={styles.optional}>optional, one per syllable</span>
+        <input value={draft.ipa} onChange={e => setDraft({ ...draft, ipa: e.target.value })} placeholder="paj nǎj / maː" />
+      </label>
+      <div className={styles.editorRow}>
+        <button type="submit" className={styles.editorSave}>{existing ? 'Save' : 'Add'}</button>
+        <button type="button" className={styles.editorQuiet} onClick={onCancel}>Cancel</button>
+        {existing && <button type="button" className={`${styles.editorQuiet} ${styles.editorDelete}`} onClick={onDelete}>Delete</button>}
+      </div>
+    </form>
   );
 }

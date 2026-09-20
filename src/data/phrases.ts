@@ -9,11 +9,18 @@
  * vowels, ː for length, tone diacritic on the first vowel of a diphthong.
  */
 
+import type { ToneName } from '../lib/toneLookup';
+
 export interface PhraseSyllable {
   thai: string;
   /** One syllable, no slashes, no syllable dot — the dot is added when
-   *  syllables are joined back into a word's transcription. */
+   *  syllables are joined back into a word's transcription. Empty on a
+   *  learner's own sentence typed without IPA. */
   ipa: string;
+  /** Set only where the tone cannot be read from `ipa` — a learner's own
+   *  sentence, where it comes from the spelling or the learner's correction.
+   *  Built-in sentences carry the tone in the IPA diacritic alone. */
+  tone?: ToneName;
 }
 
 export interface PhraseWord {
@@ -50,7 +57,7 @@ export const ipaOf = (phrase: Phrase): string =>
   phrase.words.map(ipaOfWord).join(' ');
 
 export const ipaOfWord = (word: PhraseWord): string =>
-  word.syllables.map(s => s.ipa).join('.');
+  word.syllables.map(s => s.ipa).filter(Boolean).join('.');
 
 export const syllableCount = (phrase: Phrase): number =>
   phrase.words.reduce((n, w) => n + w.syllables.length, 0);

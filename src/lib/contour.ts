@@ -28,6 +28,9 @@ export function toneOf(ipa: string): ToneName {
   return 'Mid';
 }
 
+export const syllableTone = (syllable: { ipa: string; tone?: ToneName }): ToneName =>
+  syllable.tone ?? toneOf(syllable.ipa);
+
 export interface TrackPoint {
   ms: number;
   st: number;

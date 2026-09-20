@@ -13,7 +13,7 @@
 import type { Frame } from './capture';
 import type { Phrase } from '../data/phrases';
 import type { ToneName } from './toneLookup';
-import { toneOf } from './contour';
+import { syllableTone } from './contour';
 
 export interface SyllableSpec {
   thai: string;
@@ -49,7 +49,7 @@ export function syllableSpecs(phrase: Phrase): SyllableSpec[] {
   return flat.map((s, i) => ({
     thai: s.thai,
     ipa: s.ipa,
-    tone: toneOf(s.ipa),
+    tone: syllableTone(s),
     minor: isMinor(s.ipa),
     weight:
       (isLong(s.ipa) ? 1.5 : 1) *
