@@ -374,8 +374,10 @@ function draw(
   if (ghost) trace(ghost, GHOST_LINE, 2.2, [6, 4]);
   trace(segments, OWN_LINE, 2.5, []);
 
-  // --- playhead ---
-  if (elapsedMs !== null) {
+  // --- playhead: only over sound being played back. While recording the
+  // spectrogram filling in is the progress, and a marker running on the
+  // native voice's timing would invite the learner to chase it. ---
+  if (elapsedMs !== null && !data.prompter) {
     const px = Math.round(x(Math.min(elapsedMs, origin + windowMs))) + 0.5;
     ctx.strokeStyle = 'rgba(248,250,252,0.85)';
     ctx.lineWidth = 1.5;

@@ -899,7 +899,7 @@ function PracticePanel({
         <p className={styles.hintLine}>The native voice first — your recording starts right after.</p>
       )}
       {status === 'recording' && (
-        <p className={styles.hintLine}>Listening… say the sentence at your own pace; recording stops when you go quiet.</p>
+        <p className={styles.hintLine}>Recording — say it at your own pace; it stops when you go quiet.</p>
       )}
       {status === 'done' && <Report comparison={comparison} hasReference={refStatus === 'ready'} />}
       {status === 'done' && !busy && (
