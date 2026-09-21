@@ -4,17 +4,24 @@
  * Fluent Thai arrives as two or three stretches of voice for five syllables,
  * so the boundaries cannot be read off silences alone. They are found by a
  * small dynamic programme instead: each of the N−1 boundaries is placed at a
- * frame that is quiet (an energy dip), ideally unvoiced (a stop or a pause),
- * and not far from where the phrase's own syllable lengths say it should
- * fall. The native voice is a fixed recording, so this is computed once per
- * phrase and cached with it.
+ * frame that is quiet and dull (an energy dip with little above the first
+ * formant — a nasal, a glide, a stop), at a silence when the syllable's own
+ * onset calls for one, and not far from where the phrase's syllable lengths
+ * say it should fall. The native voice is a fixed recording, so this is
+ * computed once per phrase and cached with it.
+ *
+ * The syllables' tones are deliberately not a cue. In connected speech the
+ * voice realises a tone across the syllable boundary — a rising syllable
+ * dips and the rise lands on the next one, a falling syllable peaks and the
+ * fall lands on the next — so scoring each slot against its citation shape
+ * pulls every boundary a syllable late, onto the neighbour that happens to
+ * carry the glide.
  */
 
 import type { Frame } from './capture';
 import type { Phrase } from '../data/phrases';
 import type { ToneName } from './toneLookup';
-import { syllableTone, TONE_DIRECTION } from './contour';
-import { foldOctave, hzToSemitones, registerHz } from './pitch';
+import { syllableTone } from './contour';
 
 export interface SyllableSpec {
   thai: string;
@@ -24,6 +31,11 @@ export interface SyllableSpec {
   weight: number;
   /** A clipped, unstressed lead-in syllable (see isMinor). */
   minor: boolean;
+  /** The voice breaks before this syllable: its onset is voiceless — a
+   *  stop, an aspirate, a fricative, /h/ or the glottal stop — or the
+   *  syllable before it ends in a stop. A sonorant onset after a live
+   *  syllable runs straight on from the previous vowel, with no break. */
+  gapBefore: boolean;
 }
 
 export interface SyllableSpan extends SyllableSpec {
@@ -37,14 +49,22 @@ export interface SyllableSpan extends SyllableSpec {
 const bare = (ipa: string) => ipa.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 /** A syllable closed by a stop is cut off rather than allowed to ring. */
 const isDead = (ipa: string) => /[ptkʔ]$/.test(bare(ipa));
-const isLong = (ipa: string) => ipa.includes('ː');
+/** Thai's diphthongs เอีย /ia/, เอือ /ɯa/ and อัว /ua/ are long vowels
+ *  however they are written; everything else is long only with /ː/. */
+const isLong = (ipa: string) => ipa.includes('ː') || /ia|ɯa|ua|iə|ɯə|uə/.test(bare(ipa));
+/** Voiceless onsets, including the affricate /tɕ/ and the aspirates and
+ *  clusters that begin with /k t p/. Voiced stops /b d/ and the sonorants
+ *  keep the voice running into the syllable. */
+const isVoicelessOnset = (ipa: string) => /^[ktpsfhʔ]/.test(bare(ipa));
 /** A short vowel with nothing after it — /sà/ in สวัสดี, /kà/ in กะทิ. Thai
  *  allows that shape only as an unstressed lead-in to the next syllable, so
  *  it is spoken as a clipped half-syllable, shorter even than a stopped one. */
 const isMinor = (ipa: string) => !isLong(ipa) && /[aeiouɛɔɤɯə]$/.test(bare(ipa));
 
 /** Relative lengths — a prior for where each boundary falls, which the
- *  energy term below corrects. */
+ *  energy term below corrects. A slot runs from one voicing onset to the
+ *  next, so a syllable closed by a stop is not shorter than an open one:
+ *  its slot holds the closure and whatever aspiration follows it. */
 export function syllableSpecs(phrase: Phrase): SyllableSpec[] {
   const flat = phrase.words.flatMap(w => w.syllables);
   return flat.map((s, i) => ({
@@ -52,11 +72,11 @@ export function syllableSpecs(phrase: Phrase): SyllableSpec[] {
     ipa: s.ipa,
     tone: syllableTone(s),
     minor: isMinor(s.ipa),
+    gapBefore: i > 0 && (isVoicelessOnset(s.ipa) || isDead(flat[i - 1].ipa)),
     weight:
       (isLong(s.ipa) ? 1.5 : 1) *
-      (isDead(s.ipa) ? 0.72 : 1) *
       (isMinor(s.ipa) ? 0.5 : 1) *
-      (i === flat.length - 1 ? 1.3 : 1),
+      (i === flat.length - 1 ? SEGMENT_WEIGHTS.final : 1),
   }));
 }
 
@@ -70,7 +90,8 @@ const MIN_SHARE_OF_EXPECTED = 0.5;
 /** Pull toward the expected position: a boundary an eighth of the phrase
  *  from where it belongs costs more than a full-depth energy dip saves. */
 const PROPORTION_WEIGHT = 25;
-/** Preference for the onset of voicing after a silence over a mere dip. */
+/** Preference for the onset of voicing after a silence over a mere dip,
+ *  for a boundary the phonology says should have one (see gapBefore). */
 const GAP_BONUS = 0.45;
 /** An unvoiced stretch at least this long is a silence: a stop, a pause, or
  *  the aspiration of a ค/ข/พ/ท onset. Shorter breaks are the detector losing
@@ -79,24 +100,38 @@ const GAP_MIN_MS = 40;
 /** Frames this close before a silence are a fade-out, not a boundary; the
  *  boundary is where the next syllable starts. */
 const FADE_MS = 60;
-/** Cost per semitone of a slot's contour disagreeing with its tone: a
- *  rising syllable whose slot falls, a low syllable whose slot sits above
- *  the register. The native voice is known-correct speech, so its tones are
- *  a prior on where the boundaries are that energy and proportions do not
- *  have — on eight syllables in 2.5 s they alone land every slot half a
- *  syllable early, on the transition into the next one. One object so a
- *  harness can re-weight it. */
+/** Every term is relative to the energy cost, which runs 0..1 from a
+ *  silent frame to the loudest voiced one. One object so a harness can
+ *  re-weight it (scripts/speaking-harness). */
 export const SEGMENT_WEIGHTS = {
-  tone: 0.3,
+  /** Preference for a boundary on a dull frame — one whose energy sits
+   *  below SPEECH_BAND_HZ (Frame.highShare, 0..1). A vowel keeps most of
+   *  its energy in the formants above; a nasal or a glide keeps it in the
+   *  murmur below. Loudness alone cannot find the start of a quiet
+   *  syllable such as ไม่ in ไม้ใหม่ไม่ไหม้ไหม, where the whole syllable is as
+   *  soft as the nasal before it. */
+  highShare: 1,
+  /** Cost of a silence falling inside a slot. No syllable contains one: a
+   *  silence is a stop closure, an aspiration or a pause, and the syllable
+   *  after it starts where the voice returns. Priced above a full-depth
+   *  energy dip so that skipping a gap is never the cheap way to lengthen
+   *  a slot. */
+  gapInside: 1,
+  /** Cost of placing a boundary at a silence its syllable does not call
+   *  for — a sonorant onset after a live syllable. The silence is then some
+   *  other boundary's, and taking it puts every slot between them one
+   *  syllable off. Soft: a speaker may pause anywhere. */
+  strayGap: 0.3,
+  /** How much longer the last syllable runs than its shape alone says.
+   *  Speech lengthens the final syllable of a phrase to nearly twice its
+   *  mid-phrase length; with the ceiling below, a smaller factor forbids
+   *  the true boundary and pushes the last two slots forward. */
+  final: 1.9,
   /** A syllable may not run longer than this share of its expected length.
-   *  Without a ceiling the tone term stretches one syllable across its
-   *  neighbours to capture a glide that suits it, leaving them a few frames
-   *  each. */
+   *  Without a ceiling one slot stretches across a neighbour whose energy
+   *  never dips, leaving it a few frames. */
   maxShare: 1.5,
 };
-/** A glide this size in the tone's direction is a full tone; less is
- *  penalised in proportion. Level tones may drift this much unpenalised. */
-const TONE_GLIDE_ST = 1.5;
 
 export function segmentReference(frames: Frame[], specs: SyllableSpec[]): SyllableSpan[] | null {
   const voiced = frames.flatMap((f, i) => (f.hz === null ? [] : [i]));
@@ -142,8 +177,11 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
   // ruled out. Interior voiced frames compete on energy alone.
   const INF = Number.POSITIVE_INFINITY;
   const local = new Float64Array(frames.length).fill(INF);
+  const gapOnset = new Uint8Array(frames.length);
   for (let i = i0; i <= i1; i++) {
-    if (frames[i].hz !== null) local[i] = energy[i] / peak;
+    if (frames[i].hz !== null) {
+      local[i] = energy[i] / peak + SEGMENT_WEIGHTS.highShare * (frames[i].highShare ?? 0);
+    }
   }
   let g = i0;
   while (g <= i1) {
@@ -157,37 +195,25 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
     if (gapMs >= GAP_MIN_MS) {
       for (let i = g; i <= end; i++) local[i] = INF;
       for (let i = g - 1; i >= i0 && frames[g].t - frames[i].t <= FADE_MS; i--) local[i] = INF;
-      if (end + 1 <= i1) local[end + 1] = -GAP_BONUS;
+      if (end + 1 <= i1) gapOnset[end + 1] = 1;
     }
     g = end + 1;
   }
+  // gapsBefore[i]: silences ending at a frame before i.
+  const gapsBefore = new Int32Array(frames.length + 1);
+  for (let i = 0; i < frames.length; i++) gapsBefore[i + 1] = gapsBefore[i] + gapOnset[i];
+  /** Silences ending strictly inside (j, i) — swallowed by one slot. */
+  const gapsInside = (j: number, i: number) => Math.max(0, gapsBefore[i] - gapsBefore[j + 1]);
 
   const cost = (i: number, k: number) => {
     if (local[i] === INF) return INF;
     const dev = (frames[i].t - expected(k)) / span;
-    return local[i] + PROPORTION_WEIGHT * dev * dev;
+    const own = gapOnset[i] ? (specs[k].gapBefore ? -GAP_BONUS : SEGMENT_WEIGHTS.strayGap) : local[i];
+    return own + PROPORTION_WEIGHT * dev * dev;
   };
 
-  // Pitch in semitones against the clip's own register, per voiced frame.
-  const register = registerHz(frames.flatMap(f => (f.hz === null ? [] : [f.hz])));
-  const st = frames.map(f => (f.hz === null ? null : hzToSemitones(foldOctave(f.hz, register), register)));
-  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  /** How badly the contour between frames j and i fits syllable k's tone. */
-  const toneCost = (k: number, j: number, i: number): number => {
-    const w = SEGMENT_WEIGHTS.tone;
-    if (w === 0) return 0;
-    const xs: number[] = [];
-    for (let f = j; f <= i; f++) if (st[f] !== null) xs.push(st[f] as number);
-    if (xs.length < 3) return 0;
-    const third = Math.max(1, Math.round(xs.length / 3));
-    const net = mean(xs.slice(-third)) - mean(xs.slice(0, third));
-    const dir = TONE_DIRECTION[specs[k].tone];
-    let bad = dir === 0 ? Math.max(0, Math.abs(net) - TONE_GLIDE_ST) : Math.max(0, TONE_GLIDE_ST - dir * net);
-    const level = mean(xs);
-    if (specs[k].tone === 'Low') bad += Math.max(0, level + 0.5);
-    if (specs[k].tone === 'High') bad += Math.max(0, 0.5 - level);
-    return w * bad;
-  };
+  /** Cost of the stretch j..i being one syllable: the silences it swallows. */
+  const slotCost = (j: number, i: number) => SEGMENT_WEIGHTS.gapInside * gapsInside(j, i);
 
   // best[k][i]: cheapest way to place boundaries 1..k with boundary k at
   // frame i. Boundaries are ordered and at least a syllable's minimum apart.
@@ -203,7 +229,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
       if (own === INF) continue;
       if (k === 1) {
         if (frames[i].t - t0 > maxLen(0)) continue;
-        best[0][i] = own + toneCost(0, i0, i);
+        best[0][i] = own + slotCost(i0, i);
         continue;
       }
       let bestPrev = INF;
@@ -213,7 +239,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
         if (frames[i].t - frames[j].t < minLen(k - 1)) break;
         if (frames[i].t - frames[j].t > maxLen(k - 1)) continue;
         if (best[k - 2][j] === INF) continue;
-        const total = best[k - 2][j] + toneCost(k - 1, j, i);
+        const total = best[k - 2][j] + slotCost(j, i);
         if (total < bestPrev) {
           bestPrev = total;
           bestJ = j;
@@ -231,7 +257,7 @@ export function segmentReference(frames: Frame[], specs: SyllableSpec[]): Syllab
   for (let i = i0; i <= i1; i++) {
     if (best[n - 2][i] === INF) continue;
     if (t1 - frames[i].t > maxLen(n - 1)) continue;
-    const total = best[n - 2][i] + toneCost(n - 1, i, i1);
+    const total = best[n - 2][i] + slotCost(i, i1 + 1);
     if (total < endCost) {
       endCost = total;
       endI = i;

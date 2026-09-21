@@ -22,6 +22,8 @@ export interface Frame {
    *  vowel formants of a voice against the low harmonics of a hum. Absent
    *  when the frames came without a spectrum. */
   highShare?: number;
+  /** The frame's spectral shape, see bandLevels. Absent without a spectrum. */
+  bands?: number[];
 }
 
 export interface SpectrumColumn {
@@ -48,6 +50,31 @@ export const SPEECH_BAND_HZ = 300;
  *  maxDecibels (−30); back to linear amplitude so the band shares are
  *  shares of energy, not of a log scale. */
 const byteToAmplitude = (b: number) => 10 ** ((b / 255) * 70 / 20 - 5);
+
+/** Edges of the coarse bands the alignment compares, in Hz: about a third
+ *  of an octave each from the first-formant region to the top of the
+ *  spectrogram, so a vowel's formants land in different bands from another
+ *  vowel's while a speaker's formants stay in the same ones. */
+export const BAND_EDGES_HZ = [150, 250, 400, 600, 850, 1150, 1500, 1900, 2400, 3000, 3500];
+
+/** The frame's spectral shape: mean energy per band in decibels with the
+ *  frame's own mean level taken out. Two frames of one vowel read alike
+ *  whether spoken softly or loudly, and two different vowels differ by
+ *  tens of decibels where their formants fall — which is what lets the
+ *  alignment match /iː/ to /iː/ inside a run of voice, where loudness and
+ *  pitch alone tell it nothing. */
+export function bandLevels(bytes: Uint8Array, binHz: number): number[] {
+  const levels: number[] = [];
+  for (let b = 0; b + 1 < BAND_EDGES_HZ.length; b++) {
+    const lo = Math.max(1, Math.round(BAND_EDGES_HZ[b] / binHz));
+    const hi = Math.max(lo + 1, Math.min(bytes.length, Math.round(BAND_EDGES_HZ[b + 1] / binHz)));
+    let sum = 0;
+    for (let k = lo; k < hi; k++) sum += byteToAmplitude(bytes[k]) ** 2;
+    levels.push(10 * Math.log10(sum / (hi - lo) + 1e-12));
+  }
+  const mean = levels.reduce((a, b) => a + b, 0) / levels.length;
+  return levels.map(v => v - mean);
+}
 
 export function highBandShare(bytes: Uint8Array, binHz: number): number {
   const lo = Math.max(1, Math.round(SPEECH_BAND_HZ / binHz));
@@ -164,6 +191,7 @@ export function startCapture(
       rms: level,
       clarity: pitch?.clarity ?? 0,
       highShare: highBandShare(spectrum, ctx.sampleRate / analyser.fftSize),
+      bands: bandLevels(spectrum, ctx.sampleRate / analyser.fftSize),
     });
     capture.frames = gateVoicing(candidates, gate);
     capture.spectra.push({ ms: elapsed, data: spectrum });

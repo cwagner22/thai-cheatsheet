@@ -33,6 +33,13 @@ export const ALIGN_WEIGHTS = {
   pitch: 0,
   voiced: 0.4,
   energy: 3.0,
+  /** Per decibel of mean difference between two voiced frames' spectral
+   *  shapes (Frame.bands). Inside one run of voice — เรากินเมื่อวานนี้ is a
+   *  second of it with no break — energy is nearly flat and the warp is
+   *  free to slide a syllable into its neighbour's slot; the vowels are
+   *  not flat, and /i/ against /a/ differs by ten decibels or more where
+   *  their formants sit, the same vowel by two or three. */
+  bands: 0.25,
 };
 
 /** Energy is compared in decibels, floored here: on a linear scale a quiet
@@ -44,6 +51,7 @@ interface Feat {
   st: number;
   voiced: number;
   energy: number;
+  bands: number[] | null;
 }
 
 /** A frame at least this loud, relative to the take's loudest, counts as
@@ -68,6 +76,7 @@ function features(frames: Frame[]): Feat[] | null {
     st: f.hz === null ? 0 : hzToSemitones(foldOctave(f.hz, ref), ref),
     voiced: f.hz === null ? 0 : 1,
     energy: Math.max(0, 1 - (20 * Math.log10(Math.max(f.rms, 1e-6) / peak)) / ENERGY_FLOOR_DB),
+    bands: f.bands ?? null,
   }));
 }
 
@@ -79,11 +88,22 @@ export function dtwAlign(reference: Frame[], learner: Frame[]): Warp | null {
   const m = b.length;
   const band = Math.max(3, Math.round(BAND * Math.min(n, m)));
 
-  const { pitch: wPitch, voiced: wVoiced, energy: wEnergy } = ALIGN_WEIGHTS;
+  const { pitch: wPitch, voiced: wVoiced, energy: wEnergy, bands: wBands } = ALIGN_WEIGHTS;
+  // Compared on every pair of frames, not only voiced ones: silence has a
+  // flat shape, a vowel a peaked one, so a voiced frame set against a
+  // silent one pays here too. Waived for unvoiced pairs, the cheapest path
+  // through a long vowel was to match it against the other take's silence.
+  const shapeGap = (x: Feat, y: Feat): number => {
+    if (!x.bands || !y.bands) return 0;
+    let sum = 0;
+    for (let b = 0; b < x.bands.length; b++) sum += Math.abs(x.bands[b] - y.bands[b]);
+    return sum / x.bands.length;
+  };
   const dist = (x: Feat, y: Feat) =>
     (x.voiced && y.voiced ? wPitch * Math.abs(x.st - y.st) : 0) +
     wVoiced * Math.abs(x.voiced - y.voiced) +
-    wEnergy * Math.abs(x.energy - y.energy);
+    wEnergy * Math.abs(x.energy - y.energy) +
+    wBands * shapeGap(x, y);
 
   const INF = Number.POSITIVE_INFINITY;
   const acc: Float64Array[] = Array.from({ length: n }, () => new Float64Array(m).fill(INF));

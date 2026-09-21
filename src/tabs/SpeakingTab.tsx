@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { PHRASE_GROUPS, ipaOf, ipaOfWord, thaiOf, thaiOfWord, type Phrase, type PhraseGroup } from '../data/phrases';
+import { PHRASE_GROUPS, ipaOfWord, thaiOf, thaiOfWord, type Phrase, type PhraseGroup } from '../data/phrases';
 import {
   CUSTOM_GROUP,
   buildCustom,
@@ -795,14 +795,19 @@ function PracticePanel({
           revision={revision}
           height={280}
           tools={
-            <button
-              type="button"
-              className={scopeStyles.tool}
-              onClick={() => speakThai(phrase.words.map(thaiOfWord), onSpokenWord)}
-              disabled={busy}
-            >
-              Word by word
-            </button>
+            <>
+              <button type="button" className={scopeStyles.tool} onClick={onListen} disabled={busy}>
+                {refStatus === 'loading' ? 'Fetching…' : refStatus === 'playing' || playing === 'native' ? 'Playing…' : '▶ Listen'}
+              </button>
+              <button
+                type="button"
+                className={scopeStyles.tool}
+                onClick={() => speakThai(phrase.words.map(thaiOfWord), onSpokenWord)}
+                disabled={busy}
+              >
+                Word by word
+              </button>
+            </>
           }
         />
 
@@ -858,14 +863,10 @@ function PracticePanel({
               </button>
             ))}
           </p>
-          {ipaOf(phrase).trim() && <p className={styles.posterIpa}>/{ipaOf(phrase)}/</p>}
           <p className={styles.gloss}>{phrase.meaning}</p>
         </div>
         <div className={styles.act}>
           <div className={styles.actRow}>
-          <button type="button" className={styles.listenBtn} onClick={onListen} disabled={busy}>
-            {refStatus === 'loading' ? 'Fetching…' : refStatus === 'playing' || playing === 'native' ? 'Playing…' : '▶ Listen'}
-          </button>
           {status === 'recording' ? (
             <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
               <span className={styles.recDot} />Stop
@@ -881,7 +882,7 @@ function PracticePanel({
                     ? 'Try again'
                     : heard
                       ? 'Record'
-                      : 'Listen, then record'}
+                      : 'Practice'}
             </button>
           )}
           </div>

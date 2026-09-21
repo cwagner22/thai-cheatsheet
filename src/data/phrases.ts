@@ -329,6 +329,163 @@ export const PHRASE_GROUPS: PhraseGroup[] = [
       },
     ],
   },
+  {
+    id: 'advanced',
+    title: 'Advanced sentences',
+    blurb:
+      'Full clauses — conditionals, comparisons, reasons — where a slipped ' +
+      'tone can hide inside a much longer run of syllables.',
+    phrases: [
+      {
+        id: 'thafontok',
+        meaning: "If it rains, I won't go.",
+        note: 'ถ้า ... จะ frames the condition and result with no comma needed between them.',
+        words: [
+          { gloss: 'if', syllables: [{ thai: 'ถ้า', ipa: 'tʰâː' }] },
+          { gloss: 'rain', syllables: [{ thai: 'ฝน', ipa: 'fǒn' }] },
+          { gloss: 'falls', syllables: [{ thai: 'ตก', ipa: 'tòk' }] },
+          { gloss: 'I (male)', syllables: [{ thai: 'ผม', ipa: 'pʰǒm' }] },
+          { gloss: 'will', syllables: [{ thai: 'จะ', ipa: 'tɕà' }] },
+          { gloss: 'not', syllables: [{ thai: 'ไม่', ipa: 'mâj' }] },
+          { gloss: 'go', syllables: [{ thai: 'ไป', ipa: 'paj' }] },
+        ],
+      },
+      {
+        id: 'ahanthaikwa',
+        meaning: 'I think Thai food is more delicious than Japanese food.',
+        note: 'กว่า "than" attaches straight onto the adjective — no separate word for "more".',
+        words: [
+          { gloss: 'I (male)', syllables: [{ thai: 'ผม', ipa: 'pʰǒm' }] },
+          {
+            gloss: 'think that',
+            syllables: [
+              { thai: 'คิด', ipa: 'kʰít' },
+              { thai: 'ว่า', ipa: 'wâː' },
+            ],
+          },
+          {
+            gloss: 'Thai food',
+            syllables: [
+              { thai: 'อา', ipa: 'ʔaː' },
+              { thai: 'หาร', ipa: 'hǎːn' },
+              { thai: 'ไทย', ipa: 'tʰaj' },
+            ],
+          },
+          {
+            gloss: 'more delicious',
+            syllables: [
+              { thai: 'อ', ipa: 'ʔà' },
+              { thai: 'ร่อย', ipa: 'rɔ̀j' },
+              { thai: 'กว่า', ipa: 'kwàː' },
+            ],
+          },
+          {
+            gloss: 'Japanese food',
+            syllables: [
+              { thai: 'อา', ipa: 'ʔaː' },
+              { thai: 'หาร', ipa: 'hǎːn' },
+              { thai: 'ญี่', ipa: 'jîː' },
+              { thai: 'ปุ่น', ipa: 'pùn' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'ranthiraokin',
+        meaning: 'The restaurant we ate at yesterday was really good.',
+        note: 'ที่ opens the relative clause right after the noun it modifies — no agreement to track.',
+        words: [
+          {
+            gloss: 'restaurant',
+            syllables: [
+              { thai: 'ร้าน', ipa: 'ráːn' },
+              { thai: 'อา', ipa: 'ʔaː' },
+              { thai: 'หาร', ipa: 'hǎːn' },
+            ],
+          },
+          { gloss: 'that / which', syllables: [{ thai: 'ที่', ipa: 'tʰîː' }] },
+          { gloss: 'we', syllables: [{ thai: 'เรา', ipa: 'raw' }] },
+          { gloss: 'ate', syllables: [{ thai: 'กิน', ipa: 'kin' }] },
+          {
+            gloss: 'yesterday',
+            syllables: [
+              { thai: 'เมื่อ', ipa: 'mɯ̂a' },
+              { thai: 'วาน', ipa: 'waːn' },
+              { thai: 'นี้', ipa: 'níː' },
+            ],
+          },
+          { gloss: 'was delicious', syllables: [{ thai: 'อ', ipa: 'ʔà' }, { thai: 'ร่อย', ipa: 'rɔ̀j' }] },
+          { gloss: 'very', syllables: [{ thai: 'มาก', ipa: 'mâːk' }] },
+        ],
+      },
+      {
+        id: 'rianphasathaiphro',
+        meaning: "I'm studying Thai because I want to work in Thailand.",
+        note: 'เพราะ "because" opens the reason clause directly, the same way it does in English.',
+        words: [
+          { gloss: 'I (male)', syllables: [{ thai: 'ผม', ipa: 'pʰǒm' }] },
+          {
+            gloss: 'study Thai',
+            syllables: [
+              { thai: 'เรียน', ipa: 'rian' },
+              { thai: 'ภา', ipa: 'pʰaː' },
+              { thai: 'ษา', ipa: 'sǎː' },
+              { thai: 'ไทย', ipa: 'tʰaj' },
+            ],
+          },
+          { gloss: 'because', syllables: [{ thai: 'เพราะ', ipa: 'pʰrɔ́' }] },
+          { gloss: 'want to', syllables: [{ thai: 'อยาก', ipa: 'jàːk' }] },
+          {
+            gloss: 'work',
+            syllables: [
+              { thai: 'ทำ', ipa: 'tʰam' },
+              { thai: 'งาน', ipa: 'ŋaːn' },
+            ],
+          },
+          {
+            gloss: 'in Thailand',
+            syllables: [
+              { thai: 'ที่', ipa: 'tʰîː' },
+              { thai: 'เมือง', ipa: 'mɯaŋ' },
+              { thai: 'ไทย', ipa: 'tʰaj' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'phothamngansret',
+        meaning: "As soon as I finish work, I'll go straight home.",
+        note: 'พอ ... เสร็จ marks the first clause as already complete — closer to "once X is done" than a literal "as soon as".',
+        words: [
+          { gloss: 'as soon as', syllables: [{ thai: 'พอ', ipa: 'pʰɔː' }] },
+          {
+            gloss: 'finish work',
+            syllables: [
+              { thai: 'ทำ', ipa: 'tʰam' },
+              { thai: 'งาน', ipa: 'ŋaːn' },
+              { thai: 'เสร็จ', ipa: 'sèt' },
+            ],
+          },
+          { gloss: 'I (male)', syllables: [{ thai: 'ผม', ipa: 'pʰǒm' }] },
+          { gloss: 'will', syllables: [{ thai: 'จะ', ipa: 'tɕà' }] },
+          {
+            gloss: 'go home',
+            syllables: [
+              { thai: 'กลับ', ipa: 'klàp' },
+              { thai: 'บ้าน', ipa: 'bâːn' },
+            ],
+          },
+          {
+            gloss: 'immediately',
+            syllables: [
+              { thai: 'ทัน', ipa: 'tʰan' },
+              { thai: 'ที', ipa: 'tʰiː' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export const ALL_PHRASES: Phrase[] = PHRASE_GROUPS.flatMap(g => g.phrases);
