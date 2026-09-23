@@ -149,11 +149,9 @@ const MIN_VOICED_FRAMES = 8;
 const MIN_SPEECH_SHARE = 0.3;
 /** Within this the learner sits at the native voice's level on a syllable. */
 const LEVEL_TOL_ST = 1.7;
-/** Below this the native voice is not really moving on a syllable, and no
- *  movement is asked of the learner either. */
-const MOVING_ST = 1.2;
-/** A glide the native voice makes must travel at least this far before a
- *  learner can be called flat against it; asking for a third of a
+/** A glide the native voice makes must travel at least this far to count
+ *  as shown — below it the band is hidden and the syllable not judged for
+ *  movement — and before a learner can be called flat against it; asking for a third of a
  *  two-semitone drift is asking for tenths, which alignment jitter decides. */
 const MIN_WANT_ST = 2.5;
 /** The learner's movement on a syllable, as a share of the native voice's,
@@ -281,6 +279,50 @@ function groupSlots(spans: SyllableSpan[], ref: number[][], lrn: TrackPoint[][])
   return groups;
 }
 
+/** How far a contour travelled down (−1) or up (+1), from the high side of
+ *  its first half to the low side of its second, or the reverse. A fall
+ *  that happens early and then holds is a full fall to the ear; averaged by
+ *  thirds it shrinks. The sides are trimmed percentiles rather than the
+ *  extremes, so a stray frame cannot make a swing. A rising tone's dip
+ *  before the rise sits in the first half and does not cancel the rise. */
+function travel(xs: number[], dir: -1 | 1): number {
+  const pct = (ys: number[], q: number) => {
+    const sorted = [...ys].sort((a, b) => a - b);
+    return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
+  };
+  const half = Math.max(1, xs.length >> 1);
+  const a = xs.slice(0, half);
+  const b = xs.slice(half);
+  const high = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.85) : Math.max(...ys));
+  const low = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.15) : Math.min(...ys));
+  return dir < 0 ? high(a) - low(b) : high(b) - low(a);
+}
+
+/** How far a contour tone's glide may run into the next syllable, at most,
+ *  and as a share of that syllable. Thai rising and falling tones finish
+ *  late: in ไหนมา the rise of ไหน happens across the /n.m/ nasal and ends
+ *  in มา's onset, so a slot cut at the consonant holds the dip without the
+ *  rise. */
+const SPILL_MS = 110;
+const SPILL_SHARE = 0.4;
+
+/** The stretch each syllable is judged on: its slot, extended into the next
+ *  syllable when its own tone glides, and started after the previous
+ *  syllable's spill when that one glided — so a level syllable is not
+ *  charged with its neighbour's rise. */
+export function judgingWindows(spans: SyllableSpan[]): { startMs: number; endMs: number }[] {
+  const spill = spans.map((span, k) => {
+    const next = spans[k + 1];
+    // A minor lead-in syllable carries no glide of its own to spill.
+    if (!next || span.minor || TONE_DIRECTION[span.tone] === 0) return 0;
+    return Math.min(SPILL_MS, SPILL_SHARE * (next.endMs - next.startMs));
+  });
+  return spans.map((span, k) => ({
+    startMs: span.startMs + (k > 0 ? spill[k - 1] : 0),
+    endMs: span.endMs + spill[k],
+  }));
+}
+
 function scoreSyllables(
   spans: SyllableSpan[],
   refPoints: TrackPoint[],
@@ -293,34 +335,23 @@ function scoreSyllables(
     const third = Math.max(1, Math.round(xs.length / 3));
     return mean(xs.slice(-third)) - mean(xs.slice(0, third));
   };
-  /** How far the pitch travelled down (−1) or up (+1) across the syllable,
-   *  from the high side of one half to the low side of the other. A fall
-   *  that happens early and then holds is a full fall to the ear; averaged
-   *  by thirds it shrinks. The sides are trimmed percentiles rather than
-   *  the extremes, so a stray frame cannot make a swing. */
-  const pct = (xs: number[], q: number) => {
-    const sorted = [...xs].sort((a, b) => a - b);
-    return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
-  };
-  const travel = (xs: number[], dir: -1 | 1) => {
-    const half = Math.max(1, xs.length >> 1);
-    const a = xs.slice(0, half);
-    const b = xs.slice(half);
-    const high = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.85) : Math.max(...ys));
-    const low = (ys: number[]) => (ys.length >= 4 ? pct(ys, 0.15) : Math.min(...ys));
-    return dir < 0 ? high(a) - low(b) : high(b) - low(a);
-  };
-  const within = (points: TrackPoint[], span: SyllableSpan) =>
+  const within = (points: TrackPoint[], span: { startMs: number; endMs: number }) =>
     points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs);
+  // A window that leaves a short syllable too few points to judge falls
+  // back to the bare slot: the spill is a refinement, not a reason to call
+  // a syllable missing.
+  const windows = judgingWindows(spans).map((w, k) =>
+    within(refPoints, w).length >= 3 && within(lrnPoints, w).length >= 3 ? w : spans[k],
+  );
 
   const afterOnset = (points: TrackPoint[]) => {
     const start = points[0]?.ms ?? 0;
     return points.filter(p => p.ms - start >= ONSET_MS);
   };
-  const ref = spans.map(span => within(refPoints, span).map(p => p.st));
-  const lrnPts = spans.map(span => within(lrnPoints, span));
-  const refSwing = spans.map(span => within(afterOnset(refPoints), span).map(p => p.st));
-  const lrnSwing = spans.map(span => within(afterOnset(lrnPoints), span).map(p => p.st));
+  const ref = windows.map(w => within(refPoints, w).map(p => p.st));
+  const lrnPts = windows.map(w => within(lrnPoints, w));
+  const refSwing = windows.map(w => within(afterOnset(refPoints), w).map(p => p.st));
+  const lrnSwing = windows.map(w => within(afterOnset(lrnPoints), w).map(p => p.st));
   const lrn = lrnPts.map(pts => pts.map(p => p.st));
 
   // One score per group, then one entry per syllable: a group's syllables
@@ -385,7 +416,6 @@ function scoreSyllables(
       };
     }
 
-    const { referenceNet } = base;
     // Swings are measured past the onset; glides the tone asks for, below,
     // on the whole slot.
     const swingable = lrnSw.length >= 3 && refSw.length >= 3;
@@ -414,11 +444,9 @@ function scoreSyllables(
           hint: `${span.thai} goes ${way}; yours goes the other way by about ${against.toFixed(0)} st${cue(span)}`,
         };
       }
-      const nativeShowsIt =
-        refSt.length >= MIN_GLIDE_POINTS && Math.sign(referenceNet) === taught && Math.abs(referenceNet) >= MOVING_ST;
-      if (nativeShowsIt) {
-        const want = travel(refSt, taught);
-        if (want >= MIN_WANT_ST && withIt < FLAT_SHARE * want) {
+      const want = refSt.length >= MIN_GLIDE_POINTS ? travel(refSt, taught) : 0;
+      if (want >= MIN_WANT_ST) {
+        if (withIt < FLAT_SHARE * want) {
           return {
             ...base, levelSt, verdict: 'flat' as const,
             hint: `the native pitch slides ${way} about ${want.toFixed(0)} st across ${span.thai}; yours moved ${withIt.toFixed(1)} st${cue(span)}`,
@@ -440,21 +468,18 @@ function scoreSyllables(
 /** Indices of native syllables on which the native voice does not make its
  *  tone's glide — a rising tone realised as a fall, a falling tone whose
  *  drop lands in a glottal stop after a high onset. Connected speech does
- *  this often. On those syllables the textbook band and the native line
- *  would disagree on screen, so the band is not drawn there and the
- *  read-out names them. */
+ *  this often, and the read-out names those syllables so the learner
+ *  knows why the line does not follow the tone glyph there. */
 export function textbookMismatches(reference: Frame[], syllables: SyllableSpan[]): number[] {
   const points = buildSegments(reference, registerHz(reference)).flat();
-  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const windows = judgingWindows(syllables);
   return syllables.flatMap((span, i) => {
     const taught = TONE_DIRECTION[span.tone];
     if (taught === 0) return [];
-    const st = points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs).map(p => p.st);
+    const w = windows[i];
+    const st = points.filter(p => p.ms >= w.startMs && p.ms <= w.endMs).map(p => p.st);
     if (st.length < 3) return [];
-    const third = Math.max(1, Math.round(st.length / 3));
-    const net = mean(st.slice(-third)) - mean(st.slice(0, third));
-    // Against the tone, or not gliding at all where the tone glides.
-    return Math.sign(net) !== taught || Math.abs(net) < MOVING_ST ? [i] : [];
+    return travel(st, taught) < MIN_WANT_ST ? [i] : [];
   });
 }
 
