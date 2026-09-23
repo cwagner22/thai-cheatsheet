@@ -190,7 +190,7 @@ export function interpolate(anchors: [number, number][]): (t: number) => number 
 /** A silence at least this long in a take, between stretches of speech, is
  *  a pause between words. Well above the closure of a stop (under 150 ms),
  *  well below the gap a learner leaves reading word by word. */
-const PAUSE_MS = 220;
+export const PAUSE_MS = 220;
 
 interface Stretch {
   startMs: number;
@@ -232,6 +232,21 @@ const NUCLEUS_MS = 50;
  *  ผม a stretch of its own and pushes every word after it one slot late. */
 const COUNT_COST = 0.6;
 
+/** Cost, per stretch, of the pace an assignment implies straying from the
+ *  native voice's: a take read in pieces says each piece at about the
+ *  native speed or slower. Without it, a take that stopped after ไทย can
+ *  be read as the whole sentence said at 0.6 times the native length, and
+ *  the last stretch is handed ได้ นิด หน่อย along with ไทย. */
+const PACE_COST = 1;
+
+/** Cost per native unit a take leaves unsaid at its end: a little under
+ *  one unit too many in a stretch (COUNT_COST). When the take holds fewer
+ *  vowels than the sentence, the missing ones being unsaid at the end is
+ *  the likelier story than all of them squeezed into the last stretch;
+ *  the stretches' lengths against the native's still decide between them,
+ *  so a take that said everything, with one vowel miscounted, keeps it. */
+const UNSAID_COST = COUNT_COST - 0.1;
+
 /** Vowels in a stretch: runs of pitched frames, each at least NUCLEUS_MS
  *  long. Thai syllables mostly begin with a consonant that breaks the voice
  *  — a stop, an aspirate, /s/ — so a count of voiced runs follows the
@@ -268,14 +283,15 @@ function nuclei(frames: Frame[], stretch: Stretch): number {
  * maps onto the syllable boundary it sits at.
  *
  * `units` are the native voice's syllables in order; `nativeEndMs` closes
- * the last one. Returns null when the take has no pause worth anchoring on.
+ * the last one. `said` counts the units the take reached; the rest were
+ * not said. Returns null when the take has no pause worth anchoring on.
  */
 export function pauseAlign(
   reference: Frame[],
   learner: Frame[],
   units: { startMs: number; wordStart: boolean }[],
   nativeEndMs: number,
-): Warp | null {
+): (Warp & { said: number }) | null {
   let chunks = speechStretches(learner);
   const wordStartsMs = units.map(u => u.startMs);
   const words = wordStartsMs.length;
@@ -293,38 +309,60 @@ export function pauseAlign(
   const wordEnd = (w: number) => (w + 1 < words ? wordStartsMs[w + 1] : nativeEndMs);
   const nativeMs = (a: number, b: number) => wordEnd(b) - wordStartsMs[a];
   const spoken = chunks.reduce((sum, c) => sum + (c.endMs - c.startMs), 0);
-  const pace = spoken / Math.max(1, nativeEndMs - wordStartsMs[0]);
   const heard = chunks.map(c => nuclei(learner, c));
-  const cost = (c: number, a: number, b: number) => {
-    const r = (chunks[c].endMs - chunks[c].startMs + 20) / Math.max(20, nativeMs(a, b)) / pace;
-    return (
-      Math.log(r) ** 2 +
-      COUNT_COST * Math.abs(heard[c] - (b - a + 1)) +
-      (c > 0 && !units[a].wordStart ? SPLIT_IN_WORD : 0)
-    );
-  };
-  // best[c][w]: cheapest way to give stretches 0..c the words 0..w.
-  const INF = Number.POSITIVE_INFINITY;
-  const best = Array.from({ length: C }, () => new Array<number>(words).fill(INF));
-  const from = Array.from({ length: C }, () => new Array<number>(words).fill(-1));
-  for (let w = 0; w < words; w++) best[0][w] = cost(0, 0, w);
-  for (let c = 1; c < C; c++) {
-    for (let w = c; w < words; w++) {
-      for (let v = c - 1; v < w; v++) {
-        const total = best[c - 1][v] + cost(c, v + 1, w);
-        if (total < best[c][w]) {
-          best[c][w] = total;
-          from[c][w] = v;
+
+  // Cheapest way to give the stretches the units 0..last, each stretch a
+  // run of consecutive units, at the pace those units imply.
+  const solve = (last: number) => {
+    const pace = spoken / Math.max(1, nativeMs(0, last));
+    const cost = (c: number, a: number, b: number) => {
+      const r = (chunks[c].endMs - chunks[c].startMs + 20) / Math.max(20, nativeMs(a, b)) / pace;
+      return (
+        Math.log(r) ** 2 +
+        COUNT_COST * Math.abs(heard[c] - (b - a + 1)) +
+        (c > 0 && !units[a].wordStart ? SPLIT_IN_WORD : 0)
+      );
+    };
+    // best[c][w]: cheapest way to give stretches 0..c the units 0..w.
+    const INF = Number.POSITIVE_INFINITY;
+    const best = Array.from({ length: C }, () => new Array<number>(last + 1).fill(INF));
+    const from = Array.from({ length: C }, () => new Array<number>(last + 1).fill(-1));
+    for (let w = 0; w <= last; w++) best[0][w] = cost(0, 0, w);
+    for (let c = 1; c < C; c++) {
+      for (let w = c; w <= last; w++) {
+        for (let v = c - 1; v < w; v++) {
+          const total = best[c - 1][v] + cost(c, v + 1, w);
+          if (total < best[c][w]) {
+            best[c][w] = total;
+            from[c][w] = v;
+          }
         }
       }
     }
+    const runs: [number, number][] = [];
+    for (let c = C - 1, w = last; c >= 0; c--) {
+      const v = c > 0 ? from[c][w] : -1;
+      runs.unshift([v + 1, w]);
+      w = v;
+    }
+    return { total: best[C - 1][last] + C * PACE_COST * Math.log(pace) ** 2, runs };
+  };
+  // A take can stop before the sentence does — the learner ran out of
+  // time, or stopped the recording. Every ending is tried, each unit left
+  // unsaid costing what one unit too many in a stretch costs, so the last
+  // stretch is not handed the rest of the sentence just because nothing
+  // else is left to take it.
+  let chosen = solve(words - 1);
+  let said = words;
+  for (let last = C - 1; last < words - 1; last++) {
+    const option = solve(last);
+    const total = option.total + UNSAID_COST * (words - 1 - last);
+    if (total < chosen.total + UNSAID_COST * (words - said)) {
+      chosen = option;
+      said = last + 1;
+    }
   }
-  const runs: [number, number][] = [];
-  for (let c = C - 1, w = words - 1; c >= 0; c--) {
-    const v = c > 0 ? from[c][w] : -1;
-    runs.unshift([v + 1, w]);
-    w = v;
-  }
+  const runs = chosen.runs;
 
   const anchors: [number, number][] = [];
   runs.forEach(([a, b], c) => {
@@ -344,5 +382,5 @@ export function pauseAlign(
     }
   });
   if (anchors.length < 2) return null;
-  return { mapTime: interpolate(anchors), inverse: interpolate(anchors.map(([x, y]) => [y, x])) };
+  return { mapTime: interpolate(anchors), inverse: interpolate(anchors.map(([x, y]) => [y, x])), said };
 }

@@ -100,7 +100,9 @@ function splitOnJumps(segment: TrackPoint[]): TrackPoint[][] {
   return out;
 }
 
-export type SyllableVerdict = 'good' | 'high' | 'low' | 'flat' | 'shape' | 'missing' | 'unsure';
+/** `unsaid`: the take ended before the syllable (see Comparison.unsaidFrom);
+ *  not a fault in how it was said, so never counted as a miss. */
+export type SyllableVerdict = 'good' | 'high' | 'low' | 'flat' | 'shape' | 'missing' | 'unsure' | 'unsaid';
 
 export interface SyllableScore {
   /** The native syllable scored — or, when the learner ran several
@@ -143,6 +145,9 @@ export interface Comparison {
   byWord: boolean;
   /** Pitch levels were compared (see compareToReference). */
   levelsJudged: boolean;
+  /** Index of the first native syllable the take never reached — it ended
+   *  or was stopped before them — or null when it reached them all. */
+  unsaidFrom: number | null;
 }
 
 /** A take this much longer than the native voice is read slowly enough to
@@ -343,7 +348,7 @@ const SPILL_SHARE = 0.4;
  *  and past one of those the next syllable's onset would be read as the
  *  end of this one's tone. `segments` are runs of unbroken voicing
  *  (buildSegments). */
-function spillTails(spans: SyllableSpan[], segments: TrackPoint[][]): { own: TrackPoint[][]; tails: TrackPoint[][] } {
+export function spillTails(spans: SyllableSpan[], segments: TrackPoint[][]): { own: TrackPoint[][]; tails: TrackPoint[][] } {
   const segOf = new Map<TrackPoint, number>();
   segments.forEach((seg, i) => seg.forEach(p => segOf.set(p, i)));
   const points = segments.flat();
@@ -364,7 +369,7 @@ function spillTails(spans: SyllableSpan[], segments: TrackPoint[][]): { own: Tra
  *  `spills(k)` allows it. Points one syllable takes from the next are not
  *  judged again on the next, so a level syllable is not charged with its
  *  neighbour's rise. */
-function judgedPoints(
+export function judgedPoints(
   { own, tails }: { own: TrackPoint[][]; tails: TrackPoint[][] },
   spills: (k: number) => boolean = () => true,
 ): TrackPoint[][] {
@@ -474,6 +479,16 @@ function scoreSyllables(
       return {
         ...base, levelSt, verdict: above ? ('high' as const) : ('low' as const),
         hint: `your pitch on ${span.thai} sits about ${Math.abs(levelSt).toFixed(1)} st ${above ? 'higher' : 'lower'} than the native voice — ${above ? 'start it lower' : 'bring it up'}${cue(span)}`,
+      };
+    }
+
+    // Syllables run together whose tones move different ways have no one
+    // shape to hold the run to: พูด falling into ภา mid is neither level
+    // nor a fall.
+    if (new Set(idx.map(i => TONE_DIRECTION[spans[i].tone])).size > 1) {
+      return {
+        ...base, levelSt, verdict: 'unsure' as const,
+        hint: `${parts.map(p => p.thai).join(' + ')} ran together and their tones move different ways, so their shape is not judged`,
       };
     }
 
@@ -587,21 +602,35 @@ export function compareToReference(
   // syllable sitting at the learner's own register would be called low.
   const pace = speechSpanMs(learner) / Math.max(1, speechSpanMs(reference));
   const levelsJudged = !byWord && pace <= SLOW_PACE;
+  const unsaidFrom = byWord && syllables && byWord.said < syllables.length ? byWord.said : null;
+  const said = syllables ? syllables.slice(0, unsaidFrom ?? syllables.length) : [];
 
   return {
     byWord: !!byWord,
     levelsJudged,
-    syllables:
-      syllables && syllables.length
-        ? scoreSyllables(
-            syllables,
+    unsaidFrom,
+    syllables: said.length
+      ? [
+          ...scoreSyllables(
+            said,
             referenceSegments,
             learnerSegments,
-            speechInSlots(syllables, reference, learner, mapTime),
+            speechInSlots(said, reference, learner, mapTime),
             { ref: onsetTimes(reference, t => t), lrn: onsetTimes(learner, mapTime) },
             levelsJudged,
-          )
-        : [],
+          ),
+          // Not reached: scored apart, so none is run together with the
+          // last syllable said.
+          ...(syllables ?? []).slice(said.length).map(span => ({
+            span,
+            verdict: 'unsaid' as const,
+            levelSt: 0,
+            learnerNet: 0,
+            referenceNet: 0,
+            hint: '',
+          })),
+        ]
+      : [],
     referenceSegments,
     learnerSegments,
     learnerSegmentsRaw: buildSegments(learner, learnerHz),
