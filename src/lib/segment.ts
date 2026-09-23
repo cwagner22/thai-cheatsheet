@@ -36,6 +36,9 @@ export interface SyllableSpec {
    *  syllable before it ends in a stop. A sonorant onset after a live
    *  syllable runs straight on from the previous vowel, with no break. */
   gapBefore: boolean;
+  /** First syllable of a word. A learner reading word by word pauses here,
+   *  and the pauses anchor the alignment. */
+  wordStart: boolean;
 }
 
 export interface SyllableSpan extends SyllableSpec {
@@ -67,7 +70,14 @@ const isMinor = (ipa: string) => !isLong(ipa) && /[aeiouɛɔɤɯə]$/.test(bare(
  *  its slot holds the closure and whatever aspiration follows it. */
 export function syllableSpecs(phrase: Phrase): SyllableSpec[] {
   const flat = phrase.words.flatMap(w => w.syllables);
+  const starts = new Set<number>();
+  let n = 0;
+  for (const w of phrase.words) {
+    starts.add(n);
+    n += w.syllables.length;
+  }
   return flat.map((s, i) => ({
+    wordStart: starts.has(i),
     thai: s.thai,
     ipa: s.ipa,
     tone: syllableTone(s),

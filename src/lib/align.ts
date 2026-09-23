@@ -168,7 +168,7 @@ export function dtwAlign(reference: Frame[], learner: Frame[]): Warp | null {
  *  Anchors may repeat an x (several learner frames matched to one native
  *  frame, or the reverse); the first of a run wins, which keeps the function
  *  single-valued. */
-function interpolate(anchors: [number, number][]): (t: number) => number {
+export function interpolate(anchors: [number, number][]): (t: number) => number {
   const first = anchors[0];
   const last = anchors[anchors.length - 1];
   return (t: number): number => {
@@ -185,4 +185,164 @@ function interpolate(anchors: [number, number][]): (t: number) => number {
     const [x1, y1] = anchors[hi];
     return x1 === x0 ? y0 : y0 + ((t - x0) / (x1 - x0)) * (y1 - y0);
   };
+}
+
+/** A silence at least this long in a take, between stretches of speech, is
+ *  a pause between words. Well above the closure of a stop (under 150 ms),
+ *  well below the gap a learner leaves reading word by word. */
+const PAUSE_MS = 220;
+
+interface Stretch {
+  startMs: number;
+  endMs: number;
+}
+
+/** Stretches of speech in a take, split at pauses. */
+function speechStretches(frames: Frame[]): Stretch[] {
+  const peak = Math.max(...frames.map(f => f.rms)) || 1;
+  const out: Stretch[] = [];
+  let open: Stretch | undefined;
+  for (const f of frames) {
+    if (f.rms < SPEECH_SHARE * 3 * peak) continue;
+    if (open && f.t - open.endMs < PAUSE_MS) {
+      open.endMs = f.t;
+    } else {
+      if (open) out.push(open);
+      open = { startMs: f.t, endMs: f.t };
+    }
+  }
+  if (open) out.push(open);
+  return out;
+}
+
+/** Cost of a pause falling inside a word rather than between words: a
+ *  learner reading in pieces mostly breaks between words, but not always —
+ *  ภาษา | ไทย is a natural place to breathe. */
+const SPLIT_IN_WORD = 0.35;
+
+/** A run of pitched frames at least this long counts as one syllable's
+ *  vowel when counting syllables in a stretch; shorter ones are a voiced
+ *  onset or a tracker blip. */
+const NUCLEUS_MS = 50;
+
+/** Cost per syllable of difference between the vowels heard in a stretch
+ *  and the syllables in the native run it is given. Durations alone are
+ *  misled by a learner holding one word twice as long as the native: ผมพูด
+ *  said briskly and ไทย drawn out, and the cheapest split by length hands
+ *  ผม a stretch of its own and pushes every word after it one slot late. */
+const COUNT_COST = 0.6;
+
+/** Vowels in a stretch: runs of pitched frames, each at least NUCLEUS_MS
+ *  long. Thai syllables mostly begin with a consonant that breaks the voice
+ *  — a stop, an aspirate, /s/ — so a count of voiced runs follows the
+ *  syllable count; where two syllables join through a nasal (มา.นะ) it
+ *  undercounts, which is why the count only adds a cost and never decides. */
+function nuclei(frames: Frame[], stretch: Stretch): number {
+  let count = 0;
+  let runStart: number | null = null;
+  let lastT = stretch.startMs;
+  const close = () => {
+    if (runStart !== null && lastT - runStart >= NUCLEUS_MS) count++;
+    runStart = null;
+  };
+  for (const f of frames) {
+    if (f.t < stretch.startMs || f.t > stretch.endMs) continue;
+    if (f.hz === null) close();
+    else {
+      if (runStart === null) runStart = f.t;
+      lastT = f.t;
+    }
+  }
+  close();
+  return Math.max(1, count);
+}
+
+/**
+ * Alignment for a take read in pieces — word by word, or a phrase at a
+ * time. Pure time warping has nothing to match a pause against when the
+ * native voice runs straight through, and every slot after the first pause
+ * drifts. Here each stretch of the take between pauses is matched to a run
+ * of consecutive native syllables, the runs chosen so that every stretch
+ * keeps roughly the take's overall pace and breaks fall between words where
+ * they can; then each stretch is warped onto its run alone, and a pause
+ * maps onto the syllable boundary it sits at.
+ *
+ * `units` are the native voice's syllables in order; `nativeEndMs` closes
+ * the last one. Returns null when the take has no pause worth anchoring on.
+ */
+export function pauseAlign(
+  reference: Frame[],
+  learner: Frame[],
+  units: { startMs: number; wordStart: boolean }[],
+  nativeEndMs: number,
+): Warp | null {
+  let chunks = speechStretches(learner);
+  const wordStartsMs = units.map(u => u.startMs);
+  const words = wordStartsMs.length;
+  if (chunks.length < 2 || words < 2) return null;
+  // More stretches than words: a pause inside a word. Rejoin at the
+  // shortest pauses until each stretch can hold a word.
+  while (chunks.length > words) {
+    let k = 0;
+    for (let i = 1; i < chunks.length - 1; i++) {
+      if (chunks[i + 1].startMs - chunks[i].endMs < chunks[k + 1].startMs - chunks[k].endMs) k = i;
+    }
+    chunks = [...chunks.slice(0, k), { startMs: chunks[k].startMs, endMs: chunks[k + 1].endMs }, ...chunks.slice(k + 2)];
+  }
+  const C = chunks.length;
+  const wordEnd = (w: number) => (w + 1 < words ? wordStartsMs[w + 1] : nativeEndMs);
+  const nativeMs = (a: number, b: number) => wordEnd(b) - wordStartsMs[a];
+  const spoken = chunks.reduce((sum, c) => sum + (c.endMs - c.startMs), 0);
+  const pace = spoken / Math.max(1, nativeEndMs - wordStartsMs[0]);
+  const heard = chunks.map(c => nuclei(learner, c));
+  const cost = (c: number, a: number, b: number) => {
+    const r = (chunks[c].endMs - chunks[c].startMs + 20) / Math.max(20, nativeMs(a, b)) / pace;
+    return (
+      Math.log(r) ** 2 +
+      COUNT_COST * Math.abs(heard[c] - (b - a + 1)) +
+      (c > 0 && !units[a].wordStart ? SPLIT_IN_WORD : 0)
+    );
+  };
+  // best[c][w]: cheapest way to give stretches 0..c the words 0..w.
+  const INF = Number.POSITIVE_INFINITY;
+  const best = Array.from({ length: C }, () => new Array<number>(words).fill(INF));
+  const from = Array.from({ length: C }, () => new Array<number>(words).fill(-1));
+  for (let w = 0; w < words; w++) best[0][w] = cost(0, 0, w);
+  for (let c = 1; c < C; c++) {
+    for (let w = c; w < words; w++) {
+      for (let v = c - 1; v < w; v++) {
+        const total = best[c - 1][v] + cost(c, v + 1, w);
+        if (total < best[c][w]) {
+          best[c][w] = total;
+          from[c][w] = v;
+        }
+      }
+    }
+  }
+  const runs: [number, number][] = [];
+  for (let c = C - 1, w = words - 1; c >= 0; c--) {
+    const v = c > 0 ? from[c][w] : -1;
+    runs.unshift([v + 1, w]);
+    w = v;
+  }
+
+  const anchors: [number, number][] = [];
+  runs.forEach(([a, b], c) => {
+    const chunk = chunks[c];
+    const n0 = wordStartsMs[a];
+    const n1 = wordEnd(b);
+    const pad = 60;
+    const lrnPart = learner.filter(f => f.t >= chunk.startMs - pad && f.t <= chunk.endMs + pad);
+    const refPart = reference.filter(f => f.t >= n0 && f.t <= n1);
+    const local = dtwAlign(refPart, lrnPart);
+    const linear = (t: number) => n0 + ((t - chunk.startMs) / Math.max(1, chunk.endMs - chunk.startMs)) * (n1 - n0);
+    for (const f of lrnPart) {
+      if (f.t < chunk.startMs || f.t > chunk.endMs) continue;
+      const m = local ? Math.min(n1, Math.max(n0, local.mapTime(f.t))) : linear(f.t);
+      const prev = anchors[anchors.length - 1];
+      anchors.push([f.t, prev ? Math.max(prev[1], m) : m]);
+    }
+  });
+  if (anchors.length < 2) return null;
+  return { mapTime: interpolate(anchors), inverse: interpolate(anchors.map(([x, y]) => [y, x])) };
 }

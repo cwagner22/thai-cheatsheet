@@ -7,7 +7,7 @@
 import type { ToneName } from './toneLookup';
 import type { Frame } from './capture';
 import { foldOctave, hzToSemitones, registerHz as registerHzOf } from './pitch';
-import { dtwAlign, SPEECH_SHARE } from './align';
+import { dtwAlign, pauseAlign, SPEECH_SHARE } from './align';
 import type { SyllableSpan } from './segment';
 import { TONE_FEEL } from '../data/tones';
 
@@ -139,7 +139,15 @@ export interface Comparison {
   referenceHz: number;
   /** Loudest frame of the take. */
   learnerPeakRms: number;
+  /** The take was read in pieces and aligned on its pauses. */
+  byWord: boolean;
+  /** Pitch levels were compared (see compareToReference). */
+  levelsJudged: boolean;
 }
+
+/** A take this much longer than the native voice is read slowly enough to
+ *  carry its own melody; levels are not compared. */
+const SLOW_PACE = 1.5;
 
 /** Not enough voiced audio to say anything honest about. */
 const MIN_VOICED_FRAMES = 8;
@@ -166,13 +174,34 @@ const FLAT_SHARE = 1 / 3;
  *  native voice doing the same thing must always pass. */
 const SWING_ST = 2.5;
 
-/** The first stretch of an utterance does not count towards a swing. A
- *  voice starts with an onset slide — five semitones over the first 80 ms is
- *  ordinary, from a glide or a stop release settling into the vowel — that
- *  no listener hears as a tone, and that read as a mid syllable "falling".
+/** The first stretch of voice after every break in voicing does not count
+ *  towards a swing. Voice starting up — at the start of the take, after a
+ *  pause, after the closure of a stop or the hiss of an /s/ — starts with
+ *  an onset slide, five semitones over the first 80 ms being ordinary, that
+ *  no listener hears as a tone, and that read as a mid syllable "falling":
+ *  ดี after the /t/ of วัส, ไทย after a pause in a take read word by word.
  *  It still counts towards a glide the tone asks for: an onset cannot fake
  *  flatness, and a low tone's fall may well begin in it. */
 const ONSET_MS = 80;
+
+/** Times, on the `mapTime` timeline, of the voiced frames within ONSET_MS
+ *  of voice starting up. Found frame by frame on the voice's own timeline,
+ *  since a warp onto the native voice folds a learner's pause to nothing. */
+function onsetTimes(frames: Frame[], mapTime: (t: number) => number): Set<number> {
+  const out = new Set<number>();
+  let opened = Number.NEGATIVE_INFINITY;
+  let voiced = false;
+  for (const f of frames) {
+    if (f.hz === null) {
+      voiced = false;
+      continue;
+    }
+    if (!voiced) opened = f.t;
+    voiced = true;
+    if (f.t - opened < ONSET_MS) out.add(mapTime(f.t));
+  }
+  return out;
+}
 
 /** Fewer native points than this in a slot and its glide is not judged: a
  *  hundred milliseconds of contour shifts by a frame under any alignment
@@ -306,28 +335,53 @@ function travel(xs: number[], dir: -1 | 1): number {
 const SPILL_MS = 110;
 const SPILL_SHARE = 0.4;
 
-/** The stretch each syllable is judged on: its slot, extended into the next
- *  syllable when its own tone glides, and started after the previous
- *  syllable's spill when that one glided — so a level syllable is not
- *  charged with its neighbour's rise. */
-export function judgingWindows(spans: SyllableSpan[]): { startMs: number; endMs: number }[] {
-  const spill = spans.map((span, k) => {
+/** Each syllable's pitch points, and the points its glide spills into the
+ *  next syllable: that syllable's first points, taken only while the voice
+ *  runs on unbroken from one into the other. A glide carries across a
+ *  nasal or a vowel-to-vowel junction; it cannot carry across the silent
+ *  closure of a final stop (นิด.หน่อย has one after the /t/) or a pause,
+ *  and past one of those the next syllable's onset would be read as the
+ *  end of this one's tone. `segments` are runs of unbroken voicing
+ *  (buildSegments). */
+function spillTails(spans: SyllableSpan[], segments: TrackPoint[][]): { own: TrackPoint[][]; tails: TrackPoint[][] } {
+  const segOf = new Map<TrackPoint, number>();
+  segments.forEach((seg, i) => seg.forEach(p => segOf.set(p, i)));
+  const points = segments.flat();
+  const own = spans.map(span => points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs));
+  const tails = spans.map((span, k) => {
     const next = spans[k + 1];
+    const last = own[k][own[k].length - 1];
     // A minor lead-in syllable carries no glide of its own to spill.
-    if (!next || span.minor || TONE_DIRECTION[span.tone] === 0) return 0;
-    return Math.min(SPILL_MS, SPILL_SHARE * (next.endMs - next.startMs));
+    if (!next || !last || span.minor || TONE_DIRECTION[span.tone] === 0) return [];
+    const reach = span.endMs + Math.min(SPILL_MS, SPILL_SHARE * (next.endMs - next.startMs));
+    const seg = segOf.get(last);
+    return points.filter(p => p.ms > span.endMs && p.ms <= reach && segOf.get(p) === seg);
   });
-  return spans.map((span, k) => ({
-    startMs: span.startMs + (k > 0 ? spill[k - 1] : 0),
-    endMs: span.endMs + spill[k],
-  }));
+  return { own, tails };
+}
+
+/** The points each syllable is judged on: its own, plus its spill where
+ *  `spills(k)` allows it. Points one syllable takes from the next are not
+ *  judged again on the next, so a level syllable is not charged with its
+ *  neighbour's rise. */
+function judgedPoints(
+  { own, tails }: { own: TrackPoint[][]; tails: TrackPoint[][] },
+  spills: (k: number) => boolean = () => true,
+): TrackPoint[][] {
+  const kept = tails.map((tail, k) => (spills(k) ? tail : []));
+  return own.map((pts, k) => {
+    const taken = k > 0 ? new Set(kept[k - 1]) : null;
+    return [...(taken ? pts.filter(p => !taken.has(p)) : pts), ...kept[k]];
+  });
 }
 
 function scoreSyllables(
   spans: SyllableSpan[],
-  refPoints: TrackPoint[],
-  lrnPoints: TrackPoint[],
+  refSegments: TrackPoint[][],
+  lrnSegments: TrackPoint[][],
   speech: number[],
+  onsets: { ref: Set<number>; lrn: Set<number> },
+  levelsJudged = true,
 ): SyllableScore[] {
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   /** Last third against first third. */
@@ -337,21 +391,28 @@ function scoreSyllables(
   };
   const within = (points: TrackPoint[], span: { startMs: number; endMs: number }) =>
     points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs);
-  // A window that leaves a short syllable too few points to judge falls
-  // back to the bare slot: the spill is a refinement, not a reason to call
-  // a syllable missing.
-  const windows = judgingWindows(spans).map((w, k) =>
-    within(refPoints, w).length >= 3 && within(lrnPoints, w).length >= 3 ? w : spans[k],
-  );
+  const refPoints = refSegments.flat();
+  const lrnPoints = lrnSegments.flat();
+  // A syllable the spill leaves too few points to judge, in either voice,
+  // falls back to its bare slot in both: the spill is a refinement, not a
+  // reason to call a syllable missing.
+  //
+  // A syllable spills in both voices or in neither. The native voice may
+  // run on into the next syllable where the learner stops — pausing, or
+  // aspirating the next consonant — and a glide measured over the native's
+  // spill is one the learner's own syllable was never given room to match.
+  const refSpill = spillTails(spans, refSegments);
+  const lrnSpill = spillTails(spans, lrnSegments);
+  const both = (k: number) => refSpill.tails[k].length > 0 && lrnSpill.tails[k].length > 0;
+  const refJudged = judgedPoints(refSpill, both);
+  const lrnJudged = judgedPoints(lrnSpill, both);
+  const fits = spans.map((_, k) => refJudged[k].length >= 3 && lrnJudged[k].length >= 3);
+  const refPts = spans.map((span, k) => (fits[k] ? refJudged[k] : within(refPoints, span)));
+  const lrnPts = spans.map((span, k) => (fits[k] ? lrnJudged[k] : within(lrnPoints, span)));
 
-  const afterOnset = (points: TrackPoint[]) => {
-    const start = points[0]?.ms ?? 0;
-    return points.filter(p => p.ms - start >= ONSET_MS);
-  };
-  const ref = windows.map(w => within(refPoints, w).map(p => p.st));
-  const lrnPts = windows.map(w => within(lrnPoints, w));
-  const refSwing = windows.map(w => within(afterOnset(refPoints), w).map(p => p.st));
-  const lrnSwing = windows.map(w => within(afterOnset(lrnPoints), w).map(p => p.st));
+  const ref = refPts.map(pts => pts.map(p => p.st));
+  const refSwing = refPts.map(pts => pts.filter(p => !onsets.ref.has(p.ms)).map(p => p.st));
+  const lrnSwing = lrnPts.map(pts => pts.filter(p => !onsets.lrn.has(p.ms)).map(p => p.st));
   const lrn = lrnPts.map(pts => pts.map(p => p.st));
 
   // One score per group, then one entry per syllable: a group's syllables
@@ -408,7 +469,7 @@ function scoreSyllables(
     }
 
     const levelSt = mean(lrnSt) - mean(refSt);
-    if (Math.abs(levelSt) > LEVEL_TOL_ST && Math.sign(levelSt) !== side) {
+    if (levelsJudged && Math.abs(levelSt) > LEVEL_TOL_ST && Math.sign(levelSt) !== side) {
       const above = levelSt > 0;
       return {
         ...base, levelSt, verdict: above ? ('high' as const) : ('low' as const),
@@ -471,13 +532,11 @@ function scoreSyllables(
  *  this often, and the read-out names those syllables so the learner
  *  knows why the line does not follow the tone glyph there. */
 export function textbookMismatches(reference: Frame[], syllables: SyllableSpan[]): number[] {
-  const points = buildSegments(reference, registerHz(reference)).flat();
-  const windows = judgingWindows(syllables);
+  const judged = judgedPoints(spillTails(syllables, buildSegments(reference, registerHz(reference))));
   return syllables.flatMap((span, i) => {
     const taught = TONE_DIRECTION[span.tone];
     if (taught === 0) return [];
-    const w = windows[i];
-    const st = points.filter(p => p.ms >= w.startMs && p.ms <= w.endMs).map(p => p.st);
+    const st = judged[i].map(p => p.st);
     if (st.length < 3) return [];
     return travel(st, taught) < MIN_WANT_ST ? [i] : [];
   });
@@ -509,22 +568,39 @@ export function compareToReference(
   const r1 = rv[rv.length - 1].t;
   const l0 = lv[0].t;
   const l1 = lv[lv.length - 1].t;
-  // A uniform stretch is only the fallback: one lingered vowel under it
-  // pushes every later syllable into its neighbour's slot.
-  const warp = dtwAlign(reference, learner);
+  // A take read in pieces is anchored on its pauses first; otherwise time
+  // warping, with a uniform stretch only as the fallback — one lingered
+  // vowel under a stretch pushes every later syllable into its
+  // neighbour's slot.
+  const byWord =
+    syllables && syllables.length > 1 ? pauseAlign(reference, learner, syllables, syllables[syllables.length - 1].endMs) : null;
+  const warp = byWord ?? dtwAlign(reference, learner);
   const scale = (r1 - r0) / Math.max(1, l1 - l0);
   const mapTime = warp ? warp.mapTime : (t: number) => r0 + (t - l0) * scale;
   const inverseTime = warp ? warp.inverse : (t: number) => l0 + (t - r0) / scale;
 
   const referenceSegments = buildSegments(reference, referenceHz);
   const learnerSegments = buildSegments(learner, learnerHz, mapTime);
-  const refPoints = referenceSegments.flat();
-  const lrnPoints = learnerSegments.flat();
+  // A pitch level is only comparable when both voices carry the same
+  // sentence melody. Read in pieces, or at well under the native pace, a
+  // take has its own phrase-initial rise and fall on every piece, and a mid
+  // syllable sitting at the learner's own register would be called low.
+  const pace = speechSpanMs(learner) / Math.max(1, speechSpanMs(reference));
+  const levelsJudged = !byWord && pace <= SLOW_PACE;
 
   return {
+    byWord: !!byWord,
+    levelsJudged,
     syllables:
       syllables && syllables.length
-        ? scoreSyllables(syllables, refPoints, lrnPoints, speechInSlots(syllables, reference, learner, mapTime))
+        ? scoreSyllables(
+            syllables,
+            referenceSegments,
+            learnerSegments,
+            speechInSlots(syllables, reference, learner, mapTime),
+            { ref: onsetTimes(reference, t => t), lrn: onsetTimes(learner, mapTime) },
+            levelsJudged,
+          )
         : [],
     referenceSegments,
     learnerSegments,
