@@ -1,49 +1,46 @@
 /* ===== PRACTICE PANEL ===== */
 .panel { margin-bottom: 26px; }
 
-/* Under the learner's panel: the count to the left, the sentence centred,
-   the buttons to the right, so the eye stays on the sentence while counted
-   in. Clear misses are underlined in the sentence itself. */
-.poster {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
-  gap: 12px 24px;
-  align-items: center;
-  padding: 14px 6px 10px;
+/* Between the native panel and the learner's: the sentence alone, at the
+   full width, read just above the panel the take will fill. Clear misses
+   are highlighted in it after a take. */
+.poster { padding: 10px 6px 8px; }
+.posterText { min-width: 0; text-align: center; }
+/* A syllable stacks its letters over its tone glyph. */
+.syl { display: inline-flex; flex-direction: column; align-items: center; }
+/* On a small tile, so the shape reads as a deliberate mark and not as a
+   stray stroke. No wider than its syllable. */
+.glyph {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 0.72em;
+  height: 0.36em;
+  margin-top: 0.1em;
+  padding: 0.05em 0.09em;
+  border-radius: 0.1em;
+  background: #f1f3f6;
+  overflow: visible;
 }
-.countCell { display: grid; place-items: center; min-height: 64px; }
-.count {
-  font-size: 3.2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--record);
-  animation: count-pop 0.7s ease-out both;
-}
-@keyframes count-pop {
-  from { opacity: 0; transform: scale(1.3); }
-  25% { opacity: 1; transform: scale(1); }
-  to { opacity: 0.8; }
-}
-.posterText { text-align: center; }
-.sentence { justify-content: center; }
 .sylFlag {
-  text-decoration: underline wavy #d97706;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 8px;
+  background: #fde68a;
+  border-radius: 0.12em;
+  box-shadow: 0 0 0 0.06em #fde68a;
 }
-.posterText { min-width: 0; }
 .sentence {
   display: flex;
+  justify-content: center;
   flex-wrap: nowrap;
   white-space: nowrap;
-  gap: 0 0.3em;
+  gap: 0.1em 0.16em;
   margin: 0 0 6px;
   font-family: var(--thai-font);
   font-size: 3.4rem;
   font-weight: 700;
   line-height: 1.15;
 }
+.sentence[data-wrap] { flex-wrap: wrap; text-wrap: balance; }
 .wordBtn {
+  position: relative;
   border: 0;
   background: none;
   padding: 0;
@@ -61,7 +58,6 @@
 
 /* Hover tooltip on a word: its IPA and gloss. Collapsed to nothing until
    hovered so it never widens the page. */
-.wordBtn { position: relative; }
 .wordBtn[data-tooltip]::after {
   content: '';
   position: absolute;
@@ -89,22 +85,17 @@
   opacity: 1;
 }
 
-.act { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.actRow { display: flex; align-items: center; gap: 10px; }
-.listenBtn {
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 12px 20px;
-  border-radius: 999px;
-  border: 2px solid var(--ink);
-  background: var(--surface);
-  color: var(--ink);
-  cursor: pointer;
-  white-space: nowrap;
+/* Under the learner's panel: what is happening, and the keys. */
+.statusRow {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+  margin: 8px 0 4px;
 }
-.listenBtn:not(:disabled):hover { background: var(--panel); }
-.listenBtn:disabled { opacity: 0.5; cursor: default; }
+.status { grid-column: 2; margin: 0; text-align: center; font-size: 0.86rem; color: var(--ink-2); }
+.statusError { color: #b91c1c; }
 .recBtn {
   display: inline-flex;
   align-items: center;
@@ -128,7 +119,7 @@
 .recDot { width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35); }
 .stopping { background: var(--ink); box-shadow: none; }
 .stopping .recDot { border-radius: 2px; box-shadow: none; }
-.keys { font-size: 0.78rem; color: var(--ink-3); }
+.keys { grid-column: 3; justify-self: end; font-size: 0.72rem; color: var(--ink-3); white-space: nowrap; }
 
 .method { margin: -8px 0 14px; font-size: 0.86rem; color: var(--ink-2); }
 .method summary { cursor: pointer; color: var(--ink-3); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; list-style: none; }
@@ -148,45 +139,19 @@
   color: var(--ink-2);
 }
 
-/* ===== CONTROLS ===== */
-.switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 10px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-family: inherit;
-  font-size: 0.72rem;
-  color: #64748b;
-  cursor: pointer;
-}
-.switch i {
-  width: 28px;
-  height: 16px;
-  border-radius: 8px;
-  background: #cbd5e1;
-  position: relative;
-  transition: background 0.15s;
-}
-.switch i::after {
-  content: '';
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  transition: left 0.15s;
-}
-.switchOn i { background: #2563eb; }
-.switchOn i::after { left: 14px; }
-
 /* ===== READ-OUT ===== */
-.hintLine { font-size: 0.84rem; color: #64748b; margin: 10px 0 0; }
-.denied { font-size: 0.84rem; color: #b91c1c; margin: 10px 0 0; }
+.glyphNote { margin: 0 0 4px; text-align: center; font-size: 0.8rem; color: var(--ink-3); }
+.notices { display: grid; gap: 6px; margin: 0 0 12px; }
+.notice {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #1f2937;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 6px 6px 0;
+}
 .note {
   font-size: 0.8rem;
   color: #6b7280;
@@ -195,7 +160,7 @@
   border-top: 1px solid #f1f5f9;
 }
 
-.report { margin-top: 28px; }
+.report { margin: 18px 0 22px; }
 .reportHead { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); margin: 0 0 14px; }
 .refHz { font-size: 0.8rem; color: var(--ink-3); font-family: var(--mono-font); font-weight: 400; }
 
@@ -282,10 +247,11 @@
 .editorQuiet { font: inherit; font-size: 0.8rem; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 7px; background: var(--surface); color: var(--ink-2); cursor: pointer; }
 .editorDelete { margin-left: auto; color: var(--record); }
 
+@media (max-width: 900px) {
+  .keys { display: none; }
+}
 @media (max-width: 600px) {
-  .poster { grid-template-columns: 1fr; }
-  .countCell { min-height: 0; }
-  .act { align-items: flex-start; }
+  .recBtn { padding: 8px 14px; font-size: 0.86rem; gap: 7px; }
   .sentence { flex-wrap: wrap; white-space: normal; font-size: 2.2rem !important; }
 }
 
@@ -315,12 +281,6 @@
   min-width: 34px;
 }
 
-.gainHint { font-size: 0.75rem; color: #94a3b8; }
-
-@media (max-width: 600px) {
-  .gainHint { display: none; }
-}
-
 .scopeHint {
   font-size: 0.75rem;
   color: #94a3b8;
@@ -340,14 +300,4 @@
   margin-left: 8px;
 }
 .legendSwatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
-
-.reportLead {
-  font-size: 0.92rem;
-  color: #1f2937;
-  margin: 0 0 8px;
-  padding: 8px 12px;
-  background: #fffbeb;
-  border-left: 3px solid #f59e0b;
-  border-radius: 0 6px 6px 0;
-  line-height: 1.5;
-}
+.swatchOwn { background: #fff; box-shadow: 0 0 0 1px var(--ink-2); }

@@ -12,7 +12,7 @@ import {
   type CustomDraft,
 } from '../lib/customPhrases';
 import type { ToneName } from '../lib/toneLookup';
-import { TONE_COLOR } from '../data/tones';
+import { TONE_COLOR, TONE_FEEL, THAI_TONES } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
 import { SPEECH_SHARE } from '../lib/align';
 import {
@@ -69,7 +69,7 @@ const NATIVE_LABEL = 'Native · Google Translate';
 const YOU_LABEL = 'You';
 
 function emptyScope(windowMs: number, label: string, emptyText: string, gain: number): ScopeData {
-  return { windowMs, spectra: [], segments: [], ghost: null, elapsedMs: null, gain, label, emptyText, syllables: null, showTextbook: true };
+  return { windowMs, spectra: [], segments: [], ghost: null, elapsedMs: null, gain, label, emptyText, syllables: null };
 }
 
 export function SpeakingTab() {
@@ -156,14 +156,12 @@ export function SpeakingTab() {
   const [spokenWord, setSpokenWord] = useState<number | null>(null);
   const [revision, setRevision] = useState(0);
   const [gain, setGain] = useState(1.8);
-  const [showTextbook, setShowTextbook] = useState(true);
   const [playing, setPlaying] = useState<Playing>(null);
   /** Whether the native voice has been heard in full for the current
    *  sentence. The first take of a sentence plays it first; later takes go
    *  straight to the count-in. */
   const [heard, setHeard] = useState(false);
   const [mismatches, setMismatches] = useState<string[]>([]);
-  const hiddenRef = useRef<ReadonlySet<number>>(new Set());
   const heardRef = useRef<Set<string>>(new Set());
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -180,8 +178,6 @@ export function SpeakingTab() {
   const playbackRef = useRef<{ frame: number; stop: () => void } | null>(null);
   const gainRef = useRef(gain);
   gainRef.current = gain;
-  const textbookRef = useRef(showTextbook);
-  textbookRef.current = showTextbook;
 
   const nativeScope = useRef<ScopeData>(
     emptyScope(FALLBACK_WINDOW_MS, NATIVE_LABEL, 'fetching the native voice…', 1.8),
@@ -239,7 +235,6 @@ export function SpeakingTab() {
   /** Shows a finished reference on the top panel and widens both axes to it. */
   const showReference = useCallback((reference: Reference) => {
     const hidden = new Set(reference.syllables ? textbookMismatches(reference.frames, reference.syllables) : []);
-    hiddenRef.current = hidden;
     setMismatches(reference.syllables ? reference.syllables.filter((_, i) => hidden.has(i)).map(s => s.thai) : []);
     // Kept from onStart when the clip was just captured, so nothing rescales.
     const windowMs = nativeScope.current.spectra === reference.spectra ? nativeScope.current.windowMs : windowFor(reference);
@@ -253,11 +248,9 @@ export function SpeakingTab() {
       label: NATIVE_LABEL,
       emptyText: '',
       syllables: reference.syllables,
-      showTextbook: textbookRef.current,
-      textbookHidden: hidden,
     };
     // The learner's panel stays bare until there is a take: the native
-    // voice's slots and the textbook shapes mean nothing laid over silence.
+    // voice's slots mean nothing laid over silence.
     youScope.current = { ...youScope.current, windowMs };
     redraw();
   }, []);
@@ -460,8 +453,6 @@ export function SpeakingTab() {
             }))
           : null,
         elapsedMs: null,
-        showTextbook: textbookRef.current,
-        textbookHidden: hiddenRef.current,
       };
     } else if (handle) {
       const voiced = frames.filter(f => f.hz !== null);
@@ -495,7 +486,7 @@ export function SpeakingTab() {
     }
     const windowMs = windowFor(referenceRef.current);
     // While recording the panel shows the learner's own sound and nothing
-    // else — no native line, no slots, no textbook shapes. All of that
+    // else — no native line, no slots. All of that
     // returns with the scored take, fitted to what was actually said.
     youScope.current = { ...emptyScope(windowMs, YOU_LABEL, '', gainRef.current), originMs: 0, viewMs: windowMs };
     redraw();
@@ -609,14 +600,6 @@ export function SpeakingTab() {
     return () => window.removeEventListener('keydown', onKey);
   }, [busy, record, listen, step]);
 
-  const onToggleTextbook = () => {
-    const next = !showTextbook;
-    setShowTextbook(next);
-    nativeScope.current = { ...nativeScope.current, showTextbook: next };
-    youScope.current = { ...youScope.current, showTextbook: next };
-    redraw();
-  };
-
   const onGain = (g: number) => {
     setGain(g);
     // Both scopes read from refs, not props, so the value has to be written
@@ -653,8 +636,6 @@ export function SpeakingTab() {
         onStop={finish}
         gain={gain}
         onGain={onGain}
-        showTextbook={showTextbook}
-        onToggleTextbook={onToggleTextbook}
       />
 
       </div>
@@ -697,8 +678,6 @@ function PracticePanel({
   onStop,
   gain,
   onGain,
-  showTextbook,
-  onToggleTextbook,
 }: {
   phrase: Phrase;
   status: Status;
@@ -724,11 +703,9 @@ function PracticePanel({
   onStop: () => void;
   gain: number;
   onGain: (g: number) => void;
-  showTextbook: boolean;
-  onToggleTextbook: () => void;
 }) {
   const sentenceRef = useRef<HTMLParagraphElement | null>(null);
-  // Clear misses, by syllable index in the sentence, underlined in place.
+  // Clear misses, by syllable index in the sentence, highlighted in place.
   const flagged = new Map<number, string>();
   if (status === 'done') {
     comparison?.syllables.forEach((score, i) => {
@@ -744,13 +721,24 @@ function PracticePanel({
     if (!el) return;
     const fit = () => {
       el.style.fontSize = `${SENTENCE_MAX_REM}rem`;
+      delete el.dataset.wrap;
+      // Measured left-aligned: a centred line that overflows spills past
+      // both edges, and scrollWidth counts only the right-hand spill.
+      el.style.justifyContent = 'flex-start';
       const available = el.clientWidth;
       const needed = el.scrollWidth;
+      el.style.justifyContent = '';
       if (needed > available && needed > 0) {
-        el.style.fontSize = `${Math.max(SENTENCE_MIN_REM, (SENTENCE_MAX_REM * available) / needed - 0.05)}rem`;
+        const rem = (SENTENCE_MAX_REM * available) / needed - 0.05;
+        el.style.fontSize = `${Math.max(SENTENCE_MIN_REM, rem)}rem`;
+        // Too long for one line even at the smallest size: break between
+        // words into balanced lines rather than overflow.
+        if (rem < SENTENCE_MIN_REM) el.dataset.wrap = '';
       }
     };
     fit();
+    // Thai type that arrives after the first fit changes the width needed.
+    void document.fonts?.ready.then(fit);
     // Width only, and on the next frame: fitting changes the block's size,
     // and resizing an observed element inside its own callback loops the
     // observer.
@@ -811,11 +799,69 @@ function PracticePanel({
           }
         />
 
+        <header className={styles.poster}>
+          <div className={styles.posterText}>
+            <p className={styles.sentence} ref={sentenceRef}>
+              {phrase.words.map((word, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`${styles.wordBtn} ${spokenWord === i ? styles.wordSpeaking : ''}`}
+                  onClick={() => speakThai(thaiOfWord(word))}
+                  data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
+                  aria-label={`${thaiOfWord(word)} — play`}
+                >
+                  {word.syllables.map((syl, j) => {
+                    const index = syllableIndex++;
+                    const flag = flagged.get(index);
+                    return (
+                      <span key={j} className={styles.syl}>
+                        <span
+                          className={flag ? styles.sylFlag : undefined}
+                          style={{ color: TONE_COLOR[syllableTone(syl)] }}
+                          title={flag}
+                        >
+                          {syl.thai}
+                        </span>
+                        <ToneGlyph tone={syllableTone(syl)} />
+                      </span>
+                    );
+                  })}
+                </button>
+              ))}
+            </p>
+            <p className={styles.gloss}>{phrase.meaning}</p>
+          </div>
+        </header>
+
         <PhraseScope
           data={youScope}
           live={live}
           revision={revision}
           height={280}
+          overlay={status === 'counting' ? <span key={countIn} className={scopeStyles.count}>{countIn}</span> : null}
+          dock={
+            <>
+            {status === 'recording' ? (
+              <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
+                <span className={styles.recDot} />Stop
+              </button>
+            ) : (
+              <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
+                <span className={styles.recDot} />
+                {status === 'listening'
+                  ? 'Listen…'
+                  : status === 'counting'
+                    ? 'Get ready…'
+                    : status === 'done'
+                      ? 'Try again'
+                      : heard
+                        ? 'Record'
+                        : 'Practice'}
+              </button>
+            )}
+            </>
+          }
           tools={
             takeUrl && status === 'done' ? (
               <>
@@ -831,66 +877,21 @@ function PracticePanel({
         />
       </div>
 
-      <header className={styles.poster}>
-        <div className={styles.countCell} aria-live="polite">
-          {status === 'counting' && <span key={countIn} className={styles.count}>{countIn}</span>}
-        </div>
-        <div className={styles.posterText}>
-          <p className={styles.sentence} ref={sentenceRef}>
-            {phrase.words.map((word, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`${styles.wordBtn} ${spokenWord === i ? styles.wordSpeaking : ''}`}
-                onClick={() => speakThai(thaiOfWord(word))}
-                data-tooltip={[ipaOfWord(word) && `/${ipaOfWord(word)}/`, word.gloss].filter(Boolean).join(' · ') || undefined}
-                aria-label={`${thaiOfWord(word)} — play`}
-              >
-                {word.syllables.map((syl, j) => {
-                  const index = syllableIndex++;
-                  const flag = flagged.get(index);
-                  return (
-                    <span
-                      key={j}
-                      className={flag ? styles.sylFlag : undefined}
-                      style={{ color: TONE_COLOR[syllableTone(syl)] }}
-                      title={flag}
-                    >
-                      {syl.thai}
-                    </span>
-                  );
-                })}
-              </button>
-            ))}
-          </p>
-          <p className={styles.gloss}>{phrase.meaning}</p>
-        </div>
-        <div className={styles.act}>
-          <div className={styles.actRow}>
-          {status === 'recording' ? (
-            <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
-              <span className={styles.recDot} />Stop
-            </button>
-          ) : (
-            <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
-              <span className={styles.recDot} />
-              {status === 'listening'
-                ? 'Listen…'
-                : status === 'counting'
-                  ? 'Get ready…'
-                  : status === 'done'
-                    ? 'Try again'
-                    : heard
-                      ? 'Record'
-                      : 'Practice'}
-            </button>
-          )}
-          </div>
-          <span className={styles.keys}>
-            <kbd>Space</kbd> records · <kbd>L</kbd> native voice · <kbd>←</kbd> <kbd>→</kbd> sentences
+      <div className={styles.statusRow}>
+        <StatusLine status={status} refStatus={refStatus} />
+        <span className={styles.keys}>
+            <kbd>Space</kbd> record · <kbd>L</kbd> listen · <kbd>←</kbd><kbd>→</kbd> sentence
           </span>
-        </div>
-      </header>
+      </div>
+
+      {mismatches.length > 0 && (
+        <p className={styles.glyphNote}>
+          On <span className={styles.hintThai}>{mismatches.join(' ')}</span> this voice cuts the glide short:
+          the shape under the syllable is the tone, the line above is what this voice did with it.
+        </p>
+      )}
+
+      {status === 'done' && <Report comparison={comparison} hasReference={refStatus === 'ready'} />}
 
       <div className={styles.scopeTools}>
         <label className={styles.gainLabel} htmlFor="spec-gain">Sensitivity</label>
@@ -905,57 +906,46 @@ function PracticePanel({
           className={styles.gainSlider}
         />
         <span className={styles.gainValue}>{gain.toFixed(1)}×</span>
-        <button
-          type="button"
-          className={`${styles.switch} ${showTextbook ? styles.switchOn : ''}`}
-          onClick={onToggleTextbook}
-          aria-pressed={showTextbook}
-        >
-          <i /> textbook tones
-        </button>
         <span className={styles.legend}>
-          <span className={styles.legendSwatch} style={{ background: '#fff' }} /> your pitch
+          <span className={`${styles.legendSwatch} ${styles.swatchOwn}`} /> your pitch
           <span className={styles.legendSwatch} style={{ background: '#fbbf24', marginLeft: 12 }} /> native pitch (dashed)
-          {showTextbook && <><span className={styles.legendSwatch} style={{ background: '#7c3aed', marginLeft: 12 }} /> textbook tone shape</>}
         </span>
       </div>
-      <p className={styles.scopeHint}>
-        Sensitivity changes the picture only, never what is measured.
-        {mismatches.length > 0 && (
-          <>
-            {' '}On <span className={styles.hintThai}>{mismatches.join(' ')}</span> the native voice does not make
-            the textbook glide — it cuts it short — so no band is drawn there; the line is the target.
-          </>
-        )}
-      </p>
-
-      {refStatus === 'failed' && (
-        <p className={styles.denied}>
-          The native voice can't be fetched here — this build has no TTS relay configured (see
-          worker/tts-proxy/README.md). You can still record; there is just nothing to lay your take
-          against.
-        </p>
-      )}
-      {status === 'denied' && (
-        <p className={styles.denied}>
-          The microphone is blocked. Allow microphone access for this page in your browser, then try
-          recording again — nothing is uploaded, all of the analysis runs here.
-        </p>
-      )}
-      {status === 'listening' && (
-        <p className={styles.hintLine}>The native voice first — your recording starts right after.</p>
-      )}
-      {status === 'recording' && (
-        <p className={styles.hintLine}>Recording — say it at your own pace; it stops when you go quiet.</p>
-      )}
-      {status === 'done' && <Report comparison={comparison} hasReference={refStatus === 'ready'} />}
-      {status === 'done' && !busy && (
-        <p className={styles.scopeHint}>Space, or Try again, records another take.</p>
-      )}
+      <p className={styles.scopeHint}>Sensitivity changes the picture only, never what is measured.</p>
 
       {phrase.note && <p className={styles.note}>{phrase.note}</p>}
     </div>
   );
+}
+
+/** One line under the sentence saying what is happening, or what went wrong,
+ *  in the place the learner is already looking. */
+function StatusLine({ status, refStatus }: { status: Status; refStatus: ReferenceStatus }) {
+  if (status === 'denied') {
+    return (
+      <p className={`${styles.status} ${styles.statusError}`}>
+        The microphone is blocked. Allow it for this page in the browser, then record again — nothing
+        is uploaded; the analysis runs here.
+      </p>
+    );
+  }
+  if (refStatus === 'failed') {
+    return (
+      <p className={`${styles.status} ${styles.statusError}`}>
+        The native voice can't be fetched in this build (no TTS relay — see worker/tts-proxy/README.md).
+        You can still record; there is nothing to lay the take against.
+      </p>
+    );
+  }
+  const text =
+    status === 'listening'
+      ? 'The native voice first — your recording starts right after.'
+      : status === 'counting'
+        ? 'Read the sentence; start when the count ends.'
+        : status === 'recording'
+          ? 'Recording — at your own pace; it stops when you go quiet.'
+          : null;
+  return text ? <p className={styles.status}>{text}</p> : null;
 }
 
 /** Only clear misses get a label; anything else is shown plain. A green
@@ -972,17 +962,22 @@ const isFlag = (verdict: SyllableVerdict) => verdict in FLAG_LABEL;
 
 function Report({ comparison, hasReference }: { comparison: Comparison | null; hasReference: boolean }) {
   if (!hasReference) {
-    return <p className={styles.hintLine}>Recorded. Without the native reference there is nothing to compare it to.</p>;
+    return <div className={styles.report}><p className={styles.notice}>Recorded. Without the native voice there is nothing to compare it to.</p></div>;
   }
   if (!comparison) {
     return (
-      <p className={styles.hintLine}>
-        Not enough voice to compare — say the whole sentence, a little closer to the microphone.
-      </p>
+      <div className={styles.report}>
+        <p className={styles.notice}>
+          Not enough voice to compare — say the whole sentence, a little closer to the microphone.
+        </p>
+      </div>
     );
   }
   const pace = comparison.learnerMs / comparison.referenceMs;
+  // Advice about the microphone, not a judgement of the voice: below this
+  // peak the frames the analysis can read thin out.
   const quiet = comparison.learnerPeakRms < 0.03;
+  const peakDb = Math.round(20 * Math.log10(comparison.learnerPeakRms));
   const scores = comparison.syllables;
   const flags = scores.filter(s => isFlag(s.verdict));
   const merged = [...new Set(scores.filter(s => s.parts).map(s => s.parts!.map(p => p.thai).join(' + ')))];
@@ -1000,13 +995,25 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         </strong>
         <span className={styles.refHz}>
           {' '}· {(comparison.learnerMs / 1000).toFixed(1)} s vs {(comparison.referenceMs / 1000).toFixed(1)} s
-          {pace < 0.8 ? ' — slow down; the tones need room' : pace > 1.25 ? ' — slower than native, fine for now' : ''}
-          {quiet ? ` · quiet take (peak ${Math.round(20 * Math.log10(comparison.learnerPeakRms))} dB), get closer to the mic` : ''}
+          {pace > 1.25 ? ' — slower than native, fine for now' : ''}
         </span>
       </p>
+      {(quiet || pace < 0.8) && (
+        <div className={styles.notices}>
+          {quiet && (
+            <p className={styles.notice}>
+              Quiet take (peak {peakDb} dB). Move closer to the microphone or raise its input level —
+              quiet syllables are the first ones the analysis loses.
+            </p>
+          )}
+          {pace < 0.8 && (
+            <p className={styles.notice}>You went faster than the native voice; slow down so each tone has room.</p>
+          )}
+        </div>
+      )}
       {scores.length > 0 && (
         <p className={styles.paceLine}>
-          Underlined syllables are clear misses; an unmarked syllable is not a pass, just nothing the
+          Highlighted syllables are clear misses; an unmarked syllable is not a pass, just nothing the
           analysis could fault.{merged.length > 0 && ` ${merged.join(', ')} ran together in your take and are judged together.`}
         </p>
       )}
@@ -1028,6 +1035,20 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         </ul>
       )}
     </div>
+  );
+}
+
+const TONE_PATH = Object.fromEntries(THAI_TONES.map(t => [t.nameEn, t.path])) as Record<ToneName, string>;
+
+/** The tone's citation shape, drawn small under its syllable: what the tone
+ *  is, kept apart from the spectrogram, which shows only what a voice did.
+ *  Same path as the Tones tab's cards, so one shape is taught everywhere. */
+function ToneGlyph({ tone }: { tone: ToneName }) {
+  return (
+    <svg className={styles.glyph} viewBox="0 0 160 80" preserveAspectRatio="none" aria-hidden>
+      <title>{`${tone} tone — ${TONE_FEEL[tone]}`}</title>
+      <path d={TONE_PATH[tone]} stroke={TONE_COLOR[tone]} strokeWidth="12" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

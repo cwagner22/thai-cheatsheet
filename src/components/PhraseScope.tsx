@@ -2,7 +2,6 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { SPEC_MAX_HZ, type SpectrumColumn } from '../lib/capture';
 import type { TrackPoint } from '../lib/contour';
 import type { SyllableSpan } from '../lib/segment';
-import { contourAt, textbookContour } from '../lib/textbook';
 import { TONE_COLOR } from '../data/tones';
 import styles from './PhraseScope.module.css';
 
@@ -26,12 +25,6 @@ export interface ScopeData {
   emptyText: string;
   /** Syllable slots on this axis, from the native recording. */
   syllables?: SyllableSpan[] | null;
-  /** Draw the citation-form tone shape over each syllable slot. */
-  showTextbook?: boolean;
-  /** Slots (by index) whose textbook shape the native voice does not make;
-   *  no band is drawn there, so the picture never shows two targets that
-   *  disagree. */
-  textbookHidden?: ReadonlySet<number>;
   /** Milliseconds that fit the panel's visible width. When `windowMs` is
    *  longer the canvas is drawn wider than the viewport, at the same scale,
    *  and scrolls sideways — a take is never compressed to fit. Defaults to
@@ -56,8 +49,6 @@ const PAD_B = 10;
 const PITCH_INSET = 0.09;
 
 const FAINT = 'rgba(226, 232, 240, 0.16)';
-/** Half-height of a textbook band, in semitones. */
-const BAND_HALF_ST = 1.7;
 const OWN_LINE = '#ffffff';
 const GHOST_LINE = 'rgba(251, 191, 36, 0.95)';
 
@@ -110,6 +101,7 @@ export function PhraseScope({
   height = 300,
   tools,
   overlay,
+  dock,
 }: {
   data: { current: ScopeData };
   live: boolean;
@@ -120,6 +112,8 @@ export function PhraseScope({
   tools?: ReactNode;
   /** Shown centred over the panel — the count-in before a take. */
   overlay?: ReactNode;
+  /** A control docked in the panel's bottom-right corner. */
+  dock?: ReactNode;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const specRef = useRef<HTMLCanvasElement | null>(null);
@@ -171,8 +165,16 @@ export function PhraseScope({
       </div>
       {tools && <div className={styles.tools}>{tools}</div>}
       {overlay && <div className={styles.overlay}>{overlay}</div>}
+      {dock && <div className={styles.dock}>{dock}</div>}
     </div>
   );
+}
+
+/** A tone colour mixed 45% towards white, for text on the dark panel. */
+function lighten(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.45);
+  return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
 }
 
 function draw(
@@ -256,7 +258,7 @@ function draw(
     ctx.fillText(data.emptyText, PAD_L + plotW / 2, top + plotH / 2);
   }
 
-  // --- syllable slots: boundary ticks, optional textbook bands, labels ---
+  // --- syllable slots: boundary ticks and labels ---
   if (data.syllables && data.syllables.length) {
     const edges = [...data.syllables.map(s => s.startMs), data.syllables[data.syllables.length - 1].endMs];
     ctx.strokeStyle = 'rgba(226,232,240,0.28)';
@@ -269,44 +271,22 @@ function draw(
       ctx.stroke();
     }
 
-    if (data.showTextbook) {
-      const bandPx = Math.abs(y(0) - y(BAND_HALF_ST)) * 2;
-      for (const [i, syl] of data.syllables.entries()) {
-        if (data.textbookHidden?.has(i)) continue;
-        const contour = textbookContour(syl.tone);
-        const path = new Path2D();
-        for (let i = 0; i <= 24; i++) {
-          const pos = i / 24;
-          path[i === 0 ? 'moveTo' : 'lineTo'](
-            x(syl.startMs + (syl.endMs - syl.startMs) * pos),
-            y(contourAt(contour, pos)),
-          );
-        }
-        ctx.save();
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = 'rgba(5,7,13,0.45)';
-        ctx.lineWidth = bandPx + 4;
-        ctx.stroke(path);
-        ctx.strokeStyle = TONE_COLOR[syl.tone];
-        ctx.globalAlpha = 0.4;
-        ctx.lineWidth = bandPx;
-        ctx.stroke(path);
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = 2;
-        ctx.stroke(path);
-        ctx.restore();
-      }
-    }
 
     ctx.textAlign = 'center';
-    ctx.font = '600 14px "Noto Serif Thai", serif';
+    // Labels on an opaque chip in a lightened tone colour: the tone colours
+    // are chosen for white paper, and the darker ones (blue, purple, red)
+    // sink into a black spectrogram at their own value.
+    ctx.font = '700 15px "Noto Serif Thai", serif';
     for (const syl of data.syllables) {
       const cx = (x(syl.startMs) + x(syl.endMs)) / 2;
       const tw = ctx.measureText(syl.thai).width;
-      ctx.fillStyle = 'rgba(5,7,13,0.72)';
-      ctx.fillRect(cx - tw / 2 - 5, top + plotH - 26, tw + 10, 20);
+      ctx.fillStyle = '#05070d';
+      ctx.beginPath();
+      ctx.roundRect(cx - tw / 2 - 6, top + plotH - 28, tw + 12, 23, 5);
+      ctx.fill();
       ctx.fillStyle = TONE_COLOR[syl.tone];
+      ctx.fillRect(cx - tw / 2 - 6, top + plotH - 7, tw + 12, 2);
+      ctx.fillStyle = lighten(TONE_COLOR[syl.tone]);
       ctx.fillText(syl.thai, cx, top + plotH - 16);
     }
     ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
