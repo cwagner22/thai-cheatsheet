@@ -23,6 +23,7 @@ import {
   textbookMismatches,
   type Comparison,
   type SyllableVerdict,
+  type TrackPoint,
 } from '../lib/contour';
 import { cachedReference, captureReference, playReference, RUN_ON_MS, type Playback, type Reference } from '../lib/reference';
 import { PhraseScope, type ScopeData } from '../components/PhraseScope';
@@ -444,7 +445,7 @@ export function SpeakingTab() {
         windowMs: Math.max(viewMs, end + FIT_TAIL_MS - originMs),
         spectra: handle.capture.spectra,
         segments: result.learnerSegmentsRaw,
-        ghost: result.referenceSegments.map(seg => seg.map(p => ({ ms: result.inverseTime(p.ms), st: p.st }))),
+        ghost: result.referenceSegments.flatMap(seg => splitAtPauses(seg.map(p => ({ ms: result.inverseTime(p.ms), st: p.st })))),
         syllables: reference?.syllables
           ? reference.syllables.map(sp => ({
               ...sp,
@@ -654,6 +655,25 @@ export function SpeakingTab() {
   );
 }
 
+/** A gap this long between two neighbouring native pitch points, once
+ *  carried onto the take's clock, is a pause the learner made where the
+ *  native voice ran straight on; neighbouring native frames are about 20 ms
+ *  apart, and even a vowel held four times the native length leaves them
+ *  under 100 ms apart. */
+const GHOST_BREAK_MS = 200;
+
+/** Splits a native pitch run carried onto the take's clock wherever it
+ *  crosses a pause of the learner's, so the dashed line does not run flat
+ *  through the silence between two words. */
+function splitAtPauses(run: TrackPoint[]): TrackPoint[][] {
+  const out: TrackPoint[][] = [[]];
+  run.forEach((p, i) => {
+    if (i > 0 && p.ms - run[i - 1].ms > GHOST_BREAK_MS) out.push([]);
+    out[out.length - 1].push(p);
+  });
+  return out.filter(r => r.length > 1);
+}
+
 function PracticePanel({
   phrase,
   status,
@@ -758,6 +778,28 @@ function PracticePanel({
     };
   }, [phrase]);
 
+  // Docked inside the learner's panel while it is empty or filling; once
+  // the take is scored it moves under the panel, off the end of the take.
+  const recordButton =
+    status === 'recording' ? (
+      <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
+        <span className={styles.recDot} />Stop
+      </button>
+    ) : (
+      <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
+        <span className={styles.recDot} />
+        {status === 'listening'
+          ? 'Listen…'
+          : status === 'counting'
+            ? 'Get ready…'
+            : status === 'done'
+              ? 'Try again'
+              : heard
+                ? 'Record'
+                : 'Practice'}
+      </button>
+    );
+
   return (
     <div className={styles.panel}>
 
@@ -840,28 +882,7 @@ function PracticePanel({
           revision={revision}
           height={280}
           overlay={status === 'counting' ? <span key={countIn} className={scopeStyles.count}>{countIn}</span> : null}
-          dock={
-            <>
-            {status === 'recording' ? (
-              <button type="button" className={`${styles.recBtn} ${styles.stopping}`} onClick={onStop}>
-                <span className={styles.recDot} />Stop
-              </button>
-            ) : (
-              <button type="button" className={styles.recBtn} onClick={onRecord} disabled={busy}>
-                <span className={styles.recDot} />
-                {status === 'listening'
-                  ? 'Listen…'
-                  : status === 'counting'
-                    ? 'Get ready…'
-                    : status === 'done'
-                      ? 'Try again'
-                      : heard
-                        ? 'Record'
-                        : 'Practice'}
-              </button>
-            )}
-            </>
-          }
+          dock={status === 'done' ? null : recordButton}
           tools={
             takeUrl && status === 'done' ? (
               <>
@@ -879,9 +900,12 @@ function PracticePanel({
 
       <div className={styles.statusRow}>
         <StatusLine status={status} refStatus={refStatus} />
-        <span className={styles.keys}>
+        <div className={styles.rowEnd}>
+          <span className={styles.keys}>
             <kbd>Space</kbd> record · <kbd>L</kbd> listen · <kbd>←</kbd><kbd>→</kbd> sentence
           </span>
+          {status === 'done' && recordButton}
+        </div>
       </div>
 
       {mismatches.length > 0 && (
@@ -995,7 +1019,13 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         </strong>
         <span className={styles.refHz}>
           {' '}· {(comparison.learnerMs / 1000).toFixed(1)} s vs {(comparison.referenceMs / 1000).toFixed(1)} s
-          {pace > 1.25 ? ' — slower than native, fine for now' : ''}
+          {comparison.byWord
+            ? ' — read in pieces: tone shapes checked, pitch levels not compared'
+            : !comparison.levelsJudged
+              ? ' — much slower than native: tone shapes checked, pitch levels not compared'
+              : pace > 1.25
+                ? ' — slower than native, fine for now'
+                : ''}
         </span>
       </p>
       {(quiet || pace < 0.8) && (
