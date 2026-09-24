@@ -102,7 +102,7 @@ function splitOnJumps(segment: TrackPoint[]): TrackPoint[][] {
 
 /** `unsaid`: the take ended before the syllable (see Comparison.unsaidFrom);
  *  not a fault in how it was said, so never counted as a miss. */
-export type SyllableVerdict = 'good' | 'high' | 'low' | 'flat' | 'shape' | 'missing' | 'unsure' | 'unsaid';
+export type SyllableVerdict = 'good' | 'flat' | 'shape' | 'missing' | 'unsure' | 'unsaid';
 
 export interface SyllableScore {
   /** The native syllable scored — or, when the learner ran several
@@ -119,6 +119,10 @@ export interface SyllableScore {
   referenceNet: number;
   /** One short sentence, or '' when the syllable landed. */
   hint: string;
+  /** The pitch points the verdict was reached on, in semitones from each
+   *  voice's register on the native voice's clock; `…Swing` without the
+   *  points in an onset slide (ONSET_MS). Absent on syllables not scored. */
+  points?: { ref: TrackPoint[]; lrn: TrackPoint[]; refSwing: number[]; lrnSwing: number[] };
 }
 
 export interface Comparison {
@@ -143,16 +147,10 @@ export interface Comparison {
   learnerPeakRms: number;
   /** The take was read in pieces and aligned on its pauses. */
   byWord: boolean;
-  /** Pitch levels were compared (see compareToReference). */
-  levelsJudged: boolean;
   /** Index of the first native syllable the take never reached — it ended
    *  or was stopped before them — or null when it reached them all. */
   unsaidFrom: number | null;
 }
-
-/** A take this much longer than the native voice is read slowly enough to
- *  carry its own melody; levels are not compared. */
-const SLOW_PACE = 1.5;
 
 /** Not enough voiced audio to say anything honest about. */
 const MIN_VOICED_FRAMES = 8;
@@ -160,24 +158,33 @@ const MIN_VOICED_FRAMES = 8;
  *  reading of the sentence — a word, a cough, a click — and is not scored;
  *  the alignment would stretch whatever it is across every slot. */
 const MIN_SPEECH_SHARE = 0.3;
-/** Within this the learner sits at the native voice's level on a syllable. */
-const LEVEL_TOL_ST = 1.7;
+/* No verdict is reached on a syllable's pitch level — "too high", "too
+ * low" — only on its movement. Across four native voices reading the same
+ * 4,500 texts, one syllable's mean level differs between two natives by
+ * 2.7–3.5 st at the 90th percentile, while in connected speech the mean
+ * levels of mid, low and high syllables sit 0.1–0.7 st apart
+ * (scripts/speaking-dataset/levels.py): a level check flags natives as
+ * often as it catches a wrong tone. */
 /** A glide the native voice makes must travel at least this far to count
  *  as shown — below it the band is hidden and the syllable not judged for
  *  movement — and before a learner can be called flat against it; asking for a third of a
  *  two-semitone drift is asking for tenths, which alignment jitter decides. */
 const MIN_WANT_ST = 2.5;
 /** The learner's movement on a syllable, as a share of the native voice's,
- *  under which it reads as flat. The synthetic voice swings wide at the
- *  start of a sentence; a learner who makes a third of that has audibly
- *  made the tone. */
-const FLAT_SHARE = 1 / 3;
+ *  under which it reads as flat. Native voices differ widely in how far
+ *  they carry a glide in connected speech — one makes a third of another's
+ *  on one syllable in six — so only a glide all but missing is called flat.
+ *  Set, with SWING_ST, from native voices scored against each other and
+ *  syllables re-pitched to a wrong tone (scripts/speaking-dataset/sweep.py):
+ *  at 1/3 and 2.5 st, 15% of native syllables were flagged for 35% of the
+ *  wrong ones caught; here, 9% for 25%. */
+const FLAT_SHARE = 0.1;
 /** A swing this much larger than the native voice's own on a syllable —
  *  on a level tone in either direction, on a contour tone against it — is
- *  the wrong tone whatever the average level. Measured against the native's
- *  swing, not zero: connected speech drifts on every syllable, and the
- *  native voice doing the same thing must always pass. */
-const SWING_ST = 2.5;
+ *  the wrong tone. Measured against the native's swing, not zero: connected
+ *  speech drifts on every syllable, and the native voice doing the same
+ *  thing must always pass. */
+const SWING_ST = 3.5;
 
 /** The first stretch of voice after every break in voicing does not count
  *  towards a swing. Voice starting up — at the start of the take, after a
@@ -228,20 +235,6 @@ const ABUT_MS = 45;
  *  coarticulation, not the tone. Movement is only asked of the learner when
  *  it goes the way the tone goes. */
 export const TONE_DIRECTION: Record<ToneName, -1 | 0 | 1> = {
-  Mid: 0,
-  Low: -1,
-  Falling: -1,
-  High: 1,
-  Rising: 1,
-};
-
-/** The side of the native voice a tone may sit on without fault: lower on a
- *  tone that is or ends low, higher on one that is or ends high, is the tone
- *  done more clearly. Only the wrong side is reported. The synthetic voice
- *  often cuts a falling tone on a stopped syllable into creak at the top,
- *  so its measurable part is the high onset alone; a learner lower than
- *  that is not wrong. */
-const TONE_SIDE: Record<ToneName, -1 | 0 | 1> = {
   Mid: 0,
   Low: -1,
   Falling: -1,
@@ -339,6 +332,9 @@ function travel(xs: number[], dir: -1 | 1): number {
  *  rise. */
 const SPILL_MS = 110;
 const SPILL_SHARE = 0.4;
+/** The last share of a slot in which a restart of the voice that carries
+ *  on into the next slot is taken as the next syllable's onset. */
+const ONSET_SHARE_OF_SLOT = 0.25;
 
 /** Each syllable's pitch points, and the points its glide spills into the
  *  next syllable: that syllable's first points, taken only while the voice
@@ -353,6 +349,24 @@ export function spillTails(spans: SyllableSpan[], segments: TrackPoint[][]): { o
   segments.forEach((seg, i) => seg.forEach(p => segOf.set(p, i)));
   const points = segments.flat();
   const own = spans.map(span => points.filter(p => p.ms >= span.startMs && p.ms <= span.endMs));
+  // A run of voice that starts in the last stretch of a slot and carries
+  // on into the next slot is the next syllable's onset, the slot boundary
+  // having landed a frame or two late: after นิด's /t/ closure the voice
+  // comes back for หน่อย 20 ms before the boundary, and counted as นิด it
+  // hands นิด หน่อย's fall — and, through the spill below, 100 ms more of it.
+  for (let k = 0; k + 1 < spans.length; k++) {
+    const span = spans[k];
+    const last = own[k][own[k].length - 1];
+    if (!last) continue;
+    const seg = segOf.get(last);
+    const run = own[k].filter(p => segOf.get(p) === seg);
+    const late = span.endMs - ONSET_SHARE_OF_SLOT * (span.endMs - span.startMs);
+    const carriesOn = own[k + 1].some(p => segOf.get(p) === seg);
+    if (run.length < own[k].length && run[0].ms >= late && carriesOn) {
+      own[k] = own[k].filter(p => segOf.get(p) !== seg);
+      own[k + 1] = [...run, ...own[k + 1].filter(p => !run.includes(p))];
+    }
+  }
   const tails = spans.map((span, k) => {
     const next = spans[k + 1];
     const last = own[k][own[k].length - 1];
@@ -386,7 +400,6 @@ function scoreSyllables(
   lrnSegments: TrackPoint[][],
   speech: number[],
   onsets: { ref: Set<number>; lrn: Set<number> },
-  levelsJudged = true,
 ): SyllableScore[] {
   const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   /** Last third against first third. */
@@ -444,11 +457,11 @@ function scoreSyllables(
       return values.size === 1 ? [...values][0] : fallback;
     };
     const taught = same(sp => TONE_DIRECTION[sp.tone], 0 as -1 | 0 | 1);
-    const side = same(sp => TONE_SIDE[sp.tone], 0 as -1 | 0 | 1);
     const minor = idx.every(i => spans[i].minor);
     const base = {
       span,
       ...(ran ? { parts } : {}),
+      points: { ref: idx.flatMap(i => refPts[i]), lrn: idx.flatMap(i => lrnPts[i]), refSwing: refSw, lrnSwing: lrnSw },
       learnerNet: lrnSt.length >= 3 ? net(lrnSt) : 0,
       referenceNet: refSt.length >= 3 ? net(refSt) : 0,
     };
@@ -474,13 +487,6 @@ function scoreSyllables(
     }
 
     const levelSt = mean(lrnSt) - mean(refSt);
-    if (levelsJudged && Math.abs(levelSt) > LEVEL_TOL_ST && Math.sign(levelSt) !== side) {
-      const above = levelSt > 0;
-      return {
-        ...base, levelSt, verdict: above ? ('high' as const) : ('low' as const),
-        hint: `your pitch on ${span.thai} sits about ${Math.abs(levelSt).toFixed(1)} st ${above ? 'higher' : 'lower'} than the native voice — ${above ? 'start it lower' : 'bring it up'}${cue(span)}`,
-      };
-    }
 
     // Syllables run together whose tones move different ways have no one
     // shape to hold the run to: พูด falling into ภา mid is neither level
@@ -596,18 +602,11 @@ export function compareToReference(
 
   const referenceSegments = buildSegments(reference, referenceHz);
   const learnerSegments = buildSegments(learner, learnerHz, mapTime);
-  // A pitch level is only comparable when both voices carry the same
-  // sentence melody. Read in pieces, or at well under the native pace, a
-  // take has its own phrase-initial rise and fall on every piece, and a mid
-  // syllable sitting at the learner's own register would be called low.
-  const pace = speechSpanMs(learner) / Math.max(1, speechSpanMs(reference));
-  const levelsJudged = !byWord && pace <= SLOW_PACE;
   const unsaidFrom = byWord && syllables && byWord.said < syllables.length ? byWord.said : null;
   const said = syllables ? syllables.slice(0, unsaidFrom ?? syllables.length) : [];
 
   return {
     byWord: !!byWord,
-    levelsJudged,
     unsaidFrom,
     syllables: said.length
       ? [
@@ -617,7 +616,6 @@ export function compareToReference(
             learnerSegments,
             speechInSlots(said, reference, learner, mapTime),
             { ref: onsetTimes(reference, t => t), lrn: onsetTimes(learner, mapTime) },
-            levelsJudged,
           ),
           // Not reached: scored apart, so none is run together with the
           // last syllable said.

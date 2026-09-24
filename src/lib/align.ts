@@ -80,10 +80,9 @@ function features(frames: Frame[]): Feat[] | null {
   }));
 }
 
-export function dtwAlign(reference: Frame[], learner: Frame[]): Warp | null {
-  const a = features(reference);
-  const b = features(learner);
-  if (!a || !b) return null;
+/** Cumulative cost of the cheapest warping path between two feature
+ *  tracks, within the band; null when the path cannot reach the end. */
+function accumulate(a: Feat[], b: Feat[]): Float64Array[] | null {
   const n = a.length;
   const m = b.length;
   const band = Math.max(3, Math.round(BAND * Math.min(n, m)));
@@ -124,7 +123,18 @@ export function dtwAlign(reference: Frame[], learner: Frame[]): Warp | null {
       if (prev < INF) acc[i][j] = prev + d;
     }
   }
-  if (!Number.isFinite(acc[n - 1][m - 1])) return null;
+  return Number.isFinite(acc[n - 1][m - 1]) ? acc : null;
+}
+
+export function dtwAlign(reference: Frame[], learner: Frame[]): Warp | null {
+  const a = features(reference);
+  const b = features(learner);
+  if (!a || !b) return null;
+  const acc = accumulate(a, b);
+  if (!acc) return null;
+  const n = a.length;
+  const m = b.length;
+  const INF = Number.POSITIVE_INFINITY;
 
   // Both ends pinned: a path free to stop early stops just before a final
   // syllable that is present but unlike the native's (unvoiced, quieter)
@@ -215,37 +225,33 @@ function speechStretches(frames: Frame[]): Stretch[] {
   return out;
 }
 
-/** Cost of a pause falling inside a word rather than between words: a
- *  learner reading in pieces mostly breaks between words, but not always —
- *  ภาษา | ไทย is a natural place to breathe. */
-const SPLIT_IN_WORD = 0.35;
-
 /** A run of pitched frames at least this long counts as one syllable's
  *  vowel when counting syllables in a stretch; shorter ones are a voiced
  *  onset or a tracker blip. */
 const NUCLEUS_MS = 50;
 
-/** Cost per syllable of difference between the vowels heard in a stretch
- *  and the syllables in the native run it is given. Durations alone are
- *  misled by a learner holding one word twice as long as the native: ผมพูด
- *  said briskly and ไทย drawn out, and the cheapest split by length hands
- *  ผม a stretch of its own and pushes every word after it one slot late. */
-const COUNT_COST = 0.6;
-
-/** Cost, per stretch, of the pace an assignment implies straying from the
- *  native voice's: a take read in pieces says each piece at about the
- *  native speed or slower. Without it, a take that stopped after ไทย can
- *  be read as the whole sentence said at 0.6 times the native length, and
- *  the last stretch is handed ได้ นิด หน่อย along with ไทย. */
-const PACE_COST = 1;
-
-/** Cost per native unit a take leaves unsaid at its end: a little under
- *  one unit too many in a stretch (COUNT_COST). When the take holds fewer
- *  vowels than the sentence, the missing ones being unsaid at the end is
- *  the likelier story than all of them squeezed into the last stretch;
- *  the stretches' lengths against the native's still decide between them,
- *  so a take that said everything, with one vowel miscounted, keeps it. */
-const UNSAID_COST = COUNT_COST - 0.1;
+/** The costs pauseAlign weighs when it hands each stretch of a take read
+ *  in pieces a run of native syllables; one object so a harness can
+ *  re-weight it (scripts/speaking-dataset/alignbench.ts). */
+export const PAUSE_WEIGHTS = {
+  /** A pause falling inside a word rather than between words: a learner
+   *  reading in pieces mostly breaks between words, but not always —
+   *  ภาษา | ไทย is a natural place to breathe. */
+  splitInWord: 0.35,
+  /** Per vowel of difference between those heard in a stretch (nuclei())
+   *  and the syllables of the native run it is given. Durations
+   *  alone are misled by a learner holding one word twice as long as the
+   *  native: ผมพูด said briskly and ไทย drawn out, and the cheapest split
+   *  by length hands ผม a stretch of its own and pushes every word after
+   *  it one slot late. */
+  count: 0.6,
+  /** Per native syllable left unsaid at the end of the take: more than
+   *  one vowel miscounted, so a take that said everything is not read as
+   *  cut off because two of its syllables ran together. At the vowel
+   *  count's own cost, a quarter of a fast voice's complete word-by-word
+   *  takes were read as cut off (alignbench.ts); at this, under 1 %. */
+  unsaid: 0.8,
+};
 
 /** Vowels in a stretch: runs of pitched frames, each at least NUCLEUS_MS
  *  long. Thai syllables mostly begin with a consonant that breaks the voice
@@ -310,6 +316,8 @@ export function pauseAlign(
   const nativeMs = (a: number, b: number) => wordEnd(b) - wordStartsMs[a];
   const spoken = chunks.reduce((sum, c) => sum + (c.endMs - c.startMs), 0);
   const heard = chunks.map(c => nuclei(learner, c));
+  const W = PAUSE_WEIGHTS;
+  const PAD_MS = 60;
 
   // Cheapest way to give the stretches the units 0..last, each stretch a
   // run of consecutive units, at the pace those units imply.
@@ -319,8 +327,8 @@ export function pauseAlign(
       const r = (chunks[c].endMs - chunks[c].startMs + 20) / Math.max(20, nativeMs(a, b)) / pace;
       return (
         Math.log(r) ** 2 +
-        COUNT_COST * Math.abs(heard[c] - (b - a + 1)) +
-        (c > 0 && !units[a].wordStart ? SPLIT_IN_WORD : 0)
+        W.count * Math.abs(heard[c] - (b - a + 1)) +
+        (c > 0 && !units[a].wordStart ? W.splitInWord : 0)
       );
     };
     // best[c][w]: cheapest way to give stretches 0..c the units 0..w.
@@ -345,19 +353,18 @@ export function pauseAlign(
       runs.unshift([v + 1, w]);
       w = v;
     }
-    return { total: best[C - 1][last] + C * PACE_COST * Math.log(pace) ** 2, runs };
+    return { total: best[C - 1][last], runs };
   };
-  // A take can stop before the sentence does — the learner ran out of
-  // time, or stopped the recording. Every ending is tried, each unit left
-  // unsaid costing what one unit too many in a stretch costs, so the last
-  // stretch is not handed the rest of the sentence just because nothing
-  // else is left to take it.
+  // A take can stop before the sentence does — the learner stopped the
+  // recording. Every ending is tried, each unit left unsaid at a price
+  // (W.unsaid), so the last stretch need not be handed the rest of the
+  // sentence just because nothing else is left to take it.
   let chosen = solve(words - 1);
   let said = words;
   for (let last = C - 1; last < words - 1; last++) {
     const option = solve(last);
-    const total = option.total + UNSAID_COST * (words - 1 - last);
-    if (total < chosen.total + UNSAID_COST * (words - said)) {
+    const total = option.total + W.unsaid * (words - 1 - last);
+    if (total < chosen.total + W.unsaid * (words - said)) {
       chosen = option;
       said = last + 1;
     }
@@ -369,7 +376,7 @@ export function pauseAlign(
     const chunk = chunks[c];
     const n0 = wordStartsMs[a];
     const n1 = wordEnd(b);
-    const pad = 60;
+    const pad = PAD_MS;
     const lrnPart = learner.filter(f => f.t >= chunk.startMs - pad && f.t <= chunk.endMs + pad);
     const refPart = reference.filter(f => f.t >= n0 && f.t <= n1);
     const local = dtwAlign(refPart, lrnPart);

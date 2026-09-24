@@ -284,6 +284,159 @@ export const PHRASE_GROUPS: PhraseGroup[] = [
     ],
   },
   {
+    id: 'shopping',
+    title: 'Shopping & ordering',
+    blurb:
+      'What you say at a market stall or a coffee counter, chosen to stay ' +
+      'mostly on the mid tone: one or two changes of tone per phrase, so the ' +
+      'few that do move stand out.',
+    phrases: [
+      {
+        id: 'phaengjang',
+        meaning: "That's so expensive!",
+        note: 'Three mid tones in a row — hold them level, without letting the pitch sag at the end.',
+        words: [
+          { gloss: 'expensive', syllables: [{ thai: 'แพง', ipa: 'pʰɛːŋ' }] },
+          { gloss: 'so', syllables: [{ thai: 'จัง', ipa: 'tɕaŋ' }] },
+          { gloss: 'really', syllables: [{ thai: 'เลย', ipa: 'lɤːj' }] },
+        ],
+      },
+      {
+        id: 'phaengpai',
+        meaning: "It's a bit too expensive.",
+        words: [
+          { gloss: 'expensive', syllables: [{ thai: 'แพง', ipa: 'pʰɛːŋ' }] },
+          { gloss: 'too (much)', syllables: [{ thai: 'ไป', ipa: 'paj' }] },
+          { gloss: 'a little', syllables: [{ thai: 'หน่อย', ipa: 'nɔ̀j' }] },
+        ],
+      },
+      {
+        id: 'aoanni',
+        meaning: "I'll take this one.",
+        words: [
+          { gloss: 'take / want', syllables: [{ thai: 'เอา', ipa: 'ʔaw' }] },
+          {
+            gloss: 'this one',
+            syllables: [
+              { thai: 'อัน', ipa: 'ʔan' },
+              { thai: 'นี้', ipa: 'níː' },
+            ],
+          },
+          KHRAP,
+        ],
+      },
+      {
+        id: 'chayen',
+        meaning: 'A Thai iced tea, please.',
+        words: [
+          { gloss: 'take / want', syllables: [{ thai: 'เอา', ipa: 'ʔaw' }] },
+          {
+            gloss: 'Thai iced tea',
+            syllables: [
+              { thai: 'ชา', ipa: 'tɕʰaː' },
+              { thai: 'เย็น', ipa: 'jen' },
+            ],
+          },
+          KHRAP,
+        ],
+      },
+      {
+        id: 'ngenthon',
+        meaning: 'Do you have change?',
+        words: [
+          { gloss: 'have', syllables: [{ thai: 'มี', ipa: 'miː' }] },
+          {
+            gloss: 'change (money back)',
+            syllables: [
+              { thai: 'เงิน', ipa: 'ŋɤn' },
+              { thai: 'ทอน', ipa: 'tʰɔːn' },
+            ],
+          },
+          { gloss: 'question particle', syllables: [{ thai: 'ไหม', ipa: 'mǎj' }] },
+        ],
+      },
+      {
+        id: 'kafaeyen',
+        meaning: 'An iced coffee, please.',
+        words: [
+          { gloss: 'may I have', syllables: [{ thai: 'ขอ', ipa: 'kʰɔ̌ː' }] },
+          {
+            gloss: 'coffee',
+            syllables: [
+              { thai: 'กา', ipa: 'kaː' },
+              { thai: 'แฟ', ipa: 'fɛː' },
+            ],
+          },
+          { gloss: 'iced', syllables: [{ thai: 'เย็น', ipa: 'jen' }] },
+          KHRAP,
+        ],
+      },
+      {
+        id: 'khaiyangngai',
+        meaning: 'How much are you selling it for?',
+        note: 'The market way to ask a price — literally "sell how?".',
+        words: [
+          { gloss: 'sell', syllables: [{ thai: 'ขาย', ipa: 'kʰǎːj' }] },
+          {
+            gloss: 'how',
+            syllables: [
+              { thai: 'ยัง', ipa: 'jaŋ' },
+              { thai: 'ไง', ipa: 'ŋaj' },
+            ],
+          },
+          KHRAP,
+        ],
+      },
+      {
+        id: 'songkilo',
+        meaning: "I'll take two kilos.",
+        words: [
+          { gloss: 'take / want', syllables: [{ thai: 'เอา', ipa: 'ʔaw' }] },
+          { gloss: 'two', syllables: [{ thai: 'สอง', ipa: 'sɔ̌ːŋ' }] },
+          {
+            gloss: 'kilo',
+            syllables: [
+              { thai: 'กิ', ipa: 'ki' },
+              { thai: 'โล', ipa: 'loː' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'onngen',
+        meaning: 'Can I pay by transfer?',
+        words: [
+          {
+            gloss: 'transfer money',
+            syllables: [
+              { thai: 'โอน', ipa: 'ʔoːn' },
+              { thai: 'เงิน', ipa: 'ŋɤn' },
+            ],
+          },
+          { gloss: 'can', syllables: [{ thai: 'ได้', ipa: 'dâj' }] },
+          { gloss: 'question particle', syllables: [{ thai: 'ไหม', ipa: 'mǎj' }] },
+        ],
+      },
+      {
+        id: 'kafaekaeo',
+        meaning: 'One iced coffee.',
+        words: [
+          { gloss: 'take / want', syllables: [{ thai: 'เอา', ipa: 'ʔaw' }] },
+          {
+            gloss: 'coffee',
+            syllables: [
+              { thai: 'กา', ipa: 'kaː' },
+              { thai: 'แฟ', ipa: 'fɛː' },
+            ],
+          },
+          { gloss: 'iced', syllables: [{ thai: 'เย็น', ipa: 'jen' }] },
+          { gloss: 'glass (classifier)', syllables: [{ thai: 'แก้ว', ipa: 'kɛ̂ːw' }] },
+          { gloss: 'one', syllables: [{ thai: 'หนึ่ง', ipa: 'nɯ̀ŋ' }] },
+        ],
+      },
+    ],
+  },
+  {
     id: 'workout',
     title: 'Tone workouts',
     blurb:

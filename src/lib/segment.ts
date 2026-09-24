@@ -51,10 +51,10 @@ export interface SyllableSpan extends SyllableSpec {
  *  syllable's final sound. */
 const bare = (ipa: string) => ipa.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 /** A syllable closed by a stop is cut off rather than allowed to ring. */
-const isDead = (ipa: string) => /[ptkʔ]$/.test(bare(ipa));
+export const isDead = (ipa: string) => /[ptkʔ]$/.test(bare(ipa));
 /** Thai's diphthongs เอีย /ia/, เอือ /ɯa/ and อัว /ua/ are long vowels
  *  however they are written; everything else is long only with /ː/. */
-const isLong = (ipa: string) => ipa.includes('ː') || /ia|ɯa|ua|iə|ɯə|uə/.test(bare(ipa));
+export const isLong = (ipa: string) => ipa.includes('ː') || /ia|ɯa|ua|iə|ɯə|uə/.test(bare(ipa));
 /** Voiceless onsets, including the affricate /tɕ/ and the aspirates and
  *  clusters that begin with /k t p/. Voiced stops /b d/ and the sonorants
  *  keep the voice running into the syllable. */

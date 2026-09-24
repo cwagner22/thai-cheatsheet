@@ -25,7 +25,7 @@ import {
   type SyllableVerdict,
   type TrackPoint,
 } from '../lib/contour';
-import { cachedReference, captureReference, playReference, RUN_ON_MS, type Playback, type Reference } from '../lib/reference';
+import { cachedReference, loadReference as fetchReference, playReference, type Playback, type Reference } from '../lib/reference';
 import { PhraseScope, type ScopeData } from '../components/PhraseScope';
 import scopeStyles from '../components/PhraseScope.module.css';
 import { speakThai } from '../lib/speak';
@@ -71,7 +71,7 @@ function longestPause(frames: Frame[]): number {
 }
 
 type Status = 'idle' | 'listening' | 'counting' | 'recording' | 'done' | 'denied';
-type ReferenceStatus = 'none' | 'loading' | 'playing' | 'ready' | 'failed';
+type ReferenceStatus = 'none' | 'loading' | 'ready' | 'failed';
 /** Which panel a playhead is running across, if any. */
 type Playing = 'native' | 'you' | null;
 
@@ -254,8 +254,7 @@ export function SpeakingTab() {
   const showReference = useCallback((reference: Reference) => {
     const hidden = new Set(reference.syllables ? textbookMismatches(reference.frames, reference.syllables) : []);
     setMismatches(reference.syllables ? reference.syllables.filter((_, i) => hidden.has(i)).map(s => s.thai) : []);
-    // Kept from onStart when the clip was just captured, so nothing rescales.
-    const windowMs = nativeScope.current.spectra === reference.spectra ? nativeScope.current.windowMs : windowFor(reference);
+    const windowMs = windowFor(reference);
     nativeScope.current = {
       windowMs,
       spectra: reference.spectra,
@@ -315,57 +314,32 @@ export function SpeakingTab() {
     }
   }, [phrase, releaseAll, showReference]);
 
-  /** Fetches, plays (or not) and captures the native voice, drawing it live. */
-  const loadReferenceNow = useCallback(
-    async (audible: boolean): Promise<Reference | null> => {
-      const ctx = ensureCtx();
-      setRefStatus('loading');
-      nativeScope.current = emptyScope(FALLBACK_WINDOW_MS, NATIVE_LABEL, 'fetching the native voice…', gainRef.current);
+  /** Fetches and analyses the native voice, then draws it whole. */
+  const loadReferenceNow = useCallback(async (): Promise<Reference | null> => {
+    const ctx = ensureCtx();
+    setRefStatus('loading');
+    nativeScope.current = emptyScope(FALLBACK_WINDOW_MS, NATIVE_LABEL, 'fetching the native voice…', gainRef.current);
+    redraw();
+    try {
+      const reference = await fetchReference(ctx, phrase);
+      referenceRef.current = reference;
+      setRefStatus('ready');
+      showReference(reference);
+      return reference;
+    } catch {
+      setRefStatus('failed');
+      nativeScope.current = emptyScope(
+        FALLBACK_WINDOW_MS, NATIVE_LABEL, 'native voice unavailable here', gainRef.current,
+      );
       redraw();
-      try {
-        const { done, handle } = captureReference(ctx, phrase, {
-          audible,
-          // The axis is set from the clip's length before the first frame,
-          // so the picture is drawn at its final scale from the start
-          // instead of being redrawn narrower when the clip ends.
-          onStart: clipMs => {
-            const windowMs = clipMs + RUN_ON_MS + WINDOW_TAIL_MS;
-            nativeScope.current = { ...nativeScope.current, windowMs };
-            youScope.current = { ...youScope.current, windowMs, viewMs: windowMs };
-          },
-          onFrame: (elapsed, capture) => {
-            const voiced = capture.frames.filter(f => f.hz !== null);
-            nativeScope.current = {
-              ...nativeScope.current,
-              spectra: capture.spectra,
-              segments: voiced.length >= 8 ? buildSegments(capture.frames, registerHz(capture.frames)) : [],
-              elapsedMs: elapsed,
-              emptyText: '',
-            };
-          },
-        });
-        void handle.then(() => setRefStatus(audible ? 'playing' : 'loading'));
-        const reference = await done;
-        referenceRef.current = reference;
-        setRefStatus('ready');
-        showReference(reference);
-        return reference;
-      } catch {
-        setRefStatus('failed');
-        nativeScope.current = emptyScope(
-          FALLBACK_WINDOW_MS, NATIVE_LABEL, 'native voice unavailable here', gainRef.current,
-        );
-        redraw();
-        return null;
-      }
-    },
-    [phrase, showReference],
-  );
+      return null;
+    }
+  }, [phrase, showReference]);
 
   const loadReference = useCallback(
-    (audible: boolean): Promise<Reference | null> => {
+    (): Promise<Reference | null> => {
       if (loadingRef.current) return loadingRef.current;
-      const run = loadReferenceNow(audible).finally(() => {
+      const run = loadReferenceNow().finally(() => {
         loadingRef.current = null;
       });
       loadingRef.current = run;
@@ -378,14 +352,14 @@ export function SpeakingTab() {
   // only reached by a click, which is the user activation the audio graph
   // needs; a failure is not retried until the sentence changes.
   useEffect(() => {
-    if (!cachedReference(phrase.id)) void loadReference(false);
+    if (!cachedReference(phrase.id)) void loadReference();
   }, [phrase, loadReference]);
 
   /** Plays the native voice with a playhead; resolves when it has ended or
    *  been cut off. */
-  const playNative = useCallback((): Promise<void> => {
-    const reference = referenceRef.current;
-    if (!reference) return loadReference(true).then(() => undefined);
+  const playNative = useCallback(async (): Promise<void> => {
+    const reference = referenceRef.current ?? (await loadReference());
+    if (!reference) return;
     const ctx = ensureCtx();
     const playback: Playback = playReference(ctx, reference);
     return new Promise(resolve => {
@@ -491,7 +465,7 @@ export function SpeakingTab() {
     });
 
     if (!referenceRef.current && refStatus !== 'failed') {
-      await loadReference(false);
+      await loadReference();
     }
     // The first take of a sentence is preceded by the native voice, so the
     // learner has the model in their ear; a retry goes straight to the
@@ -593,7 +567,6 @@ export function SpeakingTab() {
     status === 'counting' ||
     status === 'recording' ||
     refStatus === 'loading' ||
-    refStatus === 'playing' ||
     playing !== null;
 
   // Space records (or records again), L plays the native voice.
@@ -645,7 +618,7 @@ export function SpeakingTab() {
         heard={heard}
         mismatches={mismatches}
         live={live || playing === 'you'}
-        nativeLive={refStatus === 'loading' || refStatus === 'playing' || playing === 'native'}
+        nativeLive={playing === 'native'}
         busy={busy}
         playing={playing}
         onListen={listen}
@@ -844,7 +817,7 @@ function PracticePanel({
           tools={
             <>
               <button type="button" className={scopeStyles.tool} onClick={onListen} disabled={busy}>
-                {refStatus === 'loading' ? 'Fetching…' : refStatus === 'playing' || playing === 'native' ? 'Playing…' : '▶ Listen'}
+                {refStatus === 'loading' ? 'Fetching…' : playing === 'native' ? 'Playing…' : '▶ Listen'}
               </button>
               <button
                 type="button"
@@ -993,8 +966,6 @@ function StatusLine({ status, refStatus }: { status: Status; refStatus: Referenc
  *  tick would claim the syllable was right, and the analysis cannot know
  *  that — only that nothing contradicted it. */
 const FLAG_LABEL: Partial<Record<SyllableVerdict, string>> = {
-  high: '↑ too high',
-  low: '↓ too low',
   flat: '— flat',
   shape: '~ wrong way',
   missing: '· not heard',
@@ -1038,13 +1009,7 @@ function Report({ comparison, hasReference }: { comparison: Comparison | null; h
         </strong>
         <span className={styles.refHz}>
           {' '}· {(comparison.learnerMs / 1000).toFixed(1)} s vs {(comparison.referenceMs / 1000).toFixed(1)} s
-          {comparison.byWord
-            ? ' — read in pieces: tone shapes checked, pitch levels not compared'
-            : !comparison.levelsJudged
-              ? ' — much slower than native: tone shapes checked, pitch levels not compared'
-              : pace > 1.25
-                ? ' — slower than native, fine for now'
-                : ''}
+          {comparison.byWord ? ' — read in pieces' : pace > 1.25 ? ' — slower than native, fine for now' : ''}
         </span>
       </p>
       {(quiet || pace < 0.8 || unsaid) && (

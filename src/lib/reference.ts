@@ -1,11 +1,13 @@
 /**
  * The native reference: Google Translate's Thai voice saying the phrase,
- * fetched as audio and run through the same capture loop as the microphone.
+ * fetched as audio and analysed in one pass by analyseSamples, which
+ * computes what the microphone's live capture loop computes.
  * The voice is the target; textbook citation contours miss connected
  * speech by several semitones.
  */
 
-import { startCapture, type Capture, type CaptureHandle } from './capture';
+import type { Capture } from './capture';
+import { analyseSamples } from './offlineCapture';
 import { thaiOf, type Phrase } from '../data/phrases';
 import { segmentReference, syllableSpecs, type SyllableSpan } from './segment';
 
@@ -20,17 +22,16 @@ export interface Reference extends Capture {
   syllables: SyllableSpan[] | null;
 }
 
-/** Captured past the end of the clip, so the analyser's smoothing has
- *  released the last syllable and the tail is captured as silence. */
+/** Silence analysed past the end of the clip, so the analyser's smoothing
+ *  has released the last syllable and the tail reads as silence. */
 export const RUN_ON_MS = 160;
 
 const buffers = new Map<string, Promise<AudioBuffer>>();
 const references = new Map<string, Reference>();
-/** Captures in flight, one per phrase. Two callers asking for the same
- *  phrase at once — a mount effect run twice, Listen pressed during the
- *  automatic load — share one capture; two racing captures of the same
- *  audio would each paint the panel with their own frames. */
-const pending = new Map<string, { done: Promise<Reference>; handle: Promise<CaptureHandle> }>();
+/** Loads in flight, one per phrase, so two callers asking at once — a
+ *  mount effect run twice, Listen pressed during the automatic load —
+ *  share one fetch. */
+const pending = new Map<string, Promise<Reference>>();
 
 /** translate_tts serves audio without CORS headers, so a page can play it
  *  but not read its samples. In development Vite proxies it at /tts (see
@@ -61,64 +62,34 @@ function loadBuffer(ctx: AudioContext, text: string): Promise<AudioBuffer> {
   return loading;
 }
 
-/** Plays the phrase's native rendition (silently, if asked) and captures it
- *  through the same graph as the microphone. */
-export function captureReference(
-  ctx: AudioContext,
-  phrase: Phrase,
-  options: {
-    audible: boolean;
-    onFrame?: (elapsedMs: number, capture: Capture) => void;
-    /** Called as playback starts, with the clip's length; the capture runs
-     *  RUN_ON_MS past it. */
-    onStart?: (clipMs: number) => void;
-  },
-): { done: Promise<Reference>; handle: Promise<CaptureHandle> } {
+/** Fetches and analyses the phrase's native rendition; resolves as soon as
+ *  the audio is decoded — no playback needed. */
+export function loadReference(ctx: AudioContext, phrase: Phrase): Promise<Reference> {
+  const hit = references.get(phrase.id);
+  if (hit) return Promise.resolve(hit);
   const inFlight = pending.get(phrase.id);
   if (inFlight) return inFlight;
-
-  let resolveHandle!: (h: CaptureHandle) => void;
-  const handle = new Promise<CaptureHandle>(r => (resolveHandle = r));
-
   const done = (async () => {
     const text = thaiOf(phrase);
     const buffer = await loadBuffer(ctx, text);
-    if (ctx.state === 'suspended') await ctx.resume();
-
-    return new Promise<Reference>(resolve => {
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      const out = ctx.createGain();
-      out.gain.value = options.audible ? 1 : 0;
-      source.connect(out);
-      out.connect(ctx.destination);
-
-      const capture = startCapture(ctx, source, {
-        onFrame: options.onFrame,
-        onStop: result => {
-          const reference: Reference = {
-            ...result,
-            phraseId: phrase.id,
-            text,
-            buffer,
-            durationMs: result.frames.length ? result.frames[result.frames.length - 1].t : 0,
-            syllables: segmentReference(result.frames, syllableSpecs(phrase)),
-          };
-          references.set(phrase.id, reference);
-          resolve(reference);
-        },
-      });
-      resolveHandle(capture);
-      source.onended = () => window.setTimeout(() => capture.stop(), RUN_ON_MS);
-      source.start();
-      options.onStart?.(buffer.duration * 1000);
-    });
+    const channel = buffer.getChannelData(0);
+    const samples = new Float32Array(channel.length + Math.round((RUN_ON_MS / 1000) * buffer.sampleRate));
+    samples.set(channel);
+    const result: Capture = analyseSamples(samples, buffer.sampleRate);
+    const reference: Reference = {
+      ...result,
+      phraseId: phrase.id,
+      text,
+      buffer,
+      durationMs: result.frames.length ? result.frames[result.frames.length - 1].t : 0,
+      syllables: segmentReference(result.frames, syllableSpecs(phrase)),
+    };
+    references.set(phrase.id, reference);
+    return reference;
   })();
-
-  const entry = { done, handle };
-  pending.set(phrase.id, entry);
+  pending.set(phrase.id, done);
   done.finally(() => pending.delete(phrase.id)).catch(() => undefined);
-  return entry;
+  return done;
 }
 
 export interface Playback {
@@ -129,7 +100,7 @@ export interface Playback {
   durationMs: number;
 }
 
-/** Replays a reference already captured, audibly, with no analysis. */
+/** Plays a loaded reference, audibly, with no analysis. */
 export function playReference(ctx: AudioContext, reference: Reference): Playback {
   const source = ctx.createBufferSource();
   source.buffer = reference.buffer;

@@ -7,3 +7,4 @@ dist/
 .env.local
 .env.*.local
 worker/tts-proxy/.wrangler/
+__pycache__/
