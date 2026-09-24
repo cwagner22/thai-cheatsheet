@@ -9,7 +9,7 @@
  * match the live loop's without waiting for playback.
  */
 
-import { bandLevels, highBandShare, SPEC_MAX_HZ, type Capture, type Frame } from './capture';
+import { bandLevels, formantLevel, highBandShare, SPEC_MAX_HZ, type Capture, type Frame } from './capture';
 import { detectPitch, rms } from './pitch';
 import { gateVoicing, VOICING, type VoicingGate } from './voicing';
 
@@ -81,10 +81,12 @@ export function analyseSamples(samples: Float32Array, rate: number, gate: Voicin
     }
     fft(re, im);
     const bytes = new Uint8Array(specBins);
+    const levels = new Float64Array(FFT / 2);
     for (let k = 0; k < FFT / 2; k++) {
       smoothed[k] = SMOOTHING * smoothed[k] + (1 - SMOOTHING) * (Math.hypot(re[k], im[k]) / FFT);
-      if (k >= specBins) continue;
       const db = 20 * Math.log10(smoothed[k] + 1e-20);
+      levels[k] = db;
+      if (k >= specBins) continue;
       bytes[k] = Math.max(0, Math.min(255, Math.floor(((db - MIN_DB) / (MAX_DB - MIN_DB)) * 255)));
     }
     const ms = (processed / rate) * 1000;
@@ -96,6 +98,7 @@ export function analyseSamples(samples: Float32Array, rate: number, gate: Voicin
       rms: level,
       clarity: pitch?.clarity ?? 0,
       highShare: highBandShare(bytes, binHz),
+      formantDb: formantLevel(levels, binHz),
       bands: bandLevels(bytes, binHz),
     });
     spectra.push({ ms, data: bytes });

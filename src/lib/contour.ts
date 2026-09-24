@@ -7,7 +7,7 @@
 import type { ToneName } from './toneLookup';
 import type { Frame } from './capture';
 import { foldOctave, hzToSemitones, registerHz as registerHzOf } from './pitch';
-import { dtwAlign, pauseAlign, SPEECH_SHARE } from './align';
+import { dtwAlign, pauseAlign, speechBounds, SPEECH_SHARE } from './align';
 import type { SyllableSpan } from './segment';
 import { TONE_FEEL } from '../data/tones';
 
@@ -325,6 +325,53 @@ function travel(xs: number[], dir: -1 | 1): number {
   return dir < 0 ? high(a) - low(b) : high(b) - low(a);
 }
 
+/** How far a rising (+1) tone ends above its lowest point, or a falling
+ *  (−1) tone below its highest. A Thai rising tone dips before it rises,
+ *  and in connected speech the dip can take most of the syllable — สอง in
+ *  เอาสองกิโล falls 7 st and rises 3 st in its last fifth — so travel,
+ *  which compares the slot's halves, finds the second half no higher than
+ *  the first and reads no rise at all. Measured into the end, not as the
+ *  largest rise anywhere: a pitch that bumps up early and sinks back, as a
+ *  rising tone said low does, has no rise where the tone puts it. Each
+ *  point is first the median of itself and its neighbours, so a stray frame
+ *  cannot make a glide. */
+function turnGlide(xs: number[], dir: -1 | 1): number {
+  const ys = xs.map((_, i) => {
+    const w = xs.slice(Math.max(0, i - 1), i + 2).sort((a, b) => a - b);
+    return w[w.length >> 1];
+  });
+  const end = ys[ys.length - 1];
+  return dir > 0 ? end - Math.min(...ys) : Math.max(...ys) - end;
+}
+
+/** How far a syllable's end runs against a rising (+1) or falling (−1)
+ *  tone: from the highest point of its second half down to its end, or
+ *  from the lowest up. A rising tone said low or falling — the rise missed,
+ *  the pitch sinking where it should climb — ends this way; native voices
+ *  seldom do, whatever else they do with the glide. */
+function endAgainst(xs: number[], dir: -1 | 1): number {
+  const ys = xs.map((_, i) => {
+    const w = xs.slice(Math.max(0, i - 1), i + 2).sort((a, b) => a - b);
+    return w[w.length >> 1];
+  });
+  const tail = ys.slice(ys.length >> 1);
+  const end = ys[ys.length - 1];
+  return dir > 0 ? Math.max(...tail) - end : end - Math.min(...tail);
+}
+
+/** A contour tone whose end runs against it by this much more than the
+ *  native voice's does is the wrong tone. Set on the speaking dataset
+ *  (native voices scored against Google, and syllables re-pitched to a
+ *  wrong tone): at 2 st, 3% of native rising syllables and 6% of falling
+ *  ones end this way, against 21% and 26% of the wrong ones. */
+const END_AGAINST_ST = 2;
+
+/** The glide a tone asks for, measured the way that tone makes it: from the
+ *  turning point for the contour tones, across the slot for the others. */
+function glideOf(xs: number[], tone: ToneName, dir: -1 | 1): number {
+  return tone === 'Rising' || tone === 'Falling' ? turnGlide(xs, dir) : travel(xs, dir);
+}
+
 /** How far a contour tone's glide may run into the next syllable, at most,
  *  and as a share of that syllable. Thai rising and falling tones finish
  *  late: in ไหนมา the rise of ไหน happens across the /n.m/ nasal and ends
@@ -518,15 +565,25 @@ function scoreSyllables(
     if (taught !== 0) {
       const against = swingable ? travel(lrnSw, taught < 0 ? 1 : -1) : 0;
       const refAgainst = swingable ? travel(refSw, taught < 0 ? 1 : -1) : 0;
-      const withIt = travel(lrnSt, taught);
       const way = taught < 0 ? 'down' : 'up';
+      const tone = same(sp => sp.tone, first.tone);
+      if ((tone === 'Rising' || tone === 'Falling') && lrnSt.length >= 4 && refSt.length >= 4) {
+        const late = endAgainst(lrnSt, taught);
+        if (late - endAgainst(refSt, taught) >= END_AGAINST_ST) {
+          return {
+            ...base, levelSt, verdict: 'shape' as const,
+            hint: `${span.thai} is a ${tone.toLowerCase()} tone and ends going ${way}; yours ${taught > 0 ? 'falls' : 'rises'} about ${late.toFixed(0)} st at the end${cue(span)}`,
+          };
+        }
+      }
+      const withIt = glideOf(lrnSt, tone, taught);
       if (against - refAgainst >= SWING_ST && against > withIt) {
         return {
           ...base, levelSt, verdict: 'shape' as const,
           hint: `${span.thai} goes ${way}; yours goes the other way by about ${against.toFixed(0)} st${cue(span)}`,
         };
       }
-      const want = refSt.length >= MIN_GLIDE_POINTS ? travel(refSt, taught) : 0;
+      const want = refSt.length >= MIN_GLIDE_POINTS ? glideOf(refSt, tone, taught) : 0;
       if (want >= MIN_WANT_ST) {
         if (withIt < FLAT_SHARE * want) {
           return {
@@ -559,18 +616,13 @@ export function textbookMismatches(reference: Frame[], syllables: SyllableSpan[]
     if (taught === 0) return [];
     const st = judged[i].map(p => p.st);
     if (st.length < 3) return [];
-    return travel(st, taught) < MIN_WANT_ST ? [i] : [];
+    return glideOf(st, span.tone, taught) < MIN_WANT_ST ? [i] : [];
   });
 }
 
-/** First to last frame at least SPEECH_SHARE of the take's loudest. */
 function speechSpanMs(frames: Frame[]): number {
-  const peak = Math.max(...frames.map(f => f.rms)) || 1;
-  let a = 0;
-  while (a < frames.length && frames[a].rms < SPEECH_SHARE * peak) a++;
-  let b = frames.length - 1;
-  while (b > a && frames[b].rms < SPEECH_SHARE * peak) b--;
-  return b > a ? frames[b].t - frames[a].t : 0;
+  const bounds = speechBounds(frames);
+  return bounds ? frames[bounds[1]].t - frames[bounds[0]].t : 0;
 }
 
 export function compareToReference(

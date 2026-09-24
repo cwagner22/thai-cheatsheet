@@ -14,7 +14,7 @@ import {
 import type { ToneName } from '../lib/toneLookup';
 import { TONE_COLOR, TONE_FEEL, THAI_TONES } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
-import { PAUSE_MS, SPEECH_SHARE } from '../lib/align';
+import { PAUSE_MS, speechBounds } from '../lib/align';
 import {
   buildSegments,
   compareToReference,
@@ -29,6 +29,7 @@ import { cachedReference, loadReference as fetchReference, playReference, type P
 import { PhraseScope, type ScopeData } from '../components/PhraseScope';
 import scopeStyles from '../components/PhraseScope.module.css';
 import { speakThai } from '../lib/speak';
+import { FALLBACK_TARGET_DB, boostDb, raise, speechLevelDb } from '../lib/loudness';
 import { readRoute, writeRoute } from '../lib/route';
 import styles from './SpeakingTab.module.css';
 
@@ -72,6 +73,13 @@ function longestPause(frames: Frame[]): number {
 
 type Status = 'idle' | 'listening' | 'counting' | 'recording' | 'done' | 'denied';
 type ReferenceStatus = 'none' | 'loading' | 'ready' | 'failed';
+/** A take ready to play: decoded and raised to the native voice's loudness. */
+interface PlayableTake {
+  buffer: AudioBuffer;
+  /** The raise applied, in dB. */
+  db: number;
+}
+
 /** Which panel a playhead is running across, if any. */
 type Playing = 'native' | 'you' | null;
 
@@ -196,6 +204,10 @@ export function SpeakingTab() {
   const playbackRef = useRef<{ frame: number; stop: () => void } | null>(null);
   const gainRef = useRef(gain);
   gainRef.current = gain;
+  /** The take as it is played back. The saved file stays the raw recording,
+   *  which is what the offline harness analyses. */
+  const takeAudioRef = useRef<{ url: string; ready: Promise<PlayableTake | null> } | null>(null);
+  const [takeBoost, setTakeBoost] = useState<number | null>(null);
 
   const nativeScope = useRef<ScopeData>(
     emptyScope(FALLBACK_WINDOW_MS, NATIVE_LABEL, 'fetching the native voice…', 1.8),
@@ -387,20 +399,65 @@ export function SpeakingTab() {
     void playNative();
   }, [playNative]);
 
-  /** Plays the recorded take with a playhead over the learner's panel; the
-   *  recorder and the capture start together, so their clocks agree. */
-  const listenToTake = useCallback(() => {
+  const prepareTake = useCallback((url: string): Promise<PlayableTake | null> => {
+    if (takeAudioRef.current?.url === url) return takeAudioRef.current.ready;
+    const ready = (async () => {
+      const ctx = ensureCtx();
+      const decoded = await ctx.decodeAudioData(await (await fetch(url)).arrayBuffer());
+      const samples = decoded.getChannelData(0);
+      const native = referenceRef.current?.buffer;
+      const target = (native && speechLevelDb(native.getChannelData(0), native.sampleRate)) ?? FALLBACK_TARGET_DB;
+      const db = boostDb(speechLevelDb(samples, decoded.sampleRate), target);
+      const buffer = ctx.createBuffer(1, samples.length, decoded.sampleRate);
+      buffer.getChannelData(0).set(raise(samples, decoded.sampleRate, db));
+      return { buffer, db };
+    })().catch(() => null);
+    takeAudioRef.current = { url, ready };
+    return ready;
+  }, []);
+
+  // Prepared as soon as the take exists, so Listen plays at once and the
+  // raise can be shown beside it.
+  useEffect(() => {
+    setTakeBoost(null);
     if (!takeUrl) return;
-    const audio = new Audio(takeUrl);
-    void audio.play();
-    runPlayhead(
-      'you',
-      () => audio.currentTime * 1000,
-      Number.POSITIVE_INFINITY,
-      () => audio.pause(),
-    );
-    audio.onended = () => stopPlayback();
-  }, [takeUrl, runPlayhead, stopPlayback]);
+    let current = true;
+    void prepareTake(takeUrl).then(take => {
+      if (current && take) setTakeBoost(take.db);
+    });
+    return () => {
+      current = false;
+    };
+  }, [takeUrl, prepareTake]);
+
+  /** Plays the recorded take with a playhead over the learner's panel; the
+   *  recorder and the capture start together, so their clocks agree. A take
+   *  the browser cannot decode plays as recorded. */
+  const listenToTake = useCallback(async () => {
+    if (!takeUrl) return;
+    const take = await prepareTake(takeUrl);
+    if (!take) {
+      const audio = new Audio(takeUrl);
+      void audio.play();
+      runPlayhead('you', () => audio.currentTime * 1000, Number.POSITIVE_INFINITY, () => audio.pause());
+      audio.onended = () => stopPlayback();
+      return;
+    }
+    const ctx = ensureCtx();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const source = ctx.createBufferSource();
+    source.buffer = take.buffer;
+    source.connect(ctx.destination);
+    source.start();
+    const startedAt = ctx.currentTime;
+    runPlayhead('you', () => (ctx.currentTime - startedAt) * 1000, take.buffer.duration * 1000, () => {
+      try {
+        source.stop();
+      } catch {
+        // Already ended.
+      }
+    });
+  }, [takeUrl, prepareTake, runPlayhead, stopPlayback]);
 
   const finish = useCallback(() => {
     const handle = captureRef.current;
@@ -420,10 +477,9 @@ export function SpeakingTab() {
       // The take is shown as spoken, on its own time axis; the native pitch
       // and syllable slots are carried onto it through the alignment's
       // inverse.
-      const peak = Math.max(...frames.map(f => f.rms)) || 1;
-      const speech = frames.filter(f => f.rms >= SPEECH_SHARE * peak);
-      const start = speech.length ? speech[0].t : 0;
-      const end = speech.length ? speech[speech.length - 1].t : frames[frames.length - 1]?.t ?? 0;
+      const bounds = speechBounds(frames);
+      const start = bounds ? frames[bounds[0]].t : 0;
+      const end = bounds ? frames[bounds[1]].t : frames[frames.length - 1]?.t ?? 0;
       // Same time scale as the native panel above, so a syllable held twice
       // as long looks twice as long. A take that runs past the panel's width
       // is drawn wider and scrolls, never squeezed to fit.
@@ -569,7 +625,7 @@ export function SpeakingTab() {
     refStatus === 'loading' ||
     playing !== null;
 
-  // Space records (or records again), L plays the native voice.
+  // Space records (or records again), S plays the native voice, A/D step sentences.
   useEffect(() => {
     if (busy) return;
     const onKey = (e: KeyboardEvent) => {
@@ -579,12 +635,12 @@ export function SpeakingTab() {
       if (e.code === 'Space') {
         e.preventDefault();
         void record();
-      } else if (e.code === 'KeyL') {
+      } else if (e.code === 'KeyS') {
         e.preventDefault();
         listen();
-      } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+      } else if (e.code === 'KeyD' || e.code === 'KeyA') {
         e.preventDefault();
-        step(e.code === 'ArrowRight' ? 1 : -1);
+        step(e.code === 'KeyD' ? 1 : -1);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -622,7 +678,8 @@ export function SpeakingTab() {
         busy={busy}
         playing={playing}
         onListen={listen}
-        onListenToTake={listenToTake}
+        onListenToTake={() => void listenToTake()}
+        takeBoost={takeBoost}
         onRecord={record}
         onStop={finish}
         gain={gain}
@@ -684,6 +741,7 @@ function PracticePanel({
   mismatches,
   onListen,
   onListenToTake,
+  takeBoost,
   onRecord,
   onStop,
   gain,
@@ -709,6 +767,8 @@ function PracticePanel({
   mismatches: string[];
   onListen: () => void;
   onListenToTake: () => void;
+  /** How far the take is raised on playback, in dB, once it is prepared. */
+  takeBoost: number | null;
   onRecord: () => void;
   onStop: () => void;
   gain: number;
@@ -876,8 +936,15 @@ function PracticePanel({
           tools={
             takeUrl && status === 'done' ? (
               <>
-                <button type="button" className={scopeStyles.tool} onClick={onListenToTake} disabled={busy}>
+                <button
+                  type="button"
+                  className={scopeStyles.tool}
+                  onClick={onListenToTake}
+                  disabled={busy}
+                  title={takeBoost !== null ? `Played ${takeBoost.toFixed(1)} dB louder than recorded, to match the native voice` : undefined}
+                >
                   {playing === 'you' ? 'Playing…' : '▶ Listen'}
+                  {takeBoost !== null && Math.abs(takeBoost) >= 1 && ` ${takeBoost > 0 ? '+' : '−'}${Math.round(Math.abs(takeBoost))} dB`}
                 </button>
                 <a className={scopeStyles.tool} href={takeUrl} download={`take-${phrase.id}.webm`}>
                   ⤓ Save
@@ -892,7 +959,7 @@ function PracticePanel({
         <StatusLine status={status} refStatus={refStatus} />
         <div className={styles.rowEnd}>
           <span className={styles.keys}>
-            <kbd>Space</kbd> record · <kbd>L</kbd> listen · <kbd>←</kbd><kbd>→</kbd> sentence
+            <kbd>Space</kbd> record · <kbd>S</kbd> listen · <kbd>A</kbd><kbd>D</kbd> sentence
           </span>
           {status === 'done' && recordButton}
         </div>

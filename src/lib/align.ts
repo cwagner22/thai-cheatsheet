@@ -7,6 +7,7 @@
 
 import type { Frame } from './capture';
 import { foldOctave, hzToSemitones, registerHz } from './pitch';
+import { VOICING } from './voicing';
 
 export interface Warp {
   /** Learner capture time → native time. */
@@ -60,15 +61,66 @@ interface Feat {
  *  low, because a trailing particle can sit 30 dB under the loudest vowel. */
 export const SPEECH_SHARE = 0.03;
 
+/** First and last index of each run of voiced frames. */
+function voicedRuns(frames: readonly Frame[]): [number, number][] {
+  const runs: [number, number][] = [];
+  frames.forEach((f, i) => {
+    if (f.hz === null) return;
+    const open = runs[runs.length - 1];
+    if (open && open[1] === i - 1) open[1] = i;
+    else runs.push([i, i]);
+  });
+  return runs;
+}
+
+/** Indices of the utterance's first and last frames, or null when nothing
+ *  in the take is voiced. The span runs from the first voice to the last,
+ *  leaving out a lone burst both shorter than a vowel (NUCLEUS_MS) and more
+ *  than the aboveNoise margin under the take's loudest frame: a lip or
+ *  tongue click, a tap on the desk. Either alone is not enough — a word cut
+ *  short can be voiced for 40 ms, and a trailing particle can be quiet —
+ *  but a word is never both. From there it runs out over loud frames beside
+ *  the voice — an /s/ before the first vowel, the release of a final stop,
+ *  a clipped particle — as far as the next pause. Anchored on voice because a loudness threshold alone runs on into
+ *  whatever follows the last word: in a room whose noise sits 30 dB under
+ *  the voice, SPEECH_SHARE lands in the noise itself, and the take reads as
+ *  lasting until the recording stopped. "Loud" must also clear the room by
+ *  the voicing gate's aboveNoise margin, for the same reason. */
+export function speechBounds(frames: readonly Frame[]): [number, number] | null {
+  // Runs closer than a pause are one stretch of voice, however the gate
+  // broke it.
+  const groups: [number, number][] = [];
+  for (const [a, b] of voicedRuns(frames)) {
+    const open = groups[groups.length - 1];
+    if (open && frames[a].t - frames[open[1]].t < PAUSE_MS) open[1] = b;
+    else groups.push([a, b]);
+  }
+  const peak = Math.max(...frames.map(f => f.rms));
+  const words = groups.filter(([a, b]) => {
+    if (frames[b].t - frames[a].t >= NUCLEUS_MS) return true;
+    for (let i = a; i <= b; i++) if (frames[i].rms * VOICING.aboveNoise >= peak) return true;
+    return false;
+  });
+  const anchors = words.length ? words : groups;
+  if (!anchors.length) return null;
+  let first = anchors[0][0];
+  let last = anchors[anchors.length - 1][1];
+  const levels = frames.map(f => f.rms).sort((a, b) => a - b);
+  const loud = Math.max(SPEECH_SHARE * levels[levels.length - 1], VOICING.aboveNoise * levels[Math.floor(levels.length * 0.1)]);
+  for (let i = first - 1; i >= 0 && frames[first].t - frames[i].t < PAUSE_MS; i--) {
+    if (frames[i].rms >= loud) first = i;
+  }
+  for (let i = last + 1; i < frames.length && frames[i].t - frames[last].t < PAUSE_MS; i++) {
+    if (frames[i].rms >= loud) last = i;
+  }
+  return [first, last];
+}
+
 function features(frames: Frame[]): Feat[] | null {
   const voiced = frames.flatMap((f, i) => (f.hz === null ? [] : [i]));
   if (voiced.length < 8) return null;
   const ref = registerHz(voiced.map(i => frames[i].hz as number));
-  const peakAll = Math.max(...frames.map(f => f.rms)) || 1;
-  let first = 0;
-  while (first < frames.length && frames[first].rms < SPEECH_SHARE * peakAll) first++;
-  let last = frames.length - 1;
-  while (last > first && frames[last].rms < SPEECH_SHARE * peakAll) last--;
+  const [first, last] = speechBounds(frames) as [number, number];
   const slice = frames.slice(first, last + 1);
   const peak = Math.max(...slice.map(f => f.rms)) || 1;
   return slice.map(f => ({
@@ -207,12 +259,18 @@ interface Stretch {
   endMs: number;
 }
 
-/** Stretches of speech in a take, split at pauses. */
+/** Stretches of speech in a take, split at pauses. Only inside the
+ *  utterance (speechBounds): a breath or a knock on the microphone after
+ *  the last word is loud enough to be a stretch, and kept, it reads as a
+ *  word of its own — the take as read in pieces, the last native syllable
+ *  laid on the knock. */
 function speechStretches(frames: Frame[]): Stretch[] {
+  const bounds = speechBounds(frames);
+  if (!bounds) return [];
   const peak = Math.max(...frames.map(f => f.rms)) || 1;
   const out: Stretch[] = [];
   let open: Stretch | undefined;
-  for (const f of frames) {
+  for (const f of frames.slice(bounds[0], bounds[1] + 1)) {
     if (f.rms < SPEECH_SHARE * 3 * peak) continue;
     if (open && f.t - open.endMs < PAUSE_MS) {
       open.endMs = f.t;

@@ -22,6 +22,9 @@ export interface Frame {
    *  vowel formants of a voice against the low harmonics of a hum. Absent
    *  when the frames came without a spectrum. */
   highShare?: number;
+  /** Mean energy of the formant band, SPEECH_BAND_HZ up to the top of the
+   *  spectrum, in dB. Absent when the frames came without a spectrum. */
+  formantDb?: number;
   /** The frame's spectral shape, see bandLevels. Absent without a spectrum. */
   bands?: number[];
 }
@@ -74,6 +77,28 @@ export function bandLevels(bytes: Uint8Array, binHz: number): number[] {
   }
   const mean = levels.reduce((a, b) => a + b, 0) / levels.length;
   return levels.map(v => v - mean);
+}
+
+/** Top of the band formantLevel measures. A voice's first formant and its
+ *  strongest harmonics sit under it; a quiet trailing particle may carry
+ *  little else, and averaging in the bins above would drown it in the room's
+ *  hiss. */
+const FORMANT_TOP_HZ = 1500;
+
+/** Mean energy per bin from SPEECH_BAND_HZ to FORMANT_TOP_HZ, in dB, from
+ *  a spectrum in decibels per bin (the analyser's float data). Unlike
+ *  highBandShare it is not a ratio against the low end, so a low rumble
+ *  cannot raise it however loud the rumble is: only a sound with energy
+ *  where a voice's formants sit lifts it above the room's own. Taken from
+ *  the float spectrum, not the bytes: the byte scale bottoms out at
+ *  −100 dB, and a quiet microphone's room and a rumble in it both sit
+ *  there, indistinguishable. */
+export function formantLevel(db: ArrayLike<number>, binHz: number): number {
+  const lo = Math.max(1, Math.round(SPEECH_BAND_HZ / binHz));
+  const hi = Math.max(lo + 1, Math.min(db.length, Math.round(FORMANT_TOP_HZ / binHz)));
+  let sum = 0;
+  for (let k = lo; k < hi; k++) sum += 10 ** (db[k] / 10);
+  return 10 * Math.log10(sum / (hi - lo) + 1e-30);
 }
 
 export function highBandShare(bytes: Uint8Array, binHz: number): number {
@@ -139,6 +164,7 @@ export function startCapture(
   // audio. Only the spectrogram bytes come from the analyser.
   const window = new Float32Array(analyser.fftSize);
   const freqBuf = new Uint8Array(analyser.frequencyBinCount);
+  const floatBuf = new Float32Array(analyser.frequencyBinCount);
   const specBins = Math.max(
     1,
     Math.round((SPEC_MAX_HZ / (ctx.sampleRate / 2)) * analyser.frequencyBinCount),
@@ -181,6 +207,7 @@ export function startCapture(
     window.copyWithin(0, input.length);
     window.set(input, window.length - input.length);
     analyser.getByteFrequencyData(freqBuf);
+    analyser.getFloatFrequencyData(floatBuf);
 
     const level = rms(window);
     const pitch = level > gate.silence ? detectPitch(window, ctx.sampleRate) : null;
@@ -191,6 +218,7 @@ export function startCapture(
       rms: level,
       clarity: pitch?.clarity ?? 0,
       highShare: highBandShare(spectrum, ctx.sampleRate / analyser.fftSize),
+      formantDb: formantLevel(floatBuf, ctx.sampleRate / analyser.fftSize),
       bands: bandLevels(spectrum, ctx.sampleRate / analyser.fftSize),
     });
     capture.frames = gateVoicing(candidates, gate);

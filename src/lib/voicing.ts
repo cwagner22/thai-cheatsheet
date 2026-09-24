@@ -83,6 +83,9 @@ export function gateVoicing(frames: readonly Frame[], gate: VoicingGate = VOICIN
     return frames.map(f => (f.hz === null ? f : { ...f, hz: null }));
   }
   const floor = Math.max(gate.levelShare * peak, gate.aboveNoise * quiet);
+  const formants = frames.map(f => f.formantDb).filter((v): v is number => v !== undefined).sort((a, b) => a - b);
+  const roomFormantDb = formants.length ? formants[Math.floor(formants.length * 0.1)] : null;
+  const formantGate = roomFormantDb === null ? null : roomFormantDb + 20 * Math.log10(gate.aboveNoise);
   const audible = (f: Frame) => f.hz !== null && f.rms >= floor;
 
   const voiced = new Uint8Array(n);
@@ -110,11 +113,17 @@ export function gateVoicing(frames: readonly Frame[], gate: VoicingGate = VOICIN
   // and every candidate across the dip stays on the pitch line: clarity
   // sags where a vowel changes or the voice weakens, and a run split there
   // is fragments too short to score. Noise does not land candidates on the
-  // line between two voiced frames.
+  // line between two voiced frames. A candidate an octave off the line
+  // counts as on it: where a vowel goes creaky or its pitch moves fast, the
+  // detector's candidate for a frame can land on half or double the pitch
+  // (ครับ rising 112 → 123 → 127 Hz reads 112 → 62 → 127), and without this
+  // the one halved frame splits the vowel.
   const onLine = (from: number, to: number): boolean => {
     const a = frames[from].hz;
     const b = frames[to].hz;
-    return a !== null && b !== null && Math.abs(hzToSemitones(b, a)) <= gate.maxStepSt;
+    if (a === null || b === null) return false;
+    const step = Math.abs(hzToSemitones(b, a));
+    return step <= gate.maxStepSt || Math.abs(step - 12) <= gate.maxStepSt;
   };
   const passes = (i: number) => audible(frames[i]) && frames[i].clarity >= gate.marginal;
   const grow = (from: number, step: 1 | -1) => {
@@ -140,13 +149,22 @@ export function gateVoicing(frames: readonly Frame[], gate: VoicingGate = VOICIN
   grow(n - 2, -1);
 
   // Drop runs whose spectrum is not a voice's. Judged per run on the median,
-  // so one dull frame inside a vowel does not break it.
+  // so one dull frame inside a vowel does not break it. Two tests: most of
+  // the energy above SPEECH_BAND_HZ (minHighShare), and the formant band
+  // itself above the room's by the aboveNoise margin. The first is a ratio
+  // against the low end, and a quiet rumble — breath on the microphone, a
+  // knock on the desk — passes it, because the room's own hiss fills the
+  // formant band while the rumble adds nothing there. On real takes such
+  // rumbles lift the formant band 1–3 dB, a spoken syllable 17 dB or more.
   for (let i = 0; i < n; ) {
     if (!voiced[i]) { i++; continue; }
     let j = i;
     while (j < n && voiced[j]) j++;
     const shares = frames.slice(i, j).map(f => f.highShare).filter((v): v is number => v !== undefined).sort((a, b) => a - b);
-    if (shares.length && shares[shares.length >> 1] < gate.minHighShare) for (let k = i; k < j; k++) voiced[k] = 0;
+    const rises = frames.slice(i, j).map(f => f.formantDb).filter((v): v is number => v !== undefined).sort((a, b) => a - b);
+    const dull = shares.length > 0 && shares[shares.length >> 1] < gate.minHighShare;
+    const buried = formantGate !== null && rises.length > 0 && rises[rises.length >> 1] < formantGate;
+    if (dull || buried) for (let k = i; k < j; k++) voiced[k] = 0;
     i = j;
   }
 
