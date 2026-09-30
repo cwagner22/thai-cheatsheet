@@ -302,3 +302,7 @@
 }
 .legendSwatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
 .swatchOwn { background: #fff; box-shadow: 0 0 0 1px var(--ink-2); }
+
+/* Azure's word check, under the report. */
+.check { margin: 0 0 14px; }
+.checkToggle { display: flex; gap: 8px; align-items: baseline; margin: 6px 0 0; font-size: 0.8rem; color: var(--ink-3); max-width: 70ch; }

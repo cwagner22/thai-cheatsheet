@@ -32,6 +32,8 @@ import scopeStyles from '../components/PhraseScope.module.css';
 import { speakThai } from '../lib/speak';
 import { FALLBACK_TARGET_DB, boostDb, raise, speechLevelDb } from '../lib/loudness';
 import { readRoute, writeRoute } from '../lib/route';
+import { assess } from '../lib/pronunciation';
+import { PronunciationResult, type Check } from '../components/PronunciationResult';
 import styles from './SpeakingTab.module.css';
 
 const COUNT_IN_STEPS = 3;
@@ -65,6 +67,19 @@ const SENTENCE_MAX_REM = 3.4;
 const SENTENCE_MIN_REM = 1.5;
 const TONE_CYCLE: ToneName[] = ['Mid', 'Low', 'Falling', 'High', 'Rising'];
 const LAST_PHRASE_KEY = 'speaking.phrase';
+
+/** Whether each take's words are checked by Azure's pronunciation
+ *  assessment, which means sending the take to Microsoft. On unless turned
+ *  off. */
+const PRON_CHECK_KEY = 'thai.pronCheck';
+
+function readPronCheck(): boolean {
+  try {
+    return window.localStorage.getItem(PRON_CHECK_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
 
 const NATIVE_LABEL = 'Native · Google Translate';
 const YOU_LABEL = 'You';
@@ -391,6 +406,39 @@ export function SpeakingTab() {
     return ready;
   }, []);
 
+  const [pronCheck, setPronCheck] = useState(readPronCheck);
+  const [check, setCheck] = useState<Check | null>(null);
+  /** Bumped by "Check again" to re-run the check on the same take. */
+  const [checkRun, setCheckRun] = useState(0);
+  const onPronCheck = useCallback((on: boolean) => {
+    try {
+      window.localStorage.setItem(PRON_CHECK_KEY, on ? '1' : '0');
+    } catch {
+      // Storage may be unavailable; the choice lasts until the page closes.
+    }
+    setPronCheck(on);
+  }, []);
+  // Each finished take goes to Azure in Thai: what it heard, and a score per
+  // word against the sentence (it scores Thai sounds too but leaves them
+  // unnamed, so only words are shown).
+  useEffect(() => {
+    setCheck(null);
+    if (!pronCheck || !takeUrl || status !== 'done') return;
+    let current = true;
+    setCheck({ status: 'pending' });
+    void (async () => {
+      const take = await prepareTake(takeUrl);
+      if (!take) throw new Error('the take could not be decoded.');
+      return assess(take.buffer, 0, take.buffer.duration * 1000, thaiOf(phrase), 'th-TH');
+    })().then(
+      result => current && setCheck({ status: 'done', result }),
+      error => current && setCheck({ status: 'error', message: error instanceof Error ? error.message : String(error) }),
+    );
+    return () => {
+      current = false;
+    };
+  }, [pronCheck, takeUrl, status, phrase, prepareTake, checkRun]);
+
   // Prepared as soon as the take exists, so Listen plays at once and the
   // raise can be shown beside it.
   useEffect(() => {
@@ -657,6 +705,10 @@ export function SpeakingTab() {
         onStop={finish}
         gain={gain}
         onGain={onGain}
+        check={check}
+        onCheckAgain={() => setCheckRun(n => n + 1)}
+        pronCheck={pronCheck}
+        onPronCheck={onPronCheck}
       />
 
       </div>
@@ -719,6 +771,10 @@ function PracticePanel({
   onStop,
   gain,
   onGain,
+  check,
+  onCheckAgain,
+  pronCheck,
+  onPronCheck,
 }: {
   phrase: Phrase;
   status: Status;
@@ -746,6 +802,11 @@ function PracticePanel({
   onStop: () => void;
   gain: number;
   onGain: (g: number) => void;
+  /** Azure's check of the take's words, while on and once a take exists. */
+  check: Check | null;
+  onCheckAgain: () => void;
+  pronCheck: boolean;
+  onPronCheck: (on: boolean) => void;
 }) {
   const sentenceRef = useRef<HTMLParagraphElement | null>(null);
   // Clear misses, by syllable index in the sentence, highlighted in place.
@@ -946,6 +1007,15 @@ function PracticePanel({
       )}
 
       {status === 'done' && <Report comparison={comparison} hasReference={refStatus === 'ready'} />}
+      {status === 'done' && check && (
+        <div className={styles.check}>
+          <PronunciationResult
+            check={check}
+            showHeard
+            onAgain={check.status === 'pending' ? undefined : onCheckAgain}
+          />
+        </div>
+      )}
 
       <div className={styles.scopeTools}>
         <label className={styles.gainLabel} htmlFor="spec-gain">Sensitivity</label>
@@ -966,6 +1036,11 @@ function PracticePanel({
         </span>
       </div>
       <p className={styles.scopeHint}>Sensitivity changes the picture only, never what is measured.</p>
+      <label className={styles.checkToggle}>
+        <input type="checkbox" checked={pronCheck} onChange={e => onPronCheck(e.target.checked)} />
+        Check the words with Azure after each take: what it heard, and a score per word. Sends the take to
+        Microsoft; the tone analysis always runs here.
+      </label>
 
       {phrase.note && <p className={styles.note}>{phrase.note}</p>}
     </div>
@@ -978,8 +1053,8 @@ function StatusLine({ status, refStatus }: { status: Status; refStatus: Referenc
   if (status === 'denied') {
     return (
       <p className={`${styles.status} ${styles.statusError}`}>
-        The microphone is blocked. Allow it for this page in the browser, then record again — nothing
-        is uploaded; the analysis runs here.
+        The microphone is blocked. Allow it for this page in the browser, then record again. The tone
+        analysis runs here; only the word check, if it is on, sends the take to Microsoft.
       </p>
     );
   }
@@ -1138,7 +1213,18 @@ function SentenceRail({
             <h3 className={styles.railGroup} title={group.blurb}>{group.title}</h3>
             {group.phrases.map(p => (
               <div key={p.id} className={`${styles.item} ${p.id === currentId ? styles.itemOn : ''}`}>
-                <button type="button" className={styles.itemMain} onClick={() => onPick(p.id)} aria-current={p.id === currentId ? 'true' : undefined}>
+                <button
+                  type="button"
+                  className={styles.itemMain}
+                  onClick={e => {
+                    onPick(p.id);
+                    // A mouse click leaves the focus on this button, where the
+                    // hotkeys are ignored so Space can still press a focused
+                    // button; keyboard users keep their focus.
+                    if (e.detail > 0) e.currentTarget.blur();
+                  }}
+                  aria-current={p.id === currentId ? 'true' : undefined}
+                >
                   <span className={styles.itemThai}>
                     {p.words.flatMap((w, i) => w.syllables.map((s, j) => (
                       <span key={`${i}-${j}`} style={{ color: TONE_COLOR[syllableTone(s)] }}>{s.thai}</span>

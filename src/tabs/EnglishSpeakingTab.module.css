@@ -263,28 +263,5 @@
 }
 @media (max-width: 600px) { .keys { display: none; } }
 
-/* The pronunciation check, under the Heard line. */
-.check { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule); }
-.checkNote { margin-top: 10px; font-size: 0.85rem; color: var(--ink-3); }
-.checkTotals { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-size: 0.85rem; color: var(--ink-2); }
-.total b { font-family: var(--mono-font); }
-.checkWords { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; }
-.checkWord { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.checkWordText { font-weight: 700; font-size: 1.05rem; }
-.checkWordScore { font-family: var(--mono-font); font-size: 0.72rem; color: var(--ink-3); }
-.phonemes { display: flex; gap: 2px; }
-.phoneme {
-  font-family: var(--mono-font);
-  font-size: 0.8rem;
-  padding: 0 4px;
-  border-radius: 4px;
-  background: var(--panel);
-}
-.phoneme.good { background: #dcfce7; color: #15803d; }
-.phoneme.fair { background: #fef3c7; color: #b45309; }
-.phoneme.poor { background: #fee2e2; color: #b91c1c; }
-.good { color: #15803d; }
-.fair { color: #b45309; }
-.poor { color: #b91c1c; }
-.omitted .checkWordText { color: var(--ink-3); text-decoration: line-through; }
-.inserted .checkWordText { font-style: italic; }
+.save { font-size: 0.78rem; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.save:hover { color: var(--ink); }

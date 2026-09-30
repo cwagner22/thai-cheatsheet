@@ -50,17 +50,20 @@ function endpoint(): string | null {
   return relay ? `${relay}/pronunciation` : null;
 }
 
+export type AssessLanguage = 'en-US' | 'th-TH';
+
 /** The request's parameters travel base64-encoded JSON in one header, as
- *  the REST API for short audio takes them. */
-function assessmentHeader(referenceText: string): string {
+ *  the REST API for short audio takes them. Prosody scores and IPA phoneme
+ *  names are English-only; for Thai the service scores each sound but
+ *  leaves it unnamed. */
+function assessmentHeader(referenceText: string, language: AssessLanguage): string {
   const params = {
     ReferenceText: referenceText,
     GradingSystem: 'HundredMark',
     Granularity: 'Phoneme',
     Dimension: 'Comprehensive',
     EnableMiscue: 'True',
-    EnableProsodyAssessment: 'True',
-    PhonemeAlphabet: 'IPA',
+    ...(language === 'en-US' ? { EnableProsodyAssessment: 'True', PhonemeAlphabet: 'IPA' } : {}),
   };
   const bytes = new TextEncoder().encode(JSON.stringify(params));
   return btoa(String.fromCharCode(...bytes));
@@ -91,16 +94,17 @@ export async function assess(
   startMs: number,
   endMs: number,
   referenceText: string,
+  language: AssessLanguage = 'en-US',
 ): Promise<Assessment> {
   const url = endpoint();
   if (!url) throw new Error('This build has no relay to send the take to.');
   const wav = encodeWav(await to16k(buffer, startMs, endMs));
-  const response = await fetch(`${url}?language=en-US&format=detailed`, {
+  const response = await fetch(`${url}?language=${language}&format=detailed`, {
     method: 'POST',
     headers: {
       'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
       Accept: 'application/json',
-      'Pronunciation-Assessment': assessmentHeader(referenceText),
+      'Pronunciation-Assessment': assessmentHeader(referenceText, language),
     },
     body: wav,
   });

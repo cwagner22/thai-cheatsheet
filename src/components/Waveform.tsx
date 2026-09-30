@@ -43,31 +43,6 @@ export function envelopeOf(samples: Float32Array, rate: number, startMs = 0, end
 }
 
 /**
- * Where the sound in an envelope starts and ends, in ms: the first and last
- * window reaching a tenth of the envelope's own loudest, widened by `padMs`.
- * Relative to the take itself, so a quiet microphone and a loud one trim
- * alike. Null when the envelope is silent.
- */
-export function soundBounds(envelope: Float32Array, padMs = 80): { startMs: number; endMs: number } | null {
-  let max = 0;
-  for (const v of envelope) if (v > max) max = v;
-  if (max <= 0) return null;
-  const gate = max * 0.1;
-  let first = -1;
-  let last = -1;
-  envelope.forEach((v, i) => {
-    if (v < gate) return;
-    if (first < 0) first = i;
-    last = i;
-  });
-  const total = envelope.length * ENVELOPE_STEP_MS;
-  return {
-    startMs: Math.max(0, first * ENVELOPE_STEP_MS - padMs),
-    endMs: Math.min(total, (last + 1) * ENVELOPE_STEP_MS + padMs),
-  };
-}
-
-/**
  * A SoundCloud-style waveform: thin bars over a baseline with a paler
  * reflection under it, the played part in orange, a lighter tint up to the
  * pointer, and a click anywhere to seek there.

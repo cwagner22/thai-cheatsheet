@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ENGLISH_PHRASES, englishIpa, englishText, type EnglishPhrase } from '../data/englishPhrases';
 import { ttsFetchUrl } from '../lib/reference';
 import { FALLBACK_TARGET_DB, boostDb, raise, speechLevelDb } from '../lib/loudness';
-import { ENVELOPE_STEP_MS, Waveform, envelopeOf, soundBounds } from '../components/Waveform';
+import { ENVELOPE_STEP_MS, Waveform, envelopeOf } from '../components/Waveform';
+import { analyseSamples } from '../lib/offlineCapture';
+import { speechBounds } from '../lib/align';
 import { FormantStrip } from '../components/FormantStrip';
 import { spectrogramOf, type Spectrogram } from '../lib/spectrogram';
 import { startCapture } from '../lib/capture';
@@ -20,7 +22,8 @@ import {
   type WhisperOption,
 } from '../lib/whisper';
 import { matchWords, words } from '../lib/wordMatch';
-import { assess, type Assessment } from '../lib/pronunciation';
+import { assess } from '../lib/pronunciation';
+import { PronunciationResult, type Check } from '../components/PronunciationResult';
 import { writeRoute } from '../lib/route';
 import styles from './EnglishSpeakingTab.module.css';
 
@@ -63,8 +66,6 @@ interface Heard {
   status?: string;
 }
 
-/** A take's pronunciation check, from sending it to the result. */
-type Check = { status: 'pending' } | { status: 'done'; result: Assessment } | { status: 'error'; message: string };
 
 /** Whether each take is also scored by Azure's pronunciation assessment. */
 const PRON_CHECK_KEY = 'english.pronCheck';
@@ -127,10 +128,34 @@ function loadNative(ctx: AudioContext, phrase: EnglishPhrase): Promise<AudioBuff
   return loading;
 }
 
+/** Margins kept around the voice when a clip is trimmed to it. Wider after
+ *  than before: a sentence that ends on a quiet consonant (the /n/ of "run",
+ *  the release of a final /t/) fades rather than stops, and trailing
+ *  silence costs nothing where a clipped word loses the take. */
+const TRIM_LEAD_MS = 100;
+const TRIM_TAIL_MS = 250;
+
+/** Where the voice in `buffer` starts and ends, in ms, by the Thai tab's
+ *  speechBounds: anchored on voiced frames and run out over the loud
+ *  frames beside them. A loudness cut-off alone either trims a quiet final
+ *  consonant or, in a room whose noise sits 30 dB under the voice, runs on
+ *  to the end of the recording. The whole clip when nothing is voiced. */
+function voiceSpan(buffer: AudioBuffer): { startMs: number; endMs: number } {
+  const totalMs = buffer.duration * 1000;
+  const frames = analyseSamples(buffer.getChannelData(0), buffer.sampleRate).frames;
+  const bounds = frames.length ? speechBounds(frames) : null;
+  if (!bounds) return { startMs: 0, endMs: totalMs };
+  // A frame's time marks the end of its 2048-sample analysis window.
+  const windowMs = (2048 / buffer.sampleRate) * 1000;
+  return {
+    startMs: Math.max(0, frames[bounds[0]].t - windowMs - TRIM_LEAD_MS),
+    endMs: Math.min(totalMs, frames[bounds[1]].t + TRIM_TAIL_MS),
+  };
+}
+
 function clipOf(buffer: AudioBuffer): Clip {
   const samples = buffer.getChannelData(0);
-  const whole = envelopeOf(samples, buffer.sampleRate);
-  const bounds = soundBounds(whole) ?? { startMs: 0, endMs: buffer.duration * 1000 };
+  const bounds = voiceSpan(buffer);
   return {
     buffer,
     ...bounds,
@@ -192,6 +217,9 @@ export function EnglishSpeakingTab() {
   const frameRef = useRef(0);
   /** Takes kept per sentence, so going back to one shows the last attempt. */
   const takesRef = useRef(new Map<string, Clip>());
+  /** The recording as the browser made it, for Save; kept per sentence. */
+  const [takeFile, setTakeFile] = useState<string | null>(null);
+  const takeFilesRef = useRef(new Map<string, string>());
   const heardRef = useRef(new Map<string, Heard>());
   /** The sentence on screen and the newest take, so a transcript that comes
    *  back late for another sentence or an older take is not shown. */
@@ -230,6 +258,7 @@ export function EnglishSpeakingTab() {
     stopRecordingRef.current?.(false);
     setPosition(null);
     setTake(takesRef.current.get(phrase.id) ?? null);
+    setTakeFile(takeFilesRef.current.get(phrase.id) ?? null);
     setHeard(heardRef.current.get(phrase.id) ?? null);
     setCheck(checksRef.current.get(phrase.id) ?? null);
     setNative(null);
@@ -444,7 +473,13 @@ export function EnglishSpeakingTab() {
         resolveClip(null);
         return;
       }
-      const decoded = await ctx.decodeAudioData(await new Blob(chunks, { type: recorder.mimeType }).arrayBuffer());
+      const blob = new Blob(chunks, { type: recorder.mimeType });
+      const file = URL.createObjectURL(blob);
+      const old = takeFilesRef.current.get(id);
+      if (old) URL.revokeObjectURL(old);
+      takeFilesRef.current.set(id, file);
+      if (phraseIdRef.current === id) setTakeFile(file);
+      const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
       const samples = decoded.getChannelData(0);
       // Raised to the native voice's loudness for playback: raw speech from
       // a microphone sits 15-30 dB under mastered TTS audio.
@@ -590,6 +625,11 @@ export function EnglishSpeakingTab() {
                 ? seconds(liveMs)
                 : take && `${positionOf('you') !== null ? `${seconds(positionOf('you')!)} / ` : ''}${seconds(takeMs)}`}
             </span>
+            {takeFile && recording !== 'recording' && (
+              <a className={styles.save} href={takeFile} download={`take-${phrase.id}.webm`} title="Save the recording as made">
+                ⤓ Save
+              </a>
+            )}
             <button
               type="button"
               className={`${styles.iconBtn} ${styles.iconFirst} ${drawer === 'help' ? styles.iconOn : ''}`}
@@ -670,7 +710,7 @@ export function EnglishSpeakingTab() {
             />
           )}
           {check && (
-            <CheckResult
+            <PronunciationResult
               check={check}
               onAgain={
                 take && recording !== 'recording' && check.status !== 'pending'
@@ -907,78 +947,6 @@ function SttSettings({
         Whisper runs inside this page: free, no account, and the audio stays on this device. Models download once
         from Hugging Face and stay in the browser’s cache.
       </p>
-    </div>
-  );
-}
-
-/** Azure's own bands for its 0–100 scores. */
-const band = (score: number) => (score >= 80 ? styles.good : score >= 60 ? styles.fair : styles.poor);
-
-/** The pronunciation check's scores: the overall ones, then each word with
- *  the score of each of its sounds. */
-function CheckResult({ check, onAgain }: { check: Check; onAgain?: () => void }) {
-  if (check.status === 'pending') return <p className={styles.checkNote}>Checking pronunciation…</p>;
-  if (check.status === 'error') {
-    return (
-      <p className={styles.checkNote}>
-        Pronunciation check: {check.message}{' '}
-        {onAgain && (
-          <button type="button" className={styles.again} onClick={onAgain}>
-            Try again
-          </button>
-        )}
-      </p>
-    );
-  }
-  const r = check.result;
-  const totals: [string, number | undefined][] = [
-    ['Overall', r.pronunciation],
-    ['Accuracy', r.accuracy],
-    ['Fluency', r.fluency],
-    ['Completeness', r.completeness],
-    ['Prosody', r.prosody],
-  ];
-  return (
-    <div className={styles.check}>
-      <div className={styles.checkTotals}>
-        <span className={styles.heardLabel}>Pronunciation</span>
-        {totals.map(([name, v]) =>
-          v === undefined ? null : (
-            <span key={name} className={styles.total}>
-              {name} <b className={band(v)}>{Math.round(v)}</b>
-            </span>
-          ),
-        )}
-        {onAgain && (
-          <button type="button" className={styles.again} onClick={onAgain}>
-            Check again
-          </button>
-        )}
-      </div>
-      <div className={styles.checkWords}>
-        {r.words.map((w, i) => (
-          <div
-            key={i}
-            className={`${styles.checkWord} ${w.error === 'Omission' ? styles.omitted : ''} ${w.error === 'Insertion' ? styles.inserted : ''}`}
-            title={w.error === 'None' ? undefined : w.error}
-          >
-            <span className={`${styles.checkWordText} ${w.error === 'Omission' ? '' : band(w.score)}`}>
-              {w.error === 'Insertion' ? '+' : ''}
-              {w.word}
-            </span>
-            <span className={styles.checkWordScore}>{w.error === 'Omission' ? 'not said' : Math.round(w.score)}</span>
-            {w.phonemes.length > 0 && (
-              <span className={styles.phonemes}>
-                {w.phonemes.map((p, j) => (
-                  <span key={j} className={`${styles.phoneme} ${band(p.score)}`} title={`${Math.round(p.score)}/100`}>
-                    {p.phoneme}
-                  </span>
-                ))}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
