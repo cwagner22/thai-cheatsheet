@@ -64,6 +64,12 @@ export const ENGLISH_PHRASES: EnglishPhrase[] = [
     'aɪ sɔː ðə ɹɔː miːt wiː ɹoʊ ðə boʊt ənd ɡoʊ daʊn ðə ɹoʊd',
     '“Saw” and “raw” hold a steady /ɔː/; “row”, “boat”, “go” and “road” all glide, /oʊ/. “Raw” against “row” is the same /ɹ/ with the two different vowels.',
   ),
+  phrase(
+    'her-race',
+    'Her one race or run',
+    'hɝː wʌn ɹeɪs ɔːɹ ɹʌn',
+    '“Her” is a single r-coloured vowel, /ɝː/, the tongue bunched from the start; “or” is two sounds, an open rounded /ɔː/ that then moves to /ɹ/. “Race” glides, /eɪ/; “run” is the short /ʌ/ of “cup”.',
+  ),
 ];
 
 export const englishText = (p: EnglishPhrase): string => p.words.map(w => w.text).join(' ');
