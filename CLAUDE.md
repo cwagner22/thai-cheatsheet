@@ -114,3 +114,17 @@ above:
   The Speaking tab reads each syllable's tone back off its IPA diacritic, so a
   Paiboon spelling here does not just look wrong, it silently drops the
   syllable to mid tone and draws the wrong target.
+
+## English practice
+
+The sidebar's language switch also offers English, which has one page:
+speaking practice (`src/tabs/EnglishSpeakingTab.tsx`). Its sentences live in
+`src/data/englishPhrases.ts`, in General American phonemic IPA: `ɹ` for r,
+`ː` on tense monophthongs (`iː uː ɔː`), weak forms for function words
+(`ðə ənd hɚ`). The native voice is Google's `tl=en` TTS; the deployed relay
+in `worker/tts-proxy` must be redeployed before it accepts `tl`.
+
+The English page's speech-to-text is Whisper in the page (`src/lib/whisper*.ts`),
+optionally after the browser's own Web Speech service. Its pronunciation check
+(test) is Azure's pronunciation assessment (`src/lib/pronunciation.ts`), relayed
+with the key added server-side; setup is in `worker/tts-proxy/README.md`.

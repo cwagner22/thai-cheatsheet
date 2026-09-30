@@ -14,7 +14,8 @@ import {
 import type { ToneName } from '../lib/toneLookup';
 import { TONE_COLOR, TONE_FEEL, THAI_TONES } from '../data/tones';
 import { startCapture, type CaptureHandle, type Frame } from '../lib/capture';
-import { PAUSE_MS, speechBounds } from '../lib/align';
+import { speechBounds } from '../lib/align';
+import { takeFinished } from '../lib/endOfTake';
 import {
   buildSegments,
   compareToReference,
@@ -44,32 +45,6 @@ const WINDOW_TAIL_MS = 500;
  *  the panel. */
 const FIT_LEAD_MS = 150;
 const FIT_TAIL_MS = 250;
-
-/** A take may overrun the time axis while the learner is still making
- *  sound, so the final particle is not cut off; capped so a noisy room
- *  cannot keep the microphone open. */
-const OVERRUN_LIMIT = 2.5;
-/** Silence this long after the native length ends a take said in one go;
- *  the 2.5x cap above is what stops a noisy room keeping the microphone
- *  open. */
-const TRAILING_SILENCE_MS = 600;
-/** A learner reading word by word pauses between words for half a second
- *  or more, so once a take holds pauses (PAUSE_MS or longer, between two
- *  voiced frames) it ends only after this much silence, or one and a half
- *  times the longest pause so far if that is longer. */
-const PAUSED_SILENCE_MS = 1500;
-
-/** The longest gap between two voiced frames of a capture, in ms. */
-function longestPause(frames: Frame[]): number {
-  let longest = 0;
-  let lastVoiced: number | null = null;
-  for (const f of frames) {
-    if (f.hz === null) continue;
-    if (lastVoiced !== null) longest = Math.max(longest, f.t - lastVoiced);
-    lastVoiced = f.t;
-  }
-  return longest;
-}
 
 type Status = 'idle' | 'listening' | 'counting' | 'recording' | 'done' | 'denied';
 type ReferenceStatus = 'none' | 'loading' | 'ready' | 'failed';
@@ -601,13 +576,7 @@ export function SpeakingTab() {
               windowMs: Math.max(youScope.current.windowMs, elapsed + FIT_TAIL_MS),
             };
           },
-          shouldStop: (elapsed, capture) => {
-            if (elapsed < windowMs) return false;
-            const pause = longestPause(capture.frames);
-            const silence = pause >= PAUSE_MS ? Math.max(PAUSED_SILENCE_MS, 1.5 * pause) : TRAILING_SILENCE_MS;
-            const stillSpeaking = capture.frames.some(f => f.hz !== null && f.t > elapsed - silence);
-            return !stillSpeaking || elapsed >= windowMs * OVERRUN_LIMIT;
-          },
+          shouldStop: (elapsed, capture) => takeFinished(elapsed, capture.frames, windowMs),
           onStop: () => {
             // Auto-stop from inside the loop; a manual Stop already ran finish.
             if (captureRef.current) finish();
@@ -625,7 +594,8 @@ export function SpeakingTab() {
     refStatus === 'loading' ||
     playing !== null;
 
-  // Space records (or records again), S plays the native voice, A/D step sentences.
+  // Space records (or records again), S plays the native voice, R replays
+  // the take, A/D step sentences.
   useEffect(() => {
     if (busy) return;
     const onKey = (e: KeyboardEvent) => {
@@ -638,6 +608,9 @@ export function SpeakingTab() {
       } else if (e.code === 'KeyS') {
         e.preventDefault();
         listen();
+      } else if (e.code === 'KeyR' && takeUrl && status === 'done') {
+        e.preventDefault();
+        void listenToTake();
       } else if (e.code === 'KeyD' || e.code === 'KeyA') {
         e.preventDefault();
         step(e.code === 'KeyD' ? 1 : -1);
@@ -645,7 +618,7 @@ export function SpeakingTab() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [busy, record, listen, step]);
+  }, [busy, record, listen, listenToTake, takeUrl, status, step]);
 
   const onGain = (g: number) => {
     setGain(g);
@@ -959,7 +932,7 @@ function PracticePanel({
         <StatusLine status={status} refStatus={refStatus} />
         <div className={styles.rowEnd}>
           <span className={styles.keys}>
-            <kbd>Space</kbd> record · <kbd>S</kbd> listen · <kbd>A</kbd><kbd>D</kbd> sentence
+            <kbd>Space</kbd> record · <kbd>S</kbd> listen · <kbd>R</kbd> replay you · <kbd>A</kbd><kbd>D</kbd> sentence
           </span>
           {status === 'done' && recordButton}
         </div>

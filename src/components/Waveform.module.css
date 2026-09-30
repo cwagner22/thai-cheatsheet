@@ -1,0 +1,47 @@
+.wave {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+  user-select: none;
+  touch-action: manipulation;
+}
+.canvas { display: block; }
+.empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38%;
+  text-align: center;
+  line-height: normal;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  line-height: normal;
+  pointer-events: none;
+}
+.strip {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+  border-top: 1px solid var(--rule);
+  user-select: none;
+}
+.label {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  padding: 1px 6px 1px 0;
+  background: rgba(255, 255, 255, 0.85);
+  line-height: normal;
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  pointer-events: none;
+}

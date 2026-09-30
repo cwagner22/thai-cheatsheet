@@ -57,6 +57,10 @@ h1 { font-size: 1.8rem; margin-bottom: 18px; color: var(--ink); letter-spacing: 
   letter-spacing: -0.02em;
 }
 .brand .brand-mark { font-family: var(--thai-font); font-size: 1.35rem; font-weight: 700; }
+.brand .brand-mark.latin { font-family: var(--ui-font); font-size: 1.15rem; }
+/* The language switch sits under the brand, above the sections it picks. */
+.seg.lang { display: flex; margin: 0 8px 26px; }
+.seg.lang button { flex: 1; }
 
 .nav-group {
   font-size: 0.68rem;
@@ -161,6 +165,9 @@ h1 { font-size: 1.8rem; margin-bottom: 18px; color: var(--ink); letter-spacing: 
     overflow-x: auto;
   }
   .brand, .nav-group, .side-foot, .nav-marker { display: none; }
+  .seg.lang { flex: 0 0 auto; margin: 0 4px 0 0; }
+  .seg.lang button { padding: 5px 8px; }
+  .seg.lang .seg-glyph { display: none; }
   .nav-items { flex-direction: row; margin: 0; gap: 2px; }
   .nav-items.practise { flex: 0 0 auto; }
   .nav-items.reference { flex: 1; justify-content: flex-end; }

@@ -14,6 +14,8 @@ import {
   EJECTIVES,
   OTHER_SYMBOLS,
   AFFRICATES,
+  RHOTIC_AND_DIPHTHONGS,
+  MARKS,
   findConsonant,
   playIpaSound,
   parseBold,
@@ -334,7 +336,7 @@ function LabelledList({
           : primaryUsed
             ? ''
             : styles.labelledUnused;
-        const clickable = !showOther || primaryUsed;
+        const clickable = (!showOther || primaryUsed) && !item.silent;
         return (
           <li key={item.symbol} className={`${styles.labelledItem} ${toneClass}`}>
             {clickable ? (
@@ -389,9 +391,11 @@ function hasAnyItem(items: IPALabelled[], primaryLang: ExampleLang, showOther: b
 
 // ============ Tab ============
 
-export function IPATab() {
-  const [primaryLang, setPrimaryLang] = useState<ExampleLang>('th');
-  const [exampleLangs, setExampleLangs] = useState<Set<ExampleLang>>(() => new Set(['th', 'en', 'fr']));
+/** `primary` is the language the chart opens on: its sounds are the ones
+ *  highlighted, and its examples are always shown. */
+export function IPATab({ primary = 'th' }: { primary?: ExampleLang }) {
+  const [primaryLang, setPrimaryLang] = useState<ExampleLang>(primary);
+  const [exampleLangs, setExampleLangs] = useState<Set<ExampleLang>>(() => new Set([primary, 'th', 'en', 'fr']));
   const [showOther, setShowOther] = useState<boolean>(false);
 
   const handlePrimaryChange = (lang: ExampleLang) => {
@@ -431,6 +435,8 @@ export function IPATab() {
   const showNonPulmonic = showClicks || showImplosives || showEjectives;
   const showOtherSection = hasAnyItem(OTHER_SYMBOLS, primaryLang, showOther);
   const showAffricates   = hasAnyItem(AFFRICATES,    primaryLang, showOther);
+  const showRhotic       = hasAnyItem(RHOTIC_AND_DIPHTHONGS, primaryLang, showOther);
+  const showMarks        = hasAnyItem(MARKS,         primaryLang, showOther);
 
   const primaryLabel = LANGUAGE_OPTIONS.find(o => o.value === primaryLang)?.label ?? primaryLang;
 
@@ -566,6 +572,30 @@ export function IPATab() {
             <span className={styles.sectionSub}>{CATEGORY_DESCRIPTIONS.Affricates}</span>
           </div>
           <LabelledList items={AFFRICATES} visibleLangs={visibleLangs} primaryLang={primaryLang} showOther={showOther} />
+        </>
+      )}
+
+      {showRhotic && (
+        <>
+          <div className="class-section" style={{ marginTop: 18, marginBottom: 8 }}>
+            <div className={styles.sectionHeader} style={{ background: '#7c3aed' }} title={CATEGORY_DESCRIPTIONS['R-coloured vowels & diphthongs']}>
+              R-coloured vowels & diphthongs
+            </div>
+            <span className={styles.sectionSub}>{CATEGORY_DESCRIPTIONS['R-coloured vowels & diphthongs']}</span>
+          </div>
+          <LabelledList items={RHOTIC_AND_DIPHTHONGS} visibleLangs={visibleLangs} primaryLang={primaryLang} showOther={showOther} />
+        </>
+      )}
+
+      {showMarks && (
+        <>
+          <div className="class-section" style={{ marginTop: 18, marginBottom: 8 }}>
+            <div className={styles.sectionHeader} style={{ background: '#475569' }} title={CATEGORY_DESCRIPTIONS['Length, stress & breaks']}>
+              Length, stress & breaks
+            </div>
+            <span className={styles.sectionSub}>{CATEGORY_DESCRIPTIONS['Length, stress & breaks']}</span>
+          </div>
+          <LabelledList items={MARKS} visibleLangs={visibleLangs} primaryLang={primaryLang} showOther={showOther} />
         </>
       )}
 

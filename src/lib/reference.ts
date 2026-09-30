@@ -37,13 +37,17 @@ const pending = new Map<string, Promise<Reference>>();
  *  but not read its samples. In development Vite proxies it at /tts (see
  *  vite.config.ts); the deployed site goes through the relay Worker in
  *  worker/tts-proxy, whose URL is VITE_TTS_PROXY at build time. With neither,
- *  the fetch fails and the tab runs without a native voice. */
-export function ttsFetchUrl(text: string): string {
-  if (import.meta.env.DEV) return `/tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(text)}`;
+ *  the fetch fails and the tab runs without a native voice. `lang` is
+ *  Google's `tl` code: `th` for the Thai voice, `en` for the English one. */
+export function ttsFetchUrl(text: string, lang = 'th'): string {
+  const q = encodeURIComponent(text);
+  if (import.meta.env.DEV) return `/tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${q}`;
   const relay = (import.meta.env.VITE_TTS_PROXY as string | undefined)?.replace(/\/$/, '');
+  // The relay defaults to Thai, so a Thai request leaves `tl` off and keeps
+  // the URL, and with it the edge cache entry, it has always had.
   return relay
-    ? `${relay}/?q=${encodeURIComponent(text)}`
-    : `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(text)}`;
+    ? `${relay}/?q=${q}${lang === 'th' ? '' : `&tl=${lang}`}`
+    : `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${q}`;
 }
 
 export const cachedReference = (phraseId: string): Reference | null =>

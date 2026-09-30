@@ -49,6 +49,9 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   Clicks: 'Suction-based consonants — pull air inward with the tongue. Common in southern African languages (Xhosa, Zulu).',
   'Voiced implosives': 'Stops where the larynx drops, sucking air inward while voiced. Found in Sindhi, Hausa, Vietnamese.',
   Ejectives: 'Stops where the closed glottis pushes air outward like a pop. Common in Caucasian, Ethiopian, and Native American languages.',
+  'R-coloured vowels & diphthongs':
+    'Not letters of the main chart but written with them: ɚ and ɝ are ə and ɜ with an r-colouring hook; a diphthong is two vowel symbols for one vowel that glides from the first to the second.',
+  'Length, stress & breaks': 'Marks with no sound of their own: they say how long, how strong, or where a pause falls.',
   Affricates: 'A stop smoothly transitioning into a fricative at the same place — pronounced as a single unit (e.g. English "ch", "j").',
   'Other symbols': 'Articulations that don\'t fit the main pulmonic grid — co-articulations, double-place sounds, or rare phones.',
 };
@@ -316,13 +319,17 @@ let currentAudio: HTMLAudioElement | null = null;
 
 /** Play the IPA reference recording for a phoneme. Stops any previous clip.
  *  Uses `entry.audio` when set, falling back to the Wikipedia article slug. */
-export function playIpaSound(entry: { wiki: string; audio?: string }): void {
+export function playIpaSound(entry: { wiki: string; audio?: string; say?: string }): void {
   const slug = entry.audio ?? entry.wiki;
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
-  const a = new Audio(audioUrl(slug));
+  const a = new Audio(
+    entry.say
+      ? `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(entry.say)}`
+      : audioUrl(slug),
+  );
   currentAudio = a;
   a.play().catch(err => {
     // Most likely: no audio file exists for this slug, or the browser
@@ -341,6 +348,11 @@ export interface IPALabelled {
   wiki: string;
   /** Audio basename on Commons when it differs from `wiki` (some don't match). */
   audio?: string;
+  /** An English word to speak in place of a Commons clip, for sounds Commons
+   *  has no clean recording of. */
+  say?: string;
+  /** A mark with no sound of its own (length, stress, a break). */
+  silent?: boolean;
 }
 
 export const CLICKS: IPALabelled[] = [
@@ -377,6 +389,25 @@ export const OTHER_SYMBOLS: IPALabelled[] = [
   { symbol: 'ʑ', label: 'Voiced alveolo-palatal fricative',    examples: {}, wiki: 'Voiced_alveolo-palatal_fricative' },
   { symbol: 'ɺ', label: 'Alveolar lateral flap',               examples: {}, wiki: 'Alveolar_lateral_flap' },
   { symbol: 'ɧ', label: 'Simultaneous ʃ and x',                examples: {}, wiki: 'Voiceless_dorso-palatal_velar_fricative' },
+];
+
+export const RHOTIC_AND_DIPHTHONGS: IPALabelled[] = [
+  { symbol: 'ɚ', label: 'R-coloured schwa, unstressed', examples: { en: 'butt**er**, h**er** (weak)' }, wiki: 'R-colored_vowel', say: 'butter' },
+  { symbol: 'ɝ', label: 'R-coloured vowel, stressed',   examples: { en: 'b**ir**d, h**er** (US)' },      wiki: 'R-colored_vowel', say: 'bird' },
+  { symbol: 'eɪ', label: 'Diphthong, e → ɪ', examples: { en: 'd**ay**' },  wiki: 'Diphthong', say: 'day' },
+  { symbol: 'aɪ', label: 'Diphthong, a → ɪ', examples: { en: 'm**y**' },   wiki: 'Diphthong', say: 'my' },
+  { symbol: 'ɔɪ', label: 'Diphthong, ɔ → ɪ', examples: { en: 'b**oy**' },  wiki: 'Diphthong', say: 'boy' },
+  { symbol: 'aʊ', label: 'Diphthong, a → ʊ', examples: { en: 'n**ow**' },  wiki: 'Diphthong', say: 'now' },
+  { symbol: 'oʊ', label: 'Diphthong, o → ʊ', examples: { en: 'g**o** (US)' }, wiki: 'Diphthong', say: 'go' },
+];
+
+export const MARKS: IPALabelled[] = [
+  { symbol: 'ː', label: 'Long: the sound before it is held', examples: { en: 's**ee** /siː/', th: 'ก**า** /kaː/' }, wiki: 'Length_(phonetics)', silent: true },
+  { symbol: 'ˈ', label: 'Stress: the syllable after it is the strong one', examples: { en: '**rea**lly /ˈɹɪli/' }, wiki: 'Stress_(linguistics)', silent: true },
+  { symbol: 'ˌ', label: 'Secondary stress', examples: { en: '**ed**ucation /ˌɛdʒəˈkeɪʃən/' }, wiki: 'Stress_(linguistics)', silent: true },
+  { symbol: '.', label: 'Syllable break', examples: { en: 'hap.py /ˈhæ.pi/', th: 'ระ.ฆัง /rá.kʰaŋ/' }, wiki: 'Syllable', silent: true },
+  { symbol: '|', label: 'Minor break: a short pause, as at a comma', examples: { en: 'grow up, | I grew' }, wiki: 'Prosodic_unit', silent: true },
+  { symbol: '‖', label: 'Major break: the pause between sentences', examples: { en: 'raw meat. ‖ We row' }, wiki: 'Prosodic_unit', silent: true },
 ];
 
 export const AFFRICATES: IPALabelled[] = [
