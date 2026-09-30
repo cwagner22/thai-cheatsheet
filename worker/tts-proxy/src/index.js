@@ -14,8 +14,8 @@
  * adding the Speech key (the AZURE_SPEECH_KEY and AZURE_SPEECH_REGION
  * secrets) so it never reaches the browser:
  *
- *   POST /pronunciation   body: 16 kHz mono WAV, header Pronunciation-Assessment
- *                         →  Azure's JSON result
+ *   POST /pronunciation[?language=en-US|th-TH]   body: 16 kHz mono WAV,
+ *        header Pronunciation-Assessment   →  Azure's JSON result
  */
 
 const UPSTREAM = 'https://translate.google.com/translate_tts';
@@ -25,7 +25,8 @@ const LANGUAGES = ['th', 'en'];
 /** Azure scores at most 30 s of audio per request; 30 s of 16-bit 16 kHz
  *  mono is 960 KB, so anything larger is not a take. */
 const MAX_AUDIO_BYTES = 1_000_000;
-const AZURE_PATH = '/speech/recognition/conversation/cognitiveservices/v1?language=en-US&format=detailed';
+const AZURE_PATH = '/speech/recognition/conversation/cognitiveservices/v1';
+const ASSESS_LANGUAGES = ['en-US', 'th-TH'];
 
 export default {
   async fetch(request, env, ctx) {
@@ -81,13 +82,17 @@ async function pronunciation(request, env, cors) {
   if (!env.AZURE_SPEECH_KEY || !env.AZURE_SPEECH_REGION) {
     return new Response('pronunciation check not configured', { status: 503, headers: cors });
   }
+  const language = new URL(request.url).searchParams.get('language') ?? 'en-US';
+  if (!ASSESS_LANGUAGES.includes(language)) {
+    return new Response(`language must be one of ${ASSESS_LANGUAGES.join(', ')}`, { status: 400, headers: cors });
+  }
   const assessment = request.headers.get('Pronunciation-Assessment');
   if (!assessment) return new Response('Pronunciation-Assessment header required', { status: 400, headers: cors });
   const audio = await request.arrayBuffer();
   if (audio.byteLength === 0 || audio.byteLength > MAX_AUDIO_BYTES) {
     return new Response(`audio must be 1–${MAX_AUDIO_BYTES} bytes`, { status: 413, headers: cors });
   }
-  const upstream = await fetch(`https://${env.AZURE_SPEECH_REGION}.stt.speech.microsoft.com${AZURE_PATH}`, {
+  const upstream = await fetch(`https://${env.AZURE_SPEECH_REGION}.stt.speech.microsoft.com${AZURE_PATH}?language=${language}&format=detailed`, {
     method: 'POST',
     headers: {
       'Ocp-Apim-Subscription-Key': env.AZURE_SPEECH_KEY,
