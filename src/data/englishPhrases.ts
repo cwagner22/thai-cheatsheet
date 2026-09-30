@@ -60,9 +60,15 @@ export const ENGLISH_PHRASES: EnglishPhrase[] = [
   ),
   phrase(
     'raw-meat',
-    'I saw the raw meat. We row the boat and go down the road.',
-    'aɪ sɔː ðə ɹɔː miːt wiː ɹoʊ ðə boʊt ənd ɡoʊ daʊn ðə ɹoʊd',
-    '“Saw” and “raw” hold a steady /ɔː/; “row”, “boat”, “go” and “road” all glide, /oʊ/. “Raw” against “row” is the same /ɹ/ with the two different vowels.',
+    'I saw the raw meat.',
+    'aɪ sɔː ðə ɹɔː miːt',
+    '“Saw” and “raw” hold one steady /ɔː/, the jaw open, with no glide at the end; “meat” is a long, tight /iː/.',
+  ),
+  phrase(
+    'row-boat',
+    'We row the boat and go down the road.',
+    'wiː ɹoʊ ðə boʊt ənd ɡoʊ daʊn ðə ɹoʊd',
+    '“Row”, “boat”, “go” and “road” all glide, /oʊ/, the lips closing in at the end. Against “raw” in the sentence before, “row” is the same /ɹ/ with the other vowel.',
   ),
   phrase(
     'her-race',
